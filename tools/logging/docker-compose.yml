@@ -1,0 +1,22 @@
+elastic:
+    image: elasticsearch
+    ports:
+        - "9200:9200"
+        - "9300:9300"
+kibana:
+    image: pindar/kibana
+    links:
+        - elastic
+    environment:
+        - ELASTICSEARCH_ENDPOINT=http://elastic:9200
+    ports:
+        - "5601:5601"
+rsyslog:
+    image: pindar/docker-rsyslog
+    links:
+        - elastic
+    environment:
+        - ELASTICSEARCH_HOST=elastic
+    ports:
+        - "514:514"
+        - "514:514/udp"
