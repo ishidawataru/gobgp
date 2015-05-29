@@ -16,6 +16,7 @@
 package main
 
 import (
+	"fmt"
 	log "github.com/Sirupsen/logrus"
 	"github.com/Sirupsen/logrus/hooks/syslog"
 	"github.com/jessevdk/go-flags"
@@ -30,6 +31,44 @@ import (
 	"strings"
 	"syscall"
 )
+
+type JsonSyslogHook struct {
+	logrus_syslog.SyslogHook
+}
+
+func NewJsonSyslogHook(network, raddr string, priority syslog.Priority, tag string) (*JsonSyslogHook, error) {
+	w, err := syslog.Dial(network, raddr, priority, tag)
+	return &JsonSyslogHook{
+		logrus_syslog.SyslogHook{w, network, raddr},
+	}, err
+}
+
+func (hook *JsonSyslogHook) Fire(entry *log.Entry) error {
+	line, err := entry.String()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to read entry, %v", err)
+		return err
+	}
+
+	line = "@cee: " + line
+
+	switch entry.Level {
+	case log.PanicLevel:
+		return hook.Writer.Crit(line)
+	case log.FatalLevel:
+		return hook.Writer.Crit(line)
+	case log.ErrorLevel:
+		return hook.Writer.Err(line)
+	case log.WarnLevel:
+		return hook.Writer.Warning(line)
+	case log.InfoLevel:
+		return hook.Writer.Info(line)
+	case log.DebugLevel:
+		return hook.Writer.Debug(line)
+	default:
+		return nil
+	}
+}
 
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -118,7 +157,13 @@ func main() {
 			facility = syslog.LOG_LOCAL7
 		}
 
-		hook, err := logrus_syslog.NewSyslogHook(network, addr, syslog.LOG_INFO|facility, "bgpd")
+		var hook log.Hook
+		if opts.LogPlain == false {
+			hook, err = NewJsonSyslogHook(network, addr, syslog.LOG_INFO|facility, "bgpd")
+		} else {
+			hook, err = logrus_syslog.NewSyslogHook(network, addr, syslog.LOG_INFO|facility, "bgpd")
+		}
+
 		if err != nil {
 			log.Error("Unable to connect to syslog daemon, ", opts.UseSyslog)
 			os.Exit(1)
