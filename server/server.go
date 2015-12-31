@@ -346,37 +346,6 @@ func (server *BgpServer) Serve() {
 		select {
 		case c := <-server.rpkiConfigCh:
 			server.roaManager, _ = newROAManager(server.bgpConfig.Global.Config.As, c)
-<<<<<<< HEAD
-=======
-		case c := <-server.bmpConfigCh:
-			server.bmpClient, _ = newBMPClient(c, server.bmpConnCh)
-		case c := <-server.bmpConnCh:
-			bmpMsgList := []*bgp.BMPMessage{}
-			for _, targetPeer := range server.neighborMap {
-				if targetPeer.fsm.state != bgp.BGP_FSM_ESTABLISHED {
-					continue
-				}
-				for _, p := range targetPeer.adjRibIn.PathList(targetPeer.configuredRFlist(), false) {
-					// avoid to merge for timestamp
-					u := table.CreateUpdateMsgFromPaths([]*table.Path{p})
-					buf, _ := u[0].Serialize(bgp.DefaultMarshallingOptions())
-					bmpMsgList = append(bmpMsgList, bmpPeerRoute(bgp.BMP_PEER_TYPE_GLOBAL, false, 0, targetPeer.fsm.peerInfo, p.GetTimestamp().Unix(), buf))
-				}
-			}
-
-			for _, p := range server.globalRib.GetBestPathList(table.GLOBAL_RIB_NAME, server.globalRib.GetRFlist()) {
-				u := table.CreateUpdateMsgFromPaths([]*table.Path{p})
-				buf, _ := u[0].Serialize(bgp.DefaultMarshallingOptions())
-				bmpMsgList = append(bmpMsgList, bmpPeerRoute(bgp.BMP_PEER_TYPE_GLOBAL, true, 0, p.GetSource(), p.GetTimestamp().Unix(), buf))
-			}
-
-			m := &broadcastBMPMsg{
-				ch:      server.bmpClient.send(),
-				conn:    c.conn,
-				msgList: bmpMsgList,
-			}
-			server.broadcastMsgs = append(server.broadcastMsgs, m)
->>>>>>> 2e17d07... packet: unify ASPathParam and AS4PathParam
 		case rmsg := <-server.roaManager.recieveROA():
 			server.roaManager.handleROAEvent(rmsg)
 		case zmsg := <-zapiMsgCh:
@@ -491,7 +460,7 @@ func filterpath(peer *Peer, path *table.Path) *table.Path {
 	if path == nil {
 		return nil
 	}
-	if _, ok := peer.rfMap[path.GetRouteFamily()]; !ok {
+	if _, ok := peer.fsm.rfMap[path.GetRouteFamily()]; !ok {
 		return nil
 	}
 
@@ -575,7 +544,7 @@ func (server *BgpServer) dropPeerAllRoutes(peer *Peer) []*SenderMsg {
 				if !targetPeer.isRouteServerClient() || targetPeer == peer || targetPeer.fsm.state != bgp.BGP_FSM_ESTABLISHED {
 					continue
 				}
-				if _, ok := targetPeer.rfMap[rf]; !ok {
+				if _, ok := targetPeer.fsm.rfMap[rf]; !ok {
 					continue
 				}
 
@@ -608,7 +577,7 @@ func (server *BgpServer) dropPeerAllRoutes(peer *Peer) []*SenderMsg {
 				if targetPeer.isRouteServerClient() || targetPeer.fsm.state != bgp.BGP_FSM_ESTABLISHED {
 					continue
 				}
-				if _, ok := targetPeer.rfMap[rf]; !ok {
+				if _, ok := targetPeer.fsm.rfMap[rf]; !ok {
 					continue
 				}
 				targetPeer.adjRibOut.Update(pathList)
@@ -873,7 +842,7 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg, incoming chan *
 			msgs = append(msgs, newSenderMsg(peer, []*bgp.BGPMessage{bgp.NewBGPNotificationMessage(m.TypeCode, m.SubTypeCode, m.Data)}))
 		case *bgp.BGPMessage:
 			if m.Header.Type == bgp.BGP_MSG_UPDATE && server.watchers.watching(WATCHER_EVENT_UPDATE_MSG) {
-				_, y := peer.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
+				_, y := peer.fsm.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
 				l, _ := peer.fsm.LocalHostPort()
 				ev := &watcherEventUpdateMsg{
 					message:      m,
@@ -900,7 +869,7 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg, incoming chan *
 				m, altered := server.propagateUpdate(peer, pathList)
 				msgs = append(msgs, m...)
 				if server.watchers.watching(WATCHER_EVENT_POST_POLICY_UPDATE_MSG) {
-					_, y := peer.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
+					_, y := peer.fsm.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
 					l, _ := peer.fsm.LocalHostPort()
 					ev := &watcherEventUpdateMsg{
 						peerAS:       peer.fsm.peerInfo.AS,
@@ -914,16 +883,8 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg, incoming chan *
 					}
 					for _, u := range table.CreateUpdateMsgFromPaths(altered) {
 						payload, _ := u.Serialize(bgp.DefaultMarshallingOptions())
-<<<<<<< HEAD
 						ev.payload = payload
 						server.notify2watchers(WATCHER_EVENT_POST_POLICY_UPDATE_MSG, ev)
-=======
-						bm := &broadcastBMPMsg{
-							ch:      ch,
-							msgList: []*bgp.BMPMessage{bmpPeerRoute(bgp.BMP_PEER_TYPE_GLOBAL, true, 0, peer.fsm.peerInfo, e.timestamp.Unix(), payload)},
-						}
-						server.broadcastMsgs = append(server.broadcastMsgs, bm)
->>>>>>> 2e17d07... packet: unify ASPathParam and AS4PathParam
 					}
 				}
 			}
