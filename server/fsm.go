@@ -162,6 +162,7 @@ func NewFSM(gConf *config.Global, pConf *config.Neighbor, policy *table.RoutingP
 		policy:             policy,
 		marshallingOptions: bgp.DefaultMarshallingOptions(),
 	}
+	fsm.marshallingOptions.Cache = bgp.NewAttributeCache()
 	fsm.t.Go(fsm.connectLoop)
 	return fsm
 }
