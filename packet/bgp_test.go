@@ -308,7 +308,7 @@ func Test_RFC5512(t *testing.T) {
 	buf1, err := attr.Serialize(options)
 	assert.Equal(nil, err)
 
-	p, err := GetPathAttribute(buf1)
+	p, _, err := GetPathAttribute(buf1, options)
 	assert.Equal(nil, err)
 
 	err = p.DecodeFromBytes(buf1, options)

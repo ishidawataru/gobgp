@@ -1110,7 +1110,7 @@ func (server *BgpServer) Api2PathList(resource api.Resource, name string, ApiPat
 		}
 
 		for _, attr := range path.Pattrs {
-			p, err := bgp.GetPathAttribute(attr)
+			p, _, err := bgp.GetPathAttribute(attr, bgp.DefaultMarshallingOptions())
 			if err != nil {
 				return nil, err
 			}

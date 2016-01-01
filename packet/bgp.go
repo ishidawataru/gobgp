@@ -20,6 +20,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
 	"math"
 	"net"
 	"reflect"
@@ -28,8 +29,28 @@ import (
 	"strings"
 )
 
+type AttributeCache map[uint32][]PathAttributeInterface
+
+func (c AttributeCache) Add(p PathAttributeInterface) error {
+	if p.Hash() == 0 {
+		return fmt.Errorf("hash not calced")
+	}
+	list, ok := c[p.Hash()]
+	if ok {
+		c[p.Hash()] = append(list, p)
+	} else {
+		c[p.Hash()] = []PathAttributeInterface{p}
+	}
+	return nil
+}
+
+func NewAttributeCache() AttributeCache {
+	return AttributeCache(make(map[uint32][]PathAttributeInterface))
+}
+
 type MarshallingOptions struct {
-	AS2 bool
+	AS2   bool
+	Cache AttributeCache
 }
 
 func DefaultMarshallingOptions() *MarshallingOptions {
@@ -3175,6 +3196,7 @@ type PathAttributeInterface interface {
 	GetType() BGPAttrType
 	String() string
 	MarshalJSON() ([]byte, error)
+	Hash() uint32
 }
 
 type PathAttribute struct {
@@ -3182,6 +3204,7 @@ type PathAttribute struct {
 	Type   BGPAttrType
 	Length uint16
 	Value  []byte
+	hash   uint32
 }
 
 func (p *PathAttribute) Len(options *MarshallingOptions) int {
@@ -3197,6 +3220,10 @@ func (p *PathAttribute) Len(options *MarshallingOptions) int {
 	return int(l)
 }
 
+func (p *PathAttribute) Hash() uint32 {
+	return p.hash
+}
+
 func (p *PathAttribute) getFlags() BGPAttrFlag {
 	return p.Flags
 }
@@ -3205,40 +3232,64 @@ func (p *PathAttribute) GetType() BGPAttrType {
 	return p.Type
 }
 
-func (p *PathAttribute) DecodeFromBytes(data []byte, options *MarshallingOptions) error {
-	odata := data
+func parsePathAttirbuteHeader(data []byte) (int, []byte, BGPAttrFlag, BGPAttrType, error) {
 	eCode := uint8(BGP_ERROR_UPDATE_MESSAGE_ERROR)
 	eSubCode := uint8(BGP_ERROR_SUB_ATTRIBUTE_LENGTH_ERROR)
-	if len(data) < 2 {
-		return NewMessageError(eCode, eSubCode, data, "attribute header length is short")
-	}
-	p.Flags = BGPAttrFlag(data[0])
-	p.Type = BGPAttrType(data[1])
+	var length int
+	var hdrlen int
+	var flag BGPAttrFlag
+	var typ BGPAttrType
 
-	if p.Flags&BGP_ATTR_FLAG_EXTENDED_LENGTH != 0 {
+	if len(data) < 2 {
+		return length, nil, flag, typ, NewMessageError(eCode, eSubCode, data, "attribute type length is short")
+	}
+	flag = BGPAttrFlag(data[0])
+	typ = BGPAttrType(data[1])
+
+	if flag&BGP_ATTR_FLAG_EXTENDED_LENGTH != 0 {
 		if len(data) < 4 {
-			return NewMessageError(eCode, eSubCode, data, "attribute header length is short")
+			return length, nil, flag, typ, NewMessageError(eCode, eSubCode, data, "attribute header length is short")
 		}
-		p.Length = binary.BigEndian.Uint16(data[2:4])
+		hdrlen = 4
+		length = int(binary.BigEndian.Uint16(data[2:4]))
 		data = data[4:]
 	} else {
 		if len(data) < 3 {
-			return NewMessageError(eCode, eSubCode, data, "attribute header length is short")
+			return length, nil, flag, typ, NewMessageError(eCode, eSubCode, data, "attribute header length is short")
 		}
-		p.Length = uint16(data[2])
+		hdrlen = 3
+		length = int(data[2])
 		data = data[3:]
 	}
-	if len(data) < int(p.Length) {
-		return NewMessageError(eCode, eSubCode, data, "attribute value length is short")
+	if len(data) < length {
+		return length, nil, flag, typ, NewMessageError(eCode, eSubCode, data, "attribute value length is short")
 	}
-	if len(data[:p.Length]) > 0 {
-		p.Value = data[:p.Length]
+	data = data[:length]
+
+	return hdrlen + length, data, flag, typ, nil
+}
+
+func (p *PathAttribute) DecodeFromBytes(data []byte, options *MarshallingOptions) error {
+	length, body, flag, typ, err := parsePathAttirbuteHeader(data)
+	if err != nil {
+		return err
 	}
 
-	ok, eMsg := ValidateFlags(p.Type, p.Flags)
-	if !ok {
-		return NewMessageError(eCode, BGP_ERROR_SUB_ATTRIBUTE_FLAGS_ERROR, odata[:p.Len(options)], eMsg)
+	p.Flags = flag
+	p.Type = typ
+	p.Length = uint16(len(body))
+	p.Value = body
+
+	if ok, eMsg := ValidateFlags(p.Type, p.Flags); !ok {
+		return NewMessageError(uint8(BGP_ERROR_MESSAGE_HEADER_ERROR), BGP_ERROR_SUB_ATTRIBUTE_FLAGS_ERROR, data[:length], eMsg)
 	}
+
+	if options.Cache != nil {
+		h := fnv.New32()
+		h.Write(data[:length])
+		p.hash = h.Sum32()
+	}
+
 	return nil
 }
 
@@ -3282,13 +3333,15 @@ type PathAttributeOrigin struct {
 
 func (p *PathAttributeOrigin) String() string {
 	typ := "-"
-	switch p.Value[0] {
-	case BGP_ORIGIN_ATTR_TYPE_IGP:
-		typ = "i"
-	case BGP_ORIGIN_ATTR_TYPE_EGP:
-		typ = "e"
-	case BGP_ORIGIN_ATTR_TYPE_INCOMPLETE:
-		typ = "?"
+	if len(p.Value) > 0 {
+		switch p.Value[0] {
+		case BGP_ORIGIN_ATTR_TYPE_IGP:
+			typ = "i"
+		case BGP_ORIGIN_ATTR_TYPE_EGP:
+			typ = "e"
+		case BGP_ORIGIN_ATTR_TYPE_INCOMPLETE:
+			typ = "?"
+		}
 	}
 	return fmt.Sprintf("{Origin: %s}", typ)
 }
@@ -5809,51 +5862,65 @@ type PathAttributeUnknown struct {
 	PathAttribute
 }
 
-func GetPathAttribute(data []byte) (PathAttributeInterface, error) {
-	if len(data) < 2 {
-		eCode := uint8(BGP_ERROR_UPDATE_MESSAGE_ERROR)
-		eSubCode := uint8(BGP_ERROR_SUB_ATTRIBUTE_LENGTH_ERROR)
-		return nil, NewMessageError(eCode, eSubCode, data, "attribute type length is short")
+func GetPathAttribute(data []byte, options *MarshallingOptions) (PathAttributeInterface, bool, error) {
+	cacheUsed := false
+	length, _, _, typ, err := parsePathAttirbuteHeader(data)
+	if err != nil {
+		return nil, cacheUsed, err
 	}
-	switch BGPAttrType(data[1]) {
+	data = data[:length]
+
+	if options.Cache != nil {
+		h := fnv.New32()
+		h.Write(data)
+		list, _ := options.Cache[h.Sum32()]
+		for _, p := range list {
+			buf, _ := p.Serialize(options)
+			if bytes.Equal(data, buf) {
+				return p, true, nil
+			}
+		}
+	}
+
+	switch typ {
 	case BGP_ATTR_TYPE_ORIGIN:
-		return &PathAttributeOrigin{}, nil
+		return &PathAttributeOrigin{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_AS_PATH:
-		return &PathAttributeAsPath{}, nil
+		return &PathAttributeAsPath{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_NEXT_HOP:
-		return &PathAttributeNextHop{}, nil
+		return &PathAttributeNextHop{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_MULTI_EXIT_DISC:
-		return &PathAttributeMultiExitDisc{}, nil
+		return &PathAttributeMultiExitDisc{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_LOCAL_PREF:
-		return &PathAttributeLocalPref{}, nil
+		return &PathAttributeLocalPref{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_ATOMIC_AGGREGATE:
-		return &PathAttributeAtomicAggregate{}, nil
+		return &PathAttributeAtomicAggregate{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_AGGREGATOR:
-		return &PathAttributeAggregator{}, nil
+		return &PathAttributeAggregator{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_COMMUNITIES:
-		return &PathAttributeCommunities{}, nil
+		return &PathAttributeCommunities{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_ORIGINATOR_ID:
-		return &PathAttributeOriginatorId{}, nil
+		return &PathAttributeOriginatorId{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_CLUSTER_LIST:
-		return &PathAttributeClusterList{}, nil
+		return &PathAttributeClusterList{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_MP_REACH_NLRI:
-		return &PathAttributeMpReachNLRI{}, nil
+		return &PathAttributeMpReachNLRI{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_MP_UNREACH_NLRI:
-		return &PathAttributeMpUnreachNLRI{}, nil
+		return &PathAttributeMpUnreachNLRI{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_EXTENDED_COMMUNITIES:
-		return &PathAttributeExtendedCommunities{}, nil
+		return &PathAttributeExtendedCommunities{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_AS4_PATH:
-		return &PathAttributeAs4Path{}, nil
+		return &PathAttributeAs4Path{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_AS4_AGGREGATOR:
-		return &PathAttributeAs4Aggregator{}, nil
+		return &PathAttributeAs4Aggregator{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_TUNNEL_ENCAP:
-		return &PathAttributeTunnelEncap{}, nil
+		return &PathAttributeTunnelEncap{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_PMSI_TUNNEL:
-		return &PathAttributePmsiTunnel{}, nil
+		return &PathAttributePmsiTunnel{}, cacheUsed, nil
 	case BGP_ATTR_TYPE_AIGP:
-		return &PathAttributeAigp{}, nil
+		return &PathAttributeAigp{}, cacheUsed, nil
 	}
-	return &PathAttributeUnknown{}, nil
+	return &PathAttributeUnknown{}, cacheUsed, nil
 }
 
 type BGPUpdate struct {
@@ -5913,18 +5980,23 @@ func (msg *BGPUpdate) DecodeFromBytes(data []byte, options *MarshallingOptions) 
 
 	msg.PathAttributes = []PathAttributeInterface{}
 	for pathlen := msg.TotalPathAttributeLen; pathlen > 0; {
-		p, err := GetPathAttribute(data)
+		p, cacheUsed, err := GetPathAttribute(data, options)
 		if err != nil {
 			return err
 		}
-		err = p.DecodeFromBytes(data, options)
-		if err != nil {
-			return err
+		if !cacheUsed {
+			err = p.DecodeFromBytes(data, options)
+			if err != nil {
+				return err
+			}
+			if len(data) < p.Len(options) {
+				return NewMessageError(eCode, BGP_ERROR_SUB_ATTRIBUTE_LENGTH_ERROR, data, "attribute length is short")
+			}
+			if options.Cache != nil {
+				options.Cache.Add(p)
+			}
 		}
 		pathlen -= uint16(p.Len(options))
-		if len(data) < p.Len(options) {
-			return NewMessageError(eCode, BGP_ERROR_SUB_ATTRIBUTE_LENGTH_ERROR, data, "attribute length is short")
-		}
 		data = data[p.Len(options):]
 		msg.PathAttributes = append(msg.PathAttributes, p)
 	}

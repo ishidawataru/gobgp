@@ -356,17 +356,22 @@ func (e *RibEntry) DecodeFromBytes(data []byte, options *MarshallingOptions) ([]
 	totalLen := binary.BigEndian.Uint16(data[6:8])
 	data = data[8:]
 	for attrLen := totalLen; attrLen > 0; {
-		p, err := GetPathAttribute(data)
+		p, cacheUsed, err := GetPathAttribute(data, options)
 		if err != nil {
 			return nil, err
 		}
-		err = p.DecodeFromBytes(data, options)
-		if err != nil {
-			return nil, err
-		}
-		attrLen -= uint16(p.Len(options))
-		if len(data) < p.Len(options) {
-			return nil, notAllBytesAvail
+		if !cacheUsed {
+			err = p.DecodeFromBytes(data, options)
+			if err != nil {
+				return nil, err
+			}
+			attrLen -= uint16(p.Len(options))
+			if len(data) < p.Len(options) {
+				return nil, notAllBytesAvail
+			}
+			if options.Cache != nil {
+				options.Cache.Add(p)
+			}
 		}
 		data = data[p.Len(options):]
 		e.PathAttributes = append(e.PathAttributes, p)

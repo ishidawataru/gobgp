@@ -179,7 +179,7 @@ func ApiStruct2Path(p *gobgpapi.Path) ([]*Path, error) {
 
 	pattr := make([]bgp.PathAttributeInterface, 0, len(p.Pattrs))
 	for _, attr := range p.Pattrs {
-		p, err := bgp.GetPathAttribute(attr)
+		p, _, err := bgp.GetPathAttribute(attr, bgp.DefaultMarshallingOptions())
 		if err != nil {
 			return nil, err
 		}
