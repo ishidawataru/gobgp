@@ -1226,6 +1226,7 @@ func NewNeighborCondition(c config.MatchNeighborSet, m map[string]DefinedSet) (*
 type AsPathCondition struct {
 	set    *AsPathSet
 	option MatchOption
+	cache  map[bgp.PathAttributeInterface]bool
 }
 
 func (c *AsPathCondition) Type() ConditionType {
@@ -1250,6 +1251,11 @@ func (c *AsPathCondition) ToApiStruct() *api.MatchSet {
 func (c *AsPathCondition) Evaluate(path *Path) bool {
 	result := false
 	aspath := path.GetAsSeqList()
+	_, attr := path.getPathAttr(bgp.BGP_ATTR_TYPE_AS_PATH)
+	cache, ok := c.cache[attr]
+	if ok {
+		return cache
+	}
 	for _, m := range c.set.singleList {
 		result = m.Match(aspath)
 		if c.option == MATCH_OPTION_ALL && !result {
@@ -1274,6 +1280,7 @@ func (c *AsPathCondition) Evaluate(path *Path) bool {
 	if c.option == MATCH_OPTION_INVERT {
 		result = !result
 	}
+	c.cache[attr] = result
 	log.WithFields(log.Fields{
 		"Topic":       "Policy",
 		"Condition":   "aspath",
@@ -1317,12 +1324,14 @@ func NewAsPathCondition(c config.MatchAsPathSet, m map[string]DefinedSet) (*AsPa
 	return &AsPathCondition{
 		set:    s,
 		option: o,
+		cache:  make(map[bgp.PathAttributeInterface]bool),
 	}, nil
 }
 
 type CommunityCondition struct {
 	set    *CommunitySet
 	option MatchOption
+	cache  map[bgp.PathAttributeInterface]bool
 }
 
 func (c *CommunityCondition) Type() ConditionType {
@@ -1347,6 +1356,11 @@ func (c *CommunityCondition) ToApiStruct() *api.MatchSet {
 func (c *CommunityCondition) Evaluate(path *Path) bool {
 	cs := path.GetCommunities()
 	result := false
+	_, attr := path.getPathAttr(bgp.BGP_ATTR_TYPE_COMMUNITIES)
+	cache, ok := c.cache[attr]
+	if ok {
+		return cache
+	}
 	for _, x := range cs {
 		result = false
 		for _, y := range c.set.list {
@@ -1365,6 +1379,7 @@ func (c *CommunityCondition) Evaluate(path *Path) bool {
 	if c.option == MATCH_OPTION_INVERT {
 		result = !result
 	}
+	c.cache[attr] = result
 	log.WithFields(log.Fields{
 		"Topic":       "Policy",
 		"Condition":   "community",
