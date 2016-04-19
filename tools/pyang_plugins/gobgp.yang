@@ -84,10 +84,17 @@ module gobgp {
     reference "RFC4684";
   }
 
-  identity ENCAP {
+  identity IPV4-ENCAP {
     base bgp-types:afi-safi-type;
     description
       "Encapsulation (AFI,SAFI = 1,7)";
+    reference "RFC5512";
+  }
+
+  identity IPV6-ENCAP {
+    base bgp-types:afi-safi-type;
+    description
+      "Encapsulation (AFI,SAFI = 2,7)";
     reference "RFC5512";
   }
 
@@ -818,5 +825,13 @@ module gobgp {
 
   augment "/bgp:bgp/bgp:global/bgp:afi-safis/bgp:afi-safi" {
       uses bgp-mp:all-afi-safi-common;
+  }
+
+  augment "/bgp:bgp/bgp:global/bgp:afi-safis/bgp:afi-safi" {
+    container route-target-membership {
+        leaf deferral-time {
+          type uint16;
+        }
+    }
   }
 }

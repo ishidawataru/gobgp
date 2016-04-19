@@ -201,6 +201,8 @@ func NewFSM(gConf *config.Global, pConf *config.Neighbor, policy *table.RoutingP
 	if pConf.State.AdminDown {
 		adminState = ADMIN_STATE_DOWN
 	}
+	pConf.State.SessionState = config.IntToSessionStateMap[int(bgp.BGP_FSM_IDLE)]
+	pConf.Timers.State.Downtime = time.Now().Unix()
 	fsm := &FSM{
 		gConf:                gConf,
 		pConf:                pConf,
@@ -1047,7 +1049,8 @@ func (h *FSMHandler) sendMessageloop() error {
 		}
 		fsm.bgpMessageStateUpdate(m.Header.Type, false)
 
-		if m.Header.Type == bgp.BGP_MSG_NOTIFICATION {
+		switch m.Header.Type {
+		case bgp.BGP_MSG_NOTIFICATION:
 			log.WithFields(log.Fields{
 				"Topic": "Peer",
 				"Key":   fsm.pConf.Config.NeighborAddress,
@@ -1057,7 +1060,17 @@ func (h *FSMHandler) sendMessageloop() error {
 			h.errorCh <- FSM_NOTIFICATION_SENT
 			conn.Close()
 			return fmt.Errorf("closed")
-		} else {
+		case bgp.BGP_MSG_UPDATE:
+			update := m.Body.(*bgp.BGPUpdate)
+			log.WithFields(log.Fields{
+				"Topic":       "Peer",
+				"Key":         fsm.pConf.Config.NeighborAddress,
+				"State":       fsm.state,
+				"nlri":        update.NLRI,
+				"withdrawals": update.WithdrawnRoutes,
+				"attributes":  update.PathAttributes,
+			}).Debug("sent update")
+		default:
 			log.WithFields(log.Fields{
 				"Topic": "Peer",
 				"Key":   fsm.pConf.Config.NeighborAddress,

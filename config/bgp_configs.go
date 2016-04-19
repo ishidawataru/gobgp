@@ -229,7 +229,8 @@ const (
 	AFI_SAFI_TYPE_IPV4_MULTICAST        AfiSafiType = "ipv4-multicast"
 	AFI_SAFI_TYPE_IPV6_MULTICAST        AfiSafiType = "ipv6-multicast"
 	AFI_SAFI_TYPE_RTC                   AfiSafiType = "rtc"
-	AFI_SAFI_TYPE_ENCAP                 AfiSafiType = "encap"
+	AFI_SAFI_TYPE_IPV4_ENCAP            AfiSafiType = "ipv4-encap"
+	AFI_SAFI_TYPE_IPV6_ENCAP            AfiSafiType = "ipv6-encap"
 	AFI_SAFI_TYPE_IPV4_FLOWSPEC         AfiSafiType = "ipv4-flowspec"
 	AFI_SAFI_TYPE_L3VPN_IPV4_FLOWSPEC   AfiSafiType = "l3vpn-ipv4-flowspec"
 	AFI_SAFI_TYPE_IPV6_FLOWSPEC         AfiSafiType = "ipv6-flowspec"
@@ -252,13 +253,14 @@ var AfiSafiTypeToIntMap = map[AfiSafiType]int{
 	AFI_SAFI_TYPE_IPV4_MULTICAST:        10,
 	AFI_SAFI_TYPE_IPV6_MULTICAST:        11,
 	AFI_SAFI_TYPE_RTC:                   12,
-	AFI_SAFI_TYPE_ENCAP:                 13,
-	AFI_SAFI_TYPE_IPV4_FLOWSPEC:         14,
-	AFI_SAFI_TYPE_L3VPN_IPV4_FLOWSPEC:   15,
-	AFI_SAFI_TYPE_IPV6_FLOWSPEC:         16,
-	AFI_SAFI_TYPE_L3VPN_IPV6_FLOWSPEC:   17,
-	AFI_SAFI_TYPE_L2VPN_FLOWSPEC:        18,
-	AFI_SAFI_TYPE_OPAQUE:                19,
+	AFI_SAFI_TYPE_IPV4_ENCAP:            13,
+	AFI_SAFI_TYPE_IPV6_ENCAP:            14,
+	AFI_SAFI_TYPE_IPV4_FLOWSPEC:         15,
+	AFI_SAFI_TYPE_L3VPN_IPV4_FLOWSPEC:   16,
+	AFI_SAFI_TYPE_IPV6_FLOWSPEC:         17,
+	AFI_SAFI_TYPE_L3VPN_IPV6_FLOWSPEC:   18,
+	AFI_SAFI_TYPE_L2VPN_FLOWSPEC:        19,
+	AFI_SAFI_TYPE_OPAQUE:                20,
 }
 
 func (v AfiSafiType) ToInt() int {
@@ -283,13 +285,14 @@ var IntToAfiSafiTypeMap = map[int]AfiSafiType{
 	10: AFI_SAFI_TYPE_IPV4_MULTICAST,
 	11: AFI_SAFI_TYPE_IPV6_MULTICAST,
 	12: AFI_SAFI_TYPE_RTC,
-	13: AFI_SAFI_TYPE_ENCAP,
-	14: AFI_SAFI_TYPE_IPV4_FLOWSPEC,
-	15: AFI_SAFI_TYPE_L3VPN_IPV4_FLOWSPEC,
-	16: AFI_SAFI_TYPE_IPV6_FLOWSPEC,
-	17: AFI_SAFI_TYPE_L3VPN_IPV6_FLOWSPEC,
-	18: AFI_SAFI_TYPE_L2VPN_FLOWSPEC,
-	19: AFI_SAFI_TYPE_OPAQUE,
+	13: AFI_SAFI_TYPE_IPV4_ENCAP,
+	14: AFI_SAFI_TYPE_IPV6_ENCAP,
+	15: AFI_SAFI_TYPE_IPV4_FLOWSPEC,
+	16: AFI_SAFI_TYPE_L3VPN_IPV4_FLOWSPEC,
+	17: AFI_SAFI_TYPE_IPV6_FLOWSPEC,
+	18: AFI_SAFI_TYPE_L3VPN_IPV6_FLOWSPEC,
+	19: AFI_SAFI_TYPE_L2VPN_FLOWSPEC,
+	20: AFI_SAFI_TYPE_OPAQUE,
 }
 
 func (v AfiSafiType) Validate() error {
@@ -633,51 +636,6 @@ func (v DefaultPolicyType) Validate() error {
 	return nil
 }
 
-// typedef for typedef bgp-pol:bgp-next-hop-type
-type BgpNextHopType string
-
-// typedef for typedef bgp-pol:bgp-as-path-prepend-repeat
-type BgpAsPathPrependRepeat uint8
-
-// typedef for typedef bgp-pol:bgp-set-med-type
-type BgpSetMedType string
-
-// typedef for identity bgp-pol:bgp-set-community-option-type
-type BgpSetCommunityOptionType string
-
-const (
-	BGP_SET_COMMUNITY_OPTION_TYPE_ADD     BgpSetCommunityOptionType = "add"
-	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE  BgpSetCommunityOptionType = "remove"
-	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE BgpSetCommunityOptionType = "replace"
-)
-
-var BgpSetCommunityOptionTypeToIntMap = map[BgpSetCommunityOptionType]int{
-	BGP_SET_COMMUNITY_OPTION_TYPE_ADD:     0,
-	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE:  1,
-	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE: 2,
-}
-
-func (v BgpSetCommunityOptionType) ToInt() int {
-	i, ok := BgpSetCommunityOptionTypeToIntMap[v]
-	if !ok {
-		return -1
-	}
-	return i
-}
-
-var IntToBgpSetCommunityOptionTypeMap = map[int]BgpSetCommunityOptionType{
-	0: BGP_SET_COMMUNITY_OPTION_TYPE_ADD,
-	1: BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE,
-	2: BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE,
-}
-
-func (v BgpSetCommunityOptionType) Validate() error {
-	if _, ok := BgpSetCommunityOptionTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpSetCommunityOptionType: %s", v)
-	}
-	return nil
-}
-
 // typedef for identity bgp:session-state
 type SessionState string
 
@@ -755,6 +713,51 @@ var IntToModeMap = map[int]Mode{
 func (v Mode) Validate() error {
 	if _, ok := ModeToIntMap[v]; !ok {
 		return fmt.Errorf("invalid Mode: %s", v)
+	}
+	return nil
+}
+
+// typedef for typedef bgp-pol:bgp-next-hop-type
+type BgpNextHopType string
+
+// typedef for typedef bgp-pol:bgp-as-path-prepend-repeat
+type BgpAsPathPrependRepeat uint8
+
+// typedef for typedef bgp-pol:bgp-set-med-type
+type BgpSetMedType string
+
+// typedef for identity bgp-pol:bgp-set-community-option-type
+type BgpSetCommunityOptionType string
+
+const (
+	BGP_SET_COMMUNITY_OPTION_TYPE_ADD     BgpSetCommunityOptionType = "add"
+	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE  BgpSetCommunityOptionType = "remove"
+	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE BgpSetCommunityOptionType = "replace"
+)
+
+var BgpSetCommunityOptionTypeToIntMap = map[BgpSetCommunityOptionType]int{
+	BGP_SET_COMMUNITY_OPTION_TYPE_ADD:     0,
+	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE:  1,
+	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE: 2,
+}
+
+func (v BgpSetCommunityOptionType) ToInt() int {
+	i, ok := BgpSetCommunityOptionTypeToIntMap[v]
+	if !ok {
+		return -1
+	}
+	return i
+}
+
+var IntToBgpSetCommunityOptionTypeMap = map[int]BgpSetCommunityOptionType{
+	0: BGP_SET_COMMUNITY_OPTION_TYPE_ADD,
+	1: BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE,
+	2: BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE,
+}
+
+func (v BgpSetCommunityOptionType) Validate() error {
+	if _, ok := BgpSetCommunityOptionTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BgpSetCommunityOptionType: %s", v)
 	}
 	return nil
 }
@@ -1556,6 +1559,12 @@ type Collector struct {
 	Enabled bool `mapstructure:"enabled"`
 }
 
+//struct for container gobgp:route-target-membership
+type RouteTargetMembership struct {
+	// original -> gobgp:deferral-time
+	DeferralTime uint16 `mapstructure:"deferral-time"`
+}
+
 //struct for container bgp-mp:l2vpn-evpn
 type L2vpnEvpn struct {
 	// original -> bgp-mp:prefix-limit
@@ -1816,6 +1825,8 @@ type AfiSafi struct {
 	UseMultiplePaths UseMultiplePaths `mapstructure:"use-multiple-paths"`
 	// original -> bgp-mp:prefix-limit
 	PrefixLimit PrefixLimit `mapstructure:"prefix-limit"`
+	// original -> gobgp:route-target-membership
+	RouteTargetMembership RouteTargetMembership `mapstructure:"route-target-membership"`
 }
 
 //struct for container bgp:state

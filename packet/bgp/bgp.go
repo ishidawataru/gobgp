@@ -2007,6 +2007,7 @@ func NewEVPNNLRI(routetype uint8, length uint8, routetypedata EVPNRouteTypeInter
 
 type EncapNLRI struct {
 	IPAddrPrefixDefault
+	addrlen uint8
 }
 
 func (n *EncapNLRI) DecodeFromBytes(data []byte) error {
@@ -2016,17 +2017,15 @@ func (n *EncapNLRI) DecodeFromBytes(data []byte) error {
 		return NewMessageError(eCode, eSubCode, nil, "prefix misses length field")
 	}
 	n.Length = data[0]
-	return n.decodePrefix(data[1:], n.Length, n.Length/8)
+	if n.addrlen == 0 {
+		n.addrlen = 4
+	}
+	return n.decodePrefix(data[1:], n.Length, n.addrlen)
 }
 
 func (n *EncapNLRI) Serialize() ([]byte, error) {
 	buf := make([]byte, 1)
-	buf[0] = net.IPv6len * 8
-	if n.Prefix.To4() != nil {
-		buf[0] = net.IPv4len * 8
-		n.Prefix = n.Prefix.To4()
-	}
-	n.Length = buf[0]
+	buf[0] = n.Length
 	pbuf, err := n.serializePrefix(n.Length)
 	if err != nil {
 		return nil, err
@@ -2039,10 +2038,7 @@ func (n *EncapNLRI) String() string {
 }
 
 func (n *EncapNLRI) AFI() uint16 {
-	if n.Prefix.To4() != nil {
-		return AFI_IP
-	}
-	return AFI_IP6
+	return AFI_IP
 }
 
 func (n *EncapNLRI) SAFI() uint8 {
@@ -2051,7 +2047,25 @@ func (n *EncapNLRI) SAFI() uint8 {
 
 func NewEncapNLRI(endpoint string) *EncapNLRI {
 	return &EncapNLRI{
-		IPAddrPrefixDefault{0, net.ParseIP(endpoint)},
+		IPAddrPrefixDefault{32, net.ParseIP(endpoint).To4()},
+		4,
+	}
+}
+
+type Encapv6NLRI struct {
+	EncapNLRI
+}
+
+func (n *Encapv6NLRI) AFI() uint16 {
+	return AFI_IP6
+}
+
+func NewEncapv6NLRI(endpoint string) *Encapv6NLRI {
+	return &Encapv6NLRI{
+		EncapNLRI{
+			IPAddrPrefixDefault{128, net.ParseIP(endpoint)},
+			16,
+		},
 	}
 }
 
@@ -3269,7 +3283,8 @@ const (
 	RF_VPLS        RouteFamily = AFI_L2VPN<<16 | SAFI_VPLS
 	RF_EVPN        RouteFamily = AFI_L2VPN<<16 | SAFI_EVPN
 	RF_RTC_UC      RouteFamily = AFI_IP<<16 | SAFI_ROUTE_TARGET_CONSTRTAINS
-	RF_ENCAP       RouteFamily = AFI_IP<<16 | SAFI_ENCAPSULATION
+	RF_IPv4_ENCAP  RouteFamily = AFI_IP<<16 | SAFI_ENCAPSULATION
+	RF_IPv6_ENCAP  RouteFamily = AFI_IP6<<16 | SAFI_ENCAPSULATION
 	RF_FS_IPv4_UC  RouteFamily = AFI_IP<<16 | SAFI_FLOW_SPEC_UNICAST
 	RF_FS_IPv4_VPN RouteFamily = AFI_IP<<16 | SAFI_FLOW_SPEC_VPN
 	RF_FS_IPv6_UC  RouteFamily = AFI_IP6<<16 | SAFI_FLOW_SPEC_UNICAST
@@ -3292,7 +3307,8 @@ var AddressFamilyNameMap = map[RouteFamily]string{
 	RF_VPLS:        "l2vpn-vpls",
 	RF_EVPN:        "l2vpn-evpn",
 	RF_RTC_UC:      "rtc",
-	RF_ENCAP:       "encap",
+	RF_IPv4_ENCAP:  "ipv4-encap",
+	RF_IPv6_ENCAP:  "ipv6-encap",
 	RF_FS_IPv4_UC:  "ipv4-flowspec",
 	RF_FS_IPv4_VPN: "l3vpn-ipv4-flowspec",
 	RF_FS_IPv6_UC:  "ipv6-flowspec",
@@ -3315,7 +3331,8 @@ var AddressFamilyValueMap = map[string]RouteFamily{
 	AddressFamilyNameMap[RF_VPLS]:        RF_VPLS,
 	AddressFamilyNameMap[RF_EVPN]:        RF_EVPN,
 	AddressFamilyNameMap[RF_RTC_UC]:      RF_RTC_UC,
-	AddressFamilyNameMap[RF_ENCAP]:       RF_ENCAP,
+	AddressFamilyNameMap[RF_IPv4_ENCAP]:  RF_IPv4_ENCAP,
+	AddressFamilyNameMap[RF_IPv6_ENCAP]:  RF_IPv6_ENCAP,
 	AddressFamilyNameMap[RF_FS_IPv4_UC]:  RF_FS_IPv4_UC,
 	AddressFamilyNameMap[RF_FS_IPv4_VPN]: RF_FS_IPv4_VPN,
 	AddressFamilyNameMap[RF_FS_IPv6_UC]:  RF_FS_IPv6_UC,
@@ -3349,8 +3366,10 @@ func NewPrefixFromRouteFamily(afi uint16, safi uint8) (prefix AddrPrefixInterfac
 		prefix = NewEVPNNLRI(0, 0, nil)
 	case RF_RTC_UC:
 		prefix = &RouteTargetMembershipNLRI{}
-	case RF_ENCAP:
+	case RF_IPv4_ENCAP:
 		prefix = NewEncapNLRI("")
+	case RF_IPv6_ENCAP:
+		prefix = NewEncapv6NLRI("")
 	case RF_FS_IPv4_UC:
 		prefix = &FlowSpecIPv4Unicast{}
 	case RF_FS_IPv4_VPN:
@@ -4641,6 +4660,10 @@ func (p *PathAttributeMpReachNLRI) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (p *PathAttributeMpReachNLRI) String() string {
+	return fmt.Sprintf("{MpReach(%s): {Nexthop: %s, NLRIs: %s}}", AfiSafiToRouteFamily(p.AFI, p.SAFI), p.Nexthop, p.Value)
+}
+
 func NewPathAttributeMpReachNLRI(nexthop string, nlri []AddrPrefixInterface) *PathAttributeMpReachNLRI {
 	t := BGP_ATTR_TYPE_MP_REACH_NLRI
 	ip := net.ParseIP(nexthop)
@@ -4721,6 +4744,13 @@ func (p *PathAttributeMpUnreachNLRI) Serialize() ([]byte, error) {
 	}
 	p.PathAttribute.Value = buf
 	return p.PathAttribute.Serialize()
+}
+
+func (p *PathAttributeMpUnreachNLRI) String() string {
+	if len(p.Value) > 0 {
+		return fmt.Sprintf("{MpUnreach(%s): {NLRIs: %s}}", AfiSafiToRouteFamily(p.AFI, p.SAFI), p.Value)
+	}
+	return fmt.Sprintf("{MpUnreach(%s): End-of-Rib}", AfiSafiToRouteFamily(p.AFI, p.SAFI))
 }
 
 func NewPathAttributeMpUnreachNLRI(nlri []AddrPrefixInterface) *PathAttributeMpUnreachNLRI {
@@ -6594,7 +6624,13 @@ func NewEndOfRib(family RouteFamily) *BGPMessage {
 		return NewBGPUpdateMessage(nil, nil, nil)
 	} else {
 		afi, safi := RouteFamilyToAfiSafi(family)
+		t := BGP_ATTR_TYPE_MP_UNREACH_NLRI
 		unreach := &PathAttributeMpUnreachNLRI{
+			PathAttribute: PathAttribute{
+				Flags:  pathAttrFlags[t],
+				Type:   t,
+				Length: 0,
+			},
 			AFI:  afi,
 			SAFI: safi,
 		}
