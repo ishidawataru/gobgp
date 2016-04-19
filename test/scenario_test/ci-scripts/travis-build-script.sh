@@ -2,6 +2,12 @@
 SCENARIO=$1
 echo "travis-build-script.sh"
 
+export GOBGP=`pwd`
+newpath=${GOBGP##*src/}
+newpath=${newpath//\//\\\/}
+sed -i -e "s/github.com\/osrg\/gobgp/$newpath/g" */*.go
+sed -i -e "s/github.com\/osrg\/gobgp/$newpath/g" */*/*.go
+
 if [ "$SCENARIO" != "true" ]; then
   echo "execute unit test."
   go version
@@ -14,7 +20,6 @@ docker version
 echo ""
 
 export GOBGP_IMAGE=gobgp
-export GOBGP=`pwd`
 
 sudo apt-get -q update
 sudo apt-get -q -y install iputils-arping bridge-utils lv
@@ -26,7 +31,7 @@ sudo -H pip --quiet install -r $GOBGP/test/pip-requires.txt
 ls -al
 git log | head -20
 
-sudo fab -f $GOBGP/test/lib/base.py make_gobgp_ctn:tag=$GOBGP_IMAGE
+sudo fab -f $GOBGP/test/lib/base.py make_gobgp_ctn:tag=$GOBGP_IMAGE,path=${GOBGP##*src/}
 [ "$?" != 0 ] && exit "$?"
 
 cd $GOBGP/test/scenario_test
