@@ -657,7 +657,7 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 				copy(fmsg.payload[len(headerBuf):], bodyBuf)
 				fallthrough
 			case bgp.BGP_MSG_KEEPALIVE:
-				// if the lenght of h.holdTimerResetCh
+				// if the length of h.holdTimerResetCh
 				// isn't zero, the timer will be reset
 				// soon anyway.
 				select {
@@ -1277,13 +1277,18 @@ func (h *FSMHandler) changeAdminState(s AdminState) error {
 				"Key":   fsm.pConf.Config.NeighborAddress,
 				"State": fsm.state,
 			}).Info("Administrative start")
-
-		case ADMIN_STATE_DOWN, ADMIN_STATE_PFX_CT:
+		case ADMIN_STATE_DOWN:
 			log.WithFields(log.Fields{
 				"Topic": "Peer",
 				"Key":   fsm.pConf.Config.NeighborAddress,
 				"State": fsm.state,
 			}).Info("Administrative shutdown")
+		case ADMIN_STATE_PFX_CT:
+			log.WithFields(log.Fields{
+				"Topic": "Peer",
+				"Key":   fsm.pConf.Config.NeighborAddress,
+				"State": fsm.state,
+			}).Info("Administrative shutdown(Prefix limit reached)")
 		}
 
 	} else {

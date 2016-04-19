@@ -166,7 +166,7 @@ func (peer *Peer) getBestFromLocal(rfList []bgp.RouteFamily) ([]*table.Path, []*
 	return pathList, filtered
 }
 
-func (peer *Peer) processOutgoingPaths(paths []*table.Path) []*table.Path {
+func (peer *Peer) processOutgoingPaths(paths, withdrawals []*table.Path) []*table.Path {
 	if peer.fsm.state != bgp.BGP_FSM_ESTABLISHED {
 		return nil
 	}
@@ -179,6 +179,12 @@ func (peer *Peer) processOutgoingPaths(paths []*table.Path) []*table.Path {
 	}
 
 	outgoing := make([]*table.Path, 0, len(paths))
+	for _, path := range withdrawals {
+		if path.IsLocal() {
+			outgoing = append(outgoing, path)
+		}
+	}
+
 	options := &table.PolicyOptions{
 		Neighbor: peer.fsm.peerInfo.Address,
 	}
@@ -327,6 +333,18 @@ func (peer *Peer) ToApiStruct() *api.Peer {
 		localCap = append(localCap, buf)
 	}
 
+	prefixLimits := make([]*api.PrefixLimit, 0, len(peer.fsm.pConf.AfiSafis))
+	for _, family := range peer.fsm.pConf.AfiSafis {
+		if c := family.PrefixLimit.Config; c.MaxPrefixes > 0 {
+			k, _ := bgp.GetRouteFamily(string(family.AfiSafiName))
+			prefixLimits = append(prefixLimits, &api.PrefixLimit{
+				Family:               uint32(k),
+				MaxPrefixes:          c.MaxPrefixes,
+				ShutdownThresholdPct: uint32(c.ShutdownThresholdPct),
+			})
+		}
+	}
+
 	conf := &api.PeerConf{
 		NeighborAddress:  c.Config.NeighborAddress,
 		Id:               peer.fsm.peerInfo.ID.To4().String(),
@@ -341,6 +359,7 @@ func (peer *Peer) ToApiStruct() *api.Peer {
 		PeerGroup:        c.Config.PeerGroup,
 		RemoteCap:        remoteCap,
 		LocalCap:         localCap,
+		PrefixLimits:     prefixLimits,
 	}
 
 	timer := c.Timers
