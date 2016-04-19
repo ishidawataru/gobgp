@@ -2686,8 +2686,13 @@ func (r *RoutingPolicy) GetAssignmentFromConfig(dir PolicyDirection, a config.Ap
 	default:
 		return nil, def, fmt.Errorf("invalid policy direction")
 	}
-	if cdef == config.DEFAULT_POLICY_TYPE_REJECT_ROUTE {
+	switch string(cdef) {
+	case "", "accept", string(config.DEFAULT_POLICY_TYPE_ACCEPT_ROUTE):
+		def = ROUTE_TYPE_ACCEPT
+	case "reject", "deny", string(config.DEFAULT_POLICY_TYPE_REJECT_ROUTE):
 		def = ROUTE_TYPE_REJECT
+	default:
+		return nil, def, fmt.Errorf("invalid default policy type: %s", string(cdef))
 	}
 	ps := make([]*Policy, 0, len(names))
 	for _, name := range names {

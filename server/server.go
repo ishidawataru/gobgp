@@ -1091,19 +1091,21 @@ func (server *BgpServer) UpdatePolicy(policy config.RoutingPolicy) {
 	server.policyUpdateCh <- policy
 }
 
-func (server *BgpServer) setPolicyByConfig(id string, c config.ApplyPolicy) {
+func (server *BgpServer) setPolicyByConfig(id string, c config.ApplyPolicy) error {
 	for _, dir := range []table.PolicyDirection{table.POLICY_DIRECTION_IN, table.POLICY_DIRECTION_IMPORT, table.POLICY_DIRECTION_EXPORT} {
 		ps, def, err := server.policy.GetAssignmentFromConfig(dir, c)
 		if err != nil {
 			log.WithFields(log.Fields{
 				"Topic": "Policy",
-				"Dir":   dir,
+				"Key":   id,
+				"Dir":   dir.String(),
 			}).Errorf("failed to get policy info: %s", err)
-			continue
+			return err
 		}
 		server.policy.SetDefaultPolicy(id, dir, def)
 		server.policy.SetPolicy(id, dir, ps)
 	}
+	return nil
 }
 
 func (server *BgpServer) SetRoutingPolicy(pl config.RoutingPolicy) error {
@@ -1113,8 +1115,7 @@ func (server *BgpServer) SetRoutingPolicy(pl config.RoutingPolicy) error {
 		}).Errorf("failed to create routing policy: %s", err)
 		return err
 	}
-	server.setPolicyByConfig(table.GLOBAL_RIB_NAME, server.bgpConfig.Global.ApplyPolicy)
-	return nil
+	return server.setPolicyByConfig(table.GLOBAL_RIB_NAME, server.bgpConfig.Global.ApplyPolicy)
 }
 
 func (server *BgpServer) handlePolicy(pl config.RoutingPolicy) error {
@@ -1129,7 +1130,9 @@ func (server *BgpServer) handlePolicy(pl config.RoutingPolicy) error {
 			"Topic": "Peer",
 			"Key":   peer.conf.Config.NeighborAddress,
 		}).Info("call set policy")
-		server.setPolicyByConfig(peer.ID(), peer.conf.ApplyPolicy)
+		if err := server.setPolicyByConfig(peer.ID(), peer.conf.ApplyPolicy); err != nil {
+			return nil
+		}
 	}
 	return nil
 }
@@ -2277,7 +2280,9 @@ func (server *BgpServer) handleAddNeighbor(c *config.Neighbor) ([]*SenderMsg, er
 	}
 
 	peer := NewPeer(server.bgpConfig.Global, *c, server.globalRib, server.policy)
-	server.setPolicyByConfig(peer.ID(), c.ApplyPolicy)
+	if err := server.setPolicyByConfig(peer.ID(), c.ApplyPolicy); err != nil {
+		return nil, err
+	}
 	if peer.isRouteServerClient() {
 		pathList := make([]*table.Path, 0)
 		rfList := peer.configuredRFlist()
