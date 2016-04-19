@@ -11,6 +11,8 @@ go:
  - 1.6
  - tip
 
+go_import_path: github.com/osrg/gobgp
+
 env:
  - SCENARIO=false
  - SCENARIO=true
