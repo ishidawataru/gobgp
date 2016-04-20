@@ -17,6 +17,7 @@ package table
 
 import (
 	//"fmt"
+	"github.com/osrg/gobgp/config"
 	"github.com/osrg/gobgp/packet/bgp"
 	"github.com/stretchr/testify/assert"
 	"net"
@@ -27,13 +28,15 @@ import (
 func TestDestinationNewIPv4(t *testing.T) {
 	peerD := DestCreatePeer()
 	pathD := DestCreatePath(peerD)
-	ipv4d := NewDestination(pathD[0].GetNlri())
+	option := &config.RouteSelectionOptionsConfig{}
+	ipv4d := NewDestination(pathD[0].GetNlri(), option)
 	assert.NotNil(t, ipv4d)
 }
 func TestDestinationNewIPv6(t *testing.T) {
 	peerD := DestCreatePeer()
 	pathD := DestCreatePath(peerD)
-	ipv6d := NewDestination(pathD[0].GetNlri())
+	option := &config.RouteSelectionOptionsConfig{}
+	ipv6d := NewDestination(pathD[0].GetNlri(), option)
 	assert.NotNil(t, ipv6d)
 }
 
@@ -86,7 +89,8 @@ func TestCalculate(t *testing.T) {
 	path1.Filter("2", POLICY_DIRECTION_IMPORT)
 	path2.Filter("1", POLICY_DIRECTION_IMPORT)
 
-	d := NewDestination(nlri)
+	option := &config.RouteSelectionOptionsConfig{}
+	d := NewDestination(nlri, option)
 	d.addNewPath(path1)
 	d.addNewPath(path2)
 
@@ -120,7 +124,8 @@ func TestCalculate2(t *testing.T) {
 	peer1 := &PeerInfo{AS: 1, Address: net.IP{1, 1, 1, 1}}
 	path1 := ProcessMessage(update1, peer1, time.Now())[0]
 
-	d := NewDestination(nlri)
+	option := &config.RouteSelectionOptionsConfig{}
+	d := NewDestination(nlri, option)
 	d.addNewPath(path1)
 	d.Calculate(nil)
 
@@ -184,7 +189,8 @@ func TestImplicitWithdrawCalculate(t *testing.T) {
 	path2.Filter("1", POLICY_DIRECTION_IMPORT)
 	path2.Filter("3", POLICY_DIRECTION_IMPORT)
 
-	d := NewDestination(nlri)
+	option := &config.RouteSelectionOptionsConfig{}
+	d := NewDestination(nlri, option)
 	d.addNewPath(path1)
 	d.addNewPath(path2)
 
