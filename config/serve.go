@@ -2,6 +2,7 @@ package config
 
 import (
 	log "github.com/Sirupsen/logrus"
+	p "github.com/kr/pretty"
 	"github.com/spf13/viper"
 	"os"
 	"os/signal"
@@ -86,6 +87,8 @@ func UpdateConfig(curC, newC *BgpConfigSet) ([]Neighbor, []Neighbor, []Neighbor,
 		if idx := inSlice(n, curC.Neighbors); idx < 0 {
 			added = append(added, n)
 		} else if !n.Equal(&curC.Neighbors[idx]) {
+			log.Info("n:", p.Sprint(n))
+			log.Info("curC:", p.Sprint(curC.Neighbors[idx]))
 			updated = append(updated, n)
 		}
 	}
