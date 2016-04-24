@@ -372,3 +372,10 @@ class GoBGPContainer(BGPContainer):
             else:
                 raise Exception('unsupported route faily: {0}'.format(rf))
             self.local(cmd)
+
+    def local(self, cmd, capture=False, stream=False, detach=False):
+        try:
+            return super(GoBGPContainer, self).local(cmd, capture, stream, detach)
+        except RuntimeError as e:
+            print self.local("tail -n 40 {0}/gobgpd.log".format(self.SHARED_VOLUME), capture=True)
+            raise e
