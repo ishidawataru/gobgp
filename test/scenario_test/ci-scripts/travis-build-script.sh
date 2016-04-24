@@ -64,7 +64,7 @@ done
 
 PIDS=()
 
-sudo  PYTHONPATH=$GOBGP/test python global_policy_test.py --gobgp-image $GOBGP_IMAGE --test-prefix gpol -x &
+sudo  PYTHONPATH=$GOBGP/test python global_policy_test.py --gobgp-image $GOBGP_IMAGE --test-prefix gpol -x -s --gobgp-log-level=debug &
 PIDS=("${PIDS[@]}" $!)
 
 sudo  PYTHONPATH=$GOBGP/test python route_server_as2_test.py --gobgp-image $GOBGP_IMAGE --test-prefix as2 -x &
