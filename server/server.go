@@ -747,7 +747,7 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) []*SenderMsg {
 		if nextState == bgp.BGP_FSM_ESTABLISHED {
 			// update for export policy
 			laddr, _ := peer.fsm.LocalHostPort()
-			peer.fsm.pConf.Transport.Config.LocalAddress = laddr
+			peer.fsm.pConf.Transport.State.LocalAddress = laddr
 			deferralExpiredFunc := func(family bgp.RouteFamily) func() {
 				return func() {
 					req := NewGrpcRequest(REQ_DEFERRAL_TIMER_EXPIRED, peer.ID(), family, nil)
@@ -766,9 +766,9 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) []*SenderMsg {
 				// waiting sending non-route-target NLRIs since the peer won't send
 				// any routes (and EORs) before we send ours (or deferral-timer expires).
 				var pathList []*table.Path
-				if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); !peer.fsm.pConf.GracefulRestart.State.PeerRestarting && peer.fsm.rfMap[bgp.RF_RTC_UC] && c.RouteTargetMembership.DeferralTime > 0 {
+				if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); !peer.fsm.pConf.GracefulRestart.State.PeerRestarting && peer.fsm.rfMap[bgp.RF_RTC_UC] && c.RouteTargetMembership.Config.DeferralTime > 0 {
 					pathList, _ = peer.getBestFromLocal([]bgp.RouteFamily{bgp.RF_RTC_UC})
-					t := c.RouteTargetMembership.DeferralTime
+					t := c.RouteTargetMembership.Config.DeferralTime
 					for _, f := range peer.configuredRFlist() {
 						if f != bgp.RF_RTC_UC {
 							time.AfterFunc(time.Second*time.Duration(t), deferralExpiredFunc(f))
@@ -944,7 +944,7 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) []*SenderMsg {
 
 				// received EOR of route-target address family
 				// outbound filter is now ready, let's flash non-route-target NLRIs
-				if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); rtc && c != nil && c.RouteTargetMembership.DeferralTime > 0 {
+				if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); rtc && c != nil && c.RouteTargetMembership.Config.DeferralTime > 0 {
 					log.WithFields(log.Fields{
 						"Topic": "Peer",
 						"Key":   peer.ID(),
@@ -1590,10 +1590,8 @@ func (server *BgpServer) handleModConfig(grpcReq *GrpcRequest) error {
 			b := &config.BgpConfigSet{
 				Global: config.Global{
 					Config: config.GlobalConfig{
-						As:       g.As,
-						RouterId: g.RouterId,
-					},
-					ListenConfig: config.ListenConfig{
+						As:               g.As,
+						RouterId:         g.RouterId,
 						Port:             g.ListenPort,
 						LocalAddressList: g.ListenAddresses,
 					},
@@ -1620,10 +1618,10 @@ func (server *BgpServer) handleModConfig(grpcReq *GrpcRequest) error {
 			return fmt.Errorf("gobgp is already started")
 		}
 
-		if c.ListenConfig.Port > 0 {
+		if c.Config.Port > 0 {
 			acceptCh := make(chan *net.TCPConn, 4096)
-			for _, addr := range c.ListenConfig.LocalAddressList {
-				l, err := NewTCPListener(addr, uint32(c.ListenConfig.Port), acceptCh)
+			for _, addr := range c.Config.LocalAddressList {
+				l, err := NewTCPListener(addr, uint32(c.Config.Port), acceptCh)
 				if err != nil {
 					return err
 				}
@@ -1733,8 +1731,8 @@ func (server *BgpServer) handleGrpc(grpcReq *GrpcRequest) []*SenderMsg {
 			Data: &api.Global{
 				As:              g.Config.As,
 				RouterId:        g.Config.RouterId,
-				ListenPort:      g.ListenConfig.Port,
-				ListenAddresses: g.ListenConfig.LocalAddressList,
+				ListenPort:      g.Config.Port,
+				ListenAddresses: g.Config.LocalAddressList,
 				MplsLabelMin:    g.MplsLabelRange.MinLabel,
 				MplsLabelMax:    g.MplsLabelRange.MaxLabel,
 			},
@@ -2312,11 +2310,12 @@ func (server *BgpServer) handleAddNeighbor(c *config.Neighbor) ([]*SenderMsg, er
 		return nil, fmt.Errorf("Can't overwrite the exising peer: %s", addr)
 	}
 
-	if server.bgpConfig.Global.ListenConfig.Port > 0 {
+	if server.bgpConfig.Global.Config.Port > 0 {
 		for _, l := range server.Listeners(addr) {
 			SetTcpMD5SigSockopts(l, addr, c.Config.AuthPassword)
 		}
 	}
+	log.Info("Add a peer configuration for ", addr)
 
 	peer := NewPeer(&server.bgpConfig.Global, c, server.globalRib, server.policy)
 	server.setPolicyByConfig(peer.ID(), c.ApplyPolicy)
@@ -2362,6 +2361,10 @@ func (server *BgpServer) handleDelNeighbor(c *config.Neighbor) ([]*SenderMsg, er
 	}(addr)
 	delete(server.neighborMap, addr)
 	m := server.dropPeerAllRoutes(n, n.configuredRFlist())
+
+	notification := bgp.NewBGPNotificationMessage(bgp.BGP_ERROR_CEASE, bgp.BGP_ERROR_SUB_PEER_DECONFIGURED, nil)
+	m = append(m, newSenderMsg(n, nil, notification, false))
+
 	return m, nil
 }
 
@@ -2376,6 +2379,26 @@ func (server *BgpServer) handleUpdateNeighbor(c *config.Neighbor) ([]*SenderMsg,
 		policyUpdated = true
 	}
 	original := peer.fsm.pConf
+
+	if !original.Config.Equal(&c.Config) || !original.Transport.Config.Equal(&c.Transport.Config) {
+		msgs, err := server.handleDelNeighbor(peer.fsm.pConf)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"Topic": "Peer",
+				"Key":   addr,
+			}).Error(err)
+			return msgs, policyUpdated, err
+		}
+		msgs2, err := server.handleAddNeighbor(c)
+		msgs = append(msgs, msgs2...)
+		if err != nil {
+			log.WithFields(log.Fields{
+				"Topic": "Peer",
+				"Key":   addr,
+			}).Error(err)
+		}
+		return msgs, policyUpdated, err
+	}
 
 	msgs, err := peer.updatePrefixLimitConfig(c.AfiSafis)
 	if err != nil {
