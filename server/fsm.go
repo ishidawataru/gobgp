@@ -100,6 +100,7 @@ type FsmMsg struct {
 	PathList  []*table.Path
 	timestamp time.Time
 	payload   []byte
+	Version   uint
 }
 
 type FsmOutgoingMsg struct {
@@ -134,6 +135,8 @@ func (s AdminState) String() string {
 	}
 }
 
+var fsmVersion uint
+
 type FSM struct {
 	t                    tomb.Tomb
 	gConf                *config.Global
@@ -154,6 +157,7 @@ type FSM struct {
 	peerInfo             *table.PeerInfo
 	policy               *table.RoutingPolicy
 	gracefulRestartTimer *time.Timer
+	version              uint
 }
 
 func (fsm *FSM) bgpMessageStateUpdate(MessageType uint8, isIn bool) {
@@ -212,6 +216,7 @@ func NewFSM(gConf *config.Global, pConf *config.Neighbor, policy *table.RoutingP
 	}
 	pConf.State.SessionState = config.IntToSessionStateMap[int(bgp.BGP_FSM_IDLE)]
 	pConf.Timers.State.Downtime = time.Now().Unix()
+	fsmVersion++
 	fsm := &FSM{
 		gConf:                gConf,
 		pConf:                pConf,
@@ -226,6 +231,7 @@ func NewFSM(gConf *config.Global, pConf *config.Neighbor, policy *table.RoutingP
 		peerInfo:             table.NewPeerInfo(gConf, pConf),
 		policy:               policy,
 		gracefulRestartTimer: time.NewTimer(time.Hour),
+		version:              fsmVersion,
 	}
 	fsm.gracefulRestartTimer.Stop()
 	fsm.t.Go(fsm.connectLoop)
@@ -602,6 +608,7 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 			MsgType: FSM_MSG_BGP_MESSAGE,
 			MsgSrc:  h.fsm.pConf.Config.NeighborAddress,
 			MsgData: err,
+			Version: h.fsm.version,
 		}
 		return fmsg, err
 	}
@@ -624,6 +631,7 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 		MsgType:   FSM_MSG_BGP_MESSAGE,
 		MsgSrc:    h.fsm.pConf.Config.NeighborAddress,
 		timestamp: now,
+		Version:   h.fsm.version,
 	}
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -657,6 +665,9 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 					id := h.fsm.pConf.Config.NeighborAddress
 					policyMutex.RLock()
 					for _, path := range fmsg.PathList {
+						if path.IsEOR() {
+							continue
+						}
 						if h.fsm.policy.ApplyPolicy(id, table.POLICY_DIRECTION_IN, path, nil) == nil {
 							path.Filter(id, table.POLICY_DIRECTION_IN)
 						}
@@ -1271,6 +1282,7 @@ func (h *FSMHandler) loop() error {
 			MsgType: FSM_MSG_STATE_CHANGE,
 			MsgSrc:  fsm.pConf.Config.NeighborAddress,
 			MsgData: nextState,
+			Version: h.fsm.version,
 		}
 		h.stateCh <- e
 	}
