@@ -21,6 +21,7 @@ import (
 	"github.com/osrg/gobgp/table"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestModPolicyAssign(t *testing.T) {
@@ -86,4 +87,56 @@ func TestModPolicyAssign(t *testing.T) {
 
 	ps := s.policy.GetPolicy(table.GLOBAL_RIB_NAME, table.POLICY_DIRECTION_IMPORT)
 	assert.Equal(len(ps), 2)
+}
+
+func TestHandleUpdateNeighbor(t *testing.T) {
+	s := NewBgpServer()
+	go s.Serve()
+	s.SetGlobalType(config.Global{
+		Config: config.GlobalConfig{
+			As:       1,
+			RouterId: "1.1.1.1",
+		},
+	})
+	passiveMode := true
+	n := config.Neighbor{
+		Config: config.NeighborConfig{
+			NeighborAddress: "2.2.2.2",
+			PeerAs:          10,
+		},
+		Transport: config.Transport{
+			Config: config.TransportConfig{
+				PassiveMode: passiveMode,
+			},
+		},
+	}
+	ch := make(chan *GrpcResponse)
+	s.GrpcReqCh <- &GrpcRequest{
+		RequestType: REQ_ADD_NEIGHBOR,
+		Data:        &n,
+		ResponseCh:  ch,
+	}
+	<-ch
+	for i := 0; i < 500; i++ {
+		passiveMode = !passiveMode
+		n := config.Neighbor{
+			Config: config.NeighborConfig{
+				NeighborAddress: "2.2.2.2",
+				PeerAs:          10,
+			},
+			Transport: config.Transport{
+				Config: config.TransportConfig{
+					PassiveMode: passiveMode,
+				},
+			},
+		}
+		ch = make(chan *GrpcResponse)
+		s.GrpcReqCh <- &GrpcRequest{
+			RequestType: REQ_UPDATE_NEIGHBOR,
+			Data:        &n,
+			ResponseCh:  ch,
+		}
+		<-ch
+	}
+	time.Sleep(time.Second * 10)
 }
