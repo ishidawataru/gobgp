@@ -786,6 +786,12 @@ module gobgp {
       description
         "Configure url for zebra.";
     }
+    leaf version {
+      type uint8;
+      description
+        "zapi version (default 2)";
+      default 2;
+    }
     leaf-list redistribute-route-type {
       type identityref {
         base ptypes:install-protocol-type;

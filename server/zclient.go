@@ -28,7 +28,8 @@ import (
 	"strings"
 )
 
-func newIPRouteMessage(dst []*table.Path) *zebra.Message {
+func newIPRouteMessage(dst []*table.Path) (zebra.API_TYPE, *zebra.IPRouteBody) {
+	var command zebra.API_TYPE
 	paths := make([]*table.Path, 0, len(dst))
 	for _, path := range dst {
 		if path == nil || path.IsFromExternal() {
@@ -37,12 +38,11 @@ func newIPRouteMessage(dst []*table.Path) *zebra.Message {
 		paths = append(paths, path)
 	}
 	if len(paths) == 0 {
-		return nil
+		return command, nil
 	}
 	path := paths[0]
 
 	l := strings.SplitN(path.GetNlri().String(), "/", 2)
-	var command zebra.API_TYPE
 	var prefix net.IP
 	nexthops := make([]net.IP, 0, len(paths))
 	switch path.GetRouteFamily() {
@@ -67,7 +67,7 @@ func newIPRouteMessage(dst []*table.Path) *zebra.Message {
 			nexthops = append(nexthops, p.GetNexthop().To16())
 		}
 	default:
-		return nil
+		return command, nil
 	}
 	flags := uint8(zebra.MESSAGE_NEXTHOP)
 	plen, _ := strconv.Atoi(l[1])
@@ -75,22 +75,14 @@ func newIPRouteMessage(dst []*table.Path) *zebra.Message {
 	if err == nil {
 		flags |= zebra.MESSAGE_METRIC
 	}
-	return &zebra.Message{
-		Header: zebra.Header{
-			Len:     zebra.HEADER_SIZE,
-			Marker:  zebra.HEADER_MARKER,
-			Version: zebra.VERSION,
-			Command: command,
-		},
-		Body: &zebra.IPRouteBody{
-			Type:         zebra.ROUTE_BGP,
-			SAFI:         zebra.SAFI_UNICAST,
-			Message:      flags,
-			Prefix:       prefix,
-			PrefixLength: uint8(plen),
-			Nexthops:     nexthops,
-			Metric:       med,
-		},
+	return command, &zebra.IPRouteBody{
+		Type:         zebra.ROUTE_BGP,
+		SAFI:         zebra.SAFI_UNICAST,
+		Message:      flags,
+		Prefix:       prefix,
+		PrefixLength: uint8(plen),
+		Nexthops:     nexthops,
+		Metric:       med,
 	}
 }
 
@@ -213,14 +205,14 @@ func (w *zebraWatcher) loop() error {
 			msg := ev.(*watcherEventBestPathMsg)
 			if table.UseMultiplePaths.Enabled {
 				for _, dst := range msg.multiPathList {
-					if m := newIPRouteMessage(dst); m != nil {
-						w.client.Send(m)
+					if typ, m := newIPRouteMessage(dst); m != nil {
+						w.client.SendCommand(typ, m)
 					}
 				}
 			} else {
 				for _, path := range msg.pathList {
-					if m := newIPRouteMessage([]*table.Path{path}); m != nil {
-						w.client.Send(m)
+					if typ, m := newIPRouteMessage([]*table.Path{path}); m != nil {
+						w.client.SendCommand(typ, m)
 					}
 				}
 			}
@@ -229,12 +221,12 @@ func (w *zebraWatcher) loop() error {
 	return nil
 }
 
-func newZebraWatcher(apiCh chan *GrpcRequest, url string, protos []string) (*zebraWatcher, error) {
+func newZebraWatcher(apiCh chan *GrpcRequest, url string, protos []string, version uint8) (*zebraWatcher, error) {
 	l := strings.SplitN(url, ":", 2)
 	if len(l) != 2 {
 		return nil, fmt.Errorf("unsupported url: %s", url)
 	}
-	cli, err := zebra.NewClient(l[0], l[1], zebra.ROUTE_BGP)
+	cli, err := zebra.NewClient(l[0], l[1], zebra.ROUTE_BGP, version)
 	if err != nil {
 		return nil, err
 	}

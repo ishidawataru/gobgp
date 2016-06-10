@@ -29,7 +29,7 @@ func Test_Header(t *testing.T) {
 	buf := make([]byte, 6)
 	binary.BigEndian.PutUint16(buf[0:], 10)
 	buf[2] = HEADER_MARKER
-	buf[3] = VERSION
+	buf[3] = DEFAULT_VERSION
 	binary.BigEndian.PutUint16(buf[4:], uint16(IPV4_ROUTE_ADD))
 	h := &Header{}
 	err := h.DecodeFromBytes(buf)
@@ -73,6 +73,8 @@ func Test_InterfaceUpdateBody(t *testing.T) {
 	pos += 4 // MTU6
 	binary.BigEndian.PutUint32(buf[pos:], 200)
 	pos += 4 // bandwidth
+	binary.BigEndian.PutUint32(buf[pos:], 0)
+	pos += 4 // link-layer type
 	binary.BigEndian.PutUint32(buf[pos:], 6)
 	pos += 4 // hwaddr_len
 	mac, _ := net.ParseMAC("01:23:45:67:89:ab")
@@ -442,5 +444,39 @@ func Test_ImportLookupBody(t *testing.T) {
 	buf = make([]byte, 3)
 	b = &ImportLookupBody{Api: IPV4_IMPORT_LOOKUP}
 	err = b.DecodeFromBytes(buf)
+	assert.NotEqual(nil, err)
+}
+
+func Test_Header_V3(t *testing.T) {
+	assert := assert.New(t)
+
+	VERSION := byte(3)
+
+	//DecodeFromBytes
+	buf := make([]byte, 8)
+	binary.BigEndian.PutUint16(buf[0:], 12)
+	buf[2] = HEADER_MARKER
+	buf[3] = VERSION
+	binary.BigEndian.PutUint16(buf[4:], 123)
+	binary.BigEndian.PutUint16(buf[6:], uint16(IPV4_ROUTE_ADD))
+	h := &Header{}
+	err := h.DecodeFromBytes(buf)
+	assert.Equal(nil, err)
+
+	//Serialize
+	buf, err = h.Serialize()
+	assert.Equal(nil, err)
+	h2 := &Header{}
+	err = h2.DecodeFromBytes(buf)
+	assert.Equal(nil, err)
+	assert.Equal(h, h2)
+
+	// header_size mismatch
+	buf = make([]byte, HEADER_SIZE-1)
+	binary.BigEndian.PutUint16(buf[0:], 10)
+	buf[2] = 0xff
+	buf[3] = 0x02
+	h3 := &Header{}
+	err = h3.DecodeFromBytes(buf)
 	assert.NotEqual(nil, err)
 }
