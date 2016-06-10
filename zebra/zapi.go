@@ -207,6 +207,61 @@ const (
 	NEXTHOP_BLACKHOLE
 )
 
+type LINK_TYPE uint32
+
+const (
+	LLT_UNKNOWN LINK_TYPE = iota
+	LLT_ETHER
+	LLT_EETHER
+	LLT_AX25
+	LLT_PRONET
+	LLT_IEEE802
+	LLT_ARCNET
+	LLT_APPLETLK
+	LLT_DLCI
+	LLT_ATM
+	LLT_METRICOM
+	LLT_IEEE1394
+	LLT_EUI64
+	LLT_INFINIBAND
+	LLT_SLIP
+	LLT_CSLIP
+	LLT_SLIP6
+	LLT_CSLIP6
+	LLT_RSRVD
+	LLT_ADAPT
+	LLT_ROSE
+	LLT_X25
+	LLT_PPP
+	LLT_CHDLC
+	LLT_LAPB
+	LLT_RAWHDLC
+	LLT_IPIP
+	LLT_IPIP6
+	LLT_FRAD
+	LLT_SKIP
+	LLT_LOOPBACK
+	LLT_LOCALTLK
+	LLT_FDDI
+	LLT_SIT
+	LLT_IPDDP
+	LLT_IPGRE
+	LLT_IP6GRE
+	LLT_PIMREG
+	LLT_HIPPI
+	LLT_ECONET
+	LLT_IRDA
+	LLT_FCPP
+	LLT_FCAL
+	LLT_FCPL
+	LLT_FCFABRIC
+	LLT_IEEE802_TR
+	LLT_IEEE80211
+	LLT_IEEE80211_RADIOTAP
+	LLT_IEEE802154
+	LLT_IEEE802154_PHY
+)
+
 type Client struct {
 	outgoing      chan *Message
 	incoming      chan *Message
@@ -441,6 +496,7 @@ type InterfaceUpdateBody struct {
 	MTU          uint32
 	MTU6         uint32
 	Bandwidth    uint32
+	LinkType     LINK_TYPE
 	HardwareAddr net.HardwareAddr
 }
 
@@ -458,9 +514,10 @@ func (b *InterfaceUpdateBody) DecodeFromBytes(data []byte) error {
 	b.MTU = binary.BigEndian.Uint32(data[17:21])
 	b.MTU6 = binary.BigEndian.Uint32(data[21:25])
 	b.Bandwidth = binary.BigEndian.Uint32(data[25:29])
-	l := binary.BigEndian.Uint32(data[29:33])
+	b.LinkType = LINK_TYPE(binary.BigEndian.Uint32(data[29:33]))
+	l := binary.BigEndian.Uint32(data[33:37])
 	if l > 0 {
-		b.HardwareAddr = data[33 : 33+l]
+		b.HardwareAddr = data[37 : 37+l]
 	}
 	return nil
 }
