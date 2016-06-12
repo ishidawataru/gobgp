@@ -27,8 +27,9 @@ import (
 
 const (
 	HEADER_SIZE      = 6
+	HEADER_SIZE_V3   = 8
 	HEADER_MARKER    = 255
-	VERSION          = 2
+	DEFAULT_VERSION  = 2
 	INTERFACE_NAMSIZ = 20
 )
 
@@ -207,14 +208,70 @@ const (
 	NEXTHOP_BLACKHOLE
 )
 
+type LINK_TYPE uint32
+
+const (
+	LLT_UNKNOWN LINK_TYPE = iota
+	LLT_ETHER
+	LLT_EETHER
+	LLT_AX25
+	LLT_PRONET
+	LLT_IEEE802
+	LLT_ARCNET
+	LLT_APPLETLK
+	LLT_DLCI
+	LLT_ATM
+	LLT_METRICOM
+	LLT_IEEE1394
+	LLT_EUI64
+	LLT_INFINIBAND
+	LLT_SLIP
+	LLT_CSLIP
+	LLT_SLIP6
+	LLT_CSLIP6
+	LLT_RSRVD
+	LLT_ADAPT
+	LLT_ROSE
+	LLT_X25
+	LLT_PPP
+	LLT_CHDLC
+	LLT_LAPB
+	LLT_RAWHDLC
+	LLT_IPIP
+	LLT_IPIP6
+	LLT_FRAD
+	LLT_SKIP
+	LLT_LOOPBACK
+	LLT_LOCALTLK
+	LLT_FDDI
+	LLT_SIT
+	LLT_IPDDP
+	LLT_IPGRE
+	LLT_IP6GRE
+	LLT_PIMREG
+	LLT_HIPPI
+	LLT_ECONET
+	LLT_IRDA
+	LLT_FCPP
+	LLT_FCAL
+	LLT_FCPL
+	LLT_FCFABRIC
+	LLT_IEEE802_TR
+	LLT_IEEE80211
+	LLT_IEEE80211_RADIOTAP
+	LLT_IEEE802154
+	LLT_IEEE802154_PHY
+)
+
 type Client struct {
 	outgoing      chan *Message
 	incoming      chan *Message
 	redistDefault ROUTE_TYPE
 	conn          net.Conn
+	version       uint8
 }
 
-func NewClient(network, address string, typ ROUTE_TYPE) (*Client, error) {
+func NewClient(network, address string, typ ROUTE_TYPE, version uint8) (*Client, error) {
 	conn, err := net.Dial(network, address)
 	if err != nil {
 		return nil, err
@@ -227,6 +284,7 @@ func NewClient(network, address string, typ ROUTE_TYPE) (*Client, error) {
 		incoming:      incoming,
 		redistDefault: typ,
 		conn:          conn,
+		version:       version,
 	}
 
 	go func() {
@@ -253,7 +311,11 @@ func NewClient(network, address string, typ ROUTE_TYPE) (*Client, error) {
 
 	go func() {
 		for {
-			headerBuf, err := readAll(conn, HEADER_SIZE)
+			size := HEADER_SIZE
+			if c.version == 3 {
+				size = HEADER_SIZE_V3
+			}
+			headerBuf, err := readAll(conn, size)
 			if err != nil {
 				log.Error("failed to read header: ", err)
 				return
@@ -266,7 +328,7 @@ func NewClient(network, address string, typ ROUTE_TYPE) (*Client, error) {
 				return
 			}
 
-			bodyBuf, err := readAll(conn, int(hd.Len-HEADER_SIZE))
+			bodyBuf, err := readAll(conn, int(hd.Len)-size)
 			if err != nil {
 				log.Error("failed to read body: ", err)
 				return
@@ -310,11 +372,15 @@ func (c *Client) Send(m *Message) {
 }
 
 func (c *Client) SendCommand(command API_TYPE, body Body) error {
+	size := HEADER_SIZE
+	if c.version == 3 {
+		size = HEADER_SIZE_V3
+	}
 	m := &Message{
 		Header: Header{
-			Len:     HEADER_SIZE,
+			Len:     uint16(size),
 			Marker:  HEADER_MARKER,
-			Version: VERSION,
+			Version: c.version,
 			Command: command,
 		},
 		Body: body,
@@ -378,16 +444,38 @@ type Header struct {
 	Len     uint16
 	Marker  uint8
 	Version uint8
+	VRFID   uint16
 	Command API_TYPE
 }
 
-func (h *Header) Serialize() ([]byte, error) {
+func (h *Header) serializeV2() ([]byte, error) {
 	buf := make([]byte, HEADER_SIZE)
 	binary.BigEndian.PutUint16(buf[0:], h.Len)
 	buf[2] = h.Marker
 	buf[3] = h.Version
 	binary.BigEndian.PutUint16(buf[4:], uint16(h.Command))
 	return buf, nil
+}
+
+func (h *Header) serializeV3() ([]byte, error) {
+	buf := make([]byte, HEADER_SIZE_V3)
+	binary.BigEndian.PutUint16(buf[0:], h.Len)
+	buf[2] = h.Marker
+	buf[3] = h.Version
+	binary.BigEndian.PutUint16(buf[4:], uint16(h.VRFID))
+	binary.BigEndian.PutUint16(buf[6:], uint16(h.Command))
+	return buf, nil
+}
+
+func (h *Header) Serialize() ([]byte, error) {
+	switch h.Version {
+	case 2:
+		return h.serializeV2()
+	case 3:
+		return h.serializeV3()
+	default:
+		return nil, fmt.Errorf("unsupported zapi version: %d", h.Version)
+	}
 }
 
 func (h *Header) DecodeFromBytes(data []byte) error {
@@ -397,7 +485,15 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 	h.Len = binary.BigEndian.Uint16(data[0:2])
 	h.Marker = data[2]
 	h.Version = data[3]
-	h.Command = API_TYPE(binary.BigEndian.Uint16(data[4:6]))
+	next := 4
+	if h.Version == 3 {
+		if uint16(len(data)) < HEADER_SIZE_V3 {
+			return fmt.Errorf("Not all ZAPI message header")
+		}
+		h.VRFID = binary.BigEndian.Uint16(data[next : next+2])
+		next += 2
+	}
+	h.Command = API_TYPE(binary.BigEndian.Uint16(data[next : next+2]))
 	return nil
 }
 
@@ -441,6 +537,7 @@ type InterfaceUpdateBody struct {
 	MTU          uint32
 	MTU6         uint32
 	Bandwidth    uint32
+	LinkType     LINK_TYPE
 	HardwareAddr net.HardwareAddr
 }
 
@@ -458,9 +555,13 @@ func (b *InterfaceUpdateBody) DecodeFromBytes(data []byte) error {
 	b.MTU = binary.BigEndian.Uint32(data[17:21])
 	b.MTU6 = binary.BigEndian.Uint32(data[21:25])
 	b.Bandwidth = binary.BigEndian.Uint32(data[25:29])
-	l := binary.BigEndian.Uint32(data[29:33])
+	b.LinkType = LINK_TYPE(binary.BigEndian.Uint32(data[29:33]))
+	l := binary.BigEndian.Uint32(data[33:37])
+	if len(data) < int(l+37) {
+		return fmt.Errorf("lack of bytes. need %d but %d", l+37, len(data))
+	}
 	if l > 0 {
-		b.HardwareAddr = data[33 : 33+l]
+		b.HardwareAddr = data[37 : 37+l]
 	}
 	return nil
 }
@@ -906,7 +1007,14 @@ func (m *Message) Serialize() ([]byte, error) {
 			return nil, err
 		}
 	}
-	m.Header.Len = uint16(len(body)) + HEADER_SIZE
+	switch m.Header.Version {
+	case 2:
+		m.Header.Len = uint16(len(body)) + HEADER_SIZE
+	case 3:
+		m.Header.Len = uint16(len(body)) + HEADER_SIZE_V3
+	default:
+		return nil, fmt.Errorf("unsupported zapi version: %d", m.Header.Version)
+	}
 	hdr, err := m.Header.Serialize()
 	if err != nil {
 		return nil, err

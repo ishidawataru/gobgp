@@ -37,6 +37,9 @@ func SetDefaultConfigValues(v *viper.Viper, b *BgpConfigSet) error {
 	if b.Zebra.Config.Url == "" {
 		b.Zebra.Config.Url = "unix:/var/run/quagga/zserv.api"
 	}
+	if b.Zebra.Config.Version == 0 {
+		b.Zebra.Config.Version = 2
+	}
 
 	if len(b.Global.AfiSafis) == 0 {
 		b.Global.AfiSafis = []AfiSafi{}

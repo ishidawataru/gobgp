@@ -2211,7 +2211,7 @@ func (server *BgpServer) handleGrpc(grpcReq *GrpcRequest) []*SenderMsg {
 		for _, p := range c.RedistributeRouteTypeList {
 			protos = append(protos, string(p))
 		}
-		z, err := newZebraWatcher(server.GrpcReqCh, c.Url, protos)
+		z, err := newZebraWatcher(server.GrpcReqCh, c.Url, protos, c.Version)
 		if err == nil {
 			server.watchers.addWatcher(WATCHER_ZEBRA, z)
 		}

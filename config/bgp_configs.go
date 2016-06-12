@@ -954,6 +954,8 @@ type ZebraState struct {
 	Enabled bool `mapstructure:"enabled"`
 	// original -> gobgp:url
 	Url string `mapstructure:"url"`
+	// original -> gobgp:version
+	Version uint8 `mapstructure:"version"`
 	// original -> gobgp:redistribute-route-type
 	RedistributeRouteTypeList []InstallProtocolType `mapstructure:"redistribute-route-type-list"`
 }
@@ -966,6 +968,9 @@ func (lhs *ZebraState) Equal(rhs *ZebraState) bool {
 		return false
 	}
 	if lhs.Url != rhs.Url {
+		return false
+	}
+	if lhs.Version != rhs.Version {
 		return false
 	}
 	if len(lhs.RedistributeRouteTypeList) != len(rhs.RedistributeRouteTypeList) {
@@ -986,6 +991,8 @@ type ZebraConfig struct {
 	Enabled bool `mapstructure:"enabled"`
 	// original -> gobgp:url
 	Url string `mapstructure:"url"`
+	// original -> gobgp:version
+	Version uint8 `mapstructure:"version"`
 	// original -> gobgp:redistribute-route-type
 	RedistributeRouteTypeList []InstallProtocolType `mapstructure:"redistribute-route-type-list"`
 }
@@ -998,6 +1005,9 @@ func (lhs *ZebraConfig) Equal(rhs *ZebraConfig) bool {
 		return false
 	}
 	if lhs.Url != rhs.Url {
+		return false
+	}
+	if lhs.Version != rhs.Version {
 		return false
 	}
 	if len(lhs.RedistributeRouteTypeList) != len(rhs.RedistributeRouteTypeList) {
