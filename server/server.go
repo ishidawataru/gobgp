@@ -1105,14 +1105,15 @@ func (server *BgpServer) Shutdown() {
 	// TODO: call fsmincomingCh.Close()
 }
 
-func (server *BgpServer) UpdatePolicy(policy config.RoutingPolicy) {
+func (server *BgpServer) UpdatePolicy(policy config.RoutingPolicy) error {
 	ch := make(chan *GrpcResponse)
 	server.GrpcReqCh <- &GrpcRequest{
 		RequestType: REQ_RELOAD_POLICY,
 		Data:        policy,
 		ResponseCh:  ch,
 	}
-	<-ch
+	res := <-ch
+	return res.Err()
 }
 
 func (server *BgpServer) setPolicyByConfig(id string, c config.ApplyPolicy) {
@@ -1130,7 +1131,9 @@ func (server *BgpServer) setPolicyByConfig(id string, c config.ApplyPolicy) {
 	}
 }
 
-func (server *BgpServer) SetRoutingPolicy(pl config.RoutingPolicy) error {
+func (server *BgpServer) handlePolicy(pl config.RoutingPolicy) error {
+	policyMutex.Lock()
+	defer policyMutex.Unlock()
 	if err := server.policy.Reload(pl); err != nil {
 		log.WithFields(log.Fields{
 			"Topic": "Policy",
@@ -1138,16 +1141,6 @@ func (server *BgpServer) SetRoutingPolicy(pl config.RoutingPolicy) error {
 		return err
 	}
 	server.setPolicyByConfig(table.GLOBAL_RIB_NAME, server.bgpConfig.Global.ApplyPolicy)
-	return nil
-}
-
-func (server *BgpServer) handlePolicy(pl config.RoutingPolicy) error {
-	if err := server.SetRoutingPolicy(pl); err != nil {
-		log.WithFields(log.Fields{
-			"Topic": "Policy",
-		}).Errorf("failed to set new policy: %s", err)
-		return err
-	}
 	for _, peer := range server.neighborMap {
 		log.WithFields(log.Fields{
 			"Topic": "Peer",
@@ -1654,7 +1647,7 @@ func (server *BgpServer) handleModConfig(grpcReq *GrpcRequest) error {
 	server.globalRib = table.NewTableManager(rfs, c.MplsLabelRange.MinLabel, c.MplsLabelRange.MaxLabel)
 
 	p := config.RoutingPolicy{}
-	if err := server.SetRoutingPolicy(p); err != nil {
+	if err := server.handlePolicy(p); err != nil {
 		return err
 	}
 	server.bgpConfig.Global = *c
