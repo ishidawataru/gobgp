@@ -105,7 +105,7 @@ func GetIPv6LinkLocalNeighborAddress(ifname string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		if neigh.IP.IsLinkLocalUnicast() && !local {
+		if neigh.State&netlink.NUD_FAILED == 0 && neigh.IP.IsLinkLocalUnicast() && !local {
 			addr = neigh.IP
 			cnt += 1
 		}
@@ -139,6 +139,8 @@ func setDefaultNeighborConfigValuesWithViper(v *viper.Viper, n *Neighbor, asn ui
 		n.Config.PeerType = PEER_TYPE_INTERNAL
 	}
 
+	n.State.PeerAs = n.Config.PeerAs
+
 	if !v.IsSet("neighbor.timers.config.connect-retry") && n.Timers.Config.ConnectRetry == 0 {
 		n.Timers.Config.ConnectRetry = float64(DEFAULT_CONNECT_RETRY)
 	}
@@ -153,6 +155,9 @@ func setDefaultNeighborConfigValuesWithViper(v *viper.Viper, n *Neighbor, asn ui
 	}
 
 	if n.Config.NeighborInterface != "" {
+		if n.RouteServer.Config.RouteServerClient {
+			return fmt.Errorf("configuring route server client as unnumbered peer is not supported")
+		}
 		addr, err := GetIPv6LinkLocalNeighborAddress(n.Config.NeighborInterface)
 		if err != nil {
 			return err
@@ -182,7 +187,12 @@ func setDefaultNeighborConfigValuesWithViper(v *viper.Viper, n *Neighbor, asn ui
 	}
 
 	if len(n.AfiSafis) == 0 {
-		if ipAddr, err := net.ResolveIPAddr("ip", n.Config.NeighborAddress); err != nil {
+		if n.Config.NeighborInterface != "" {
+			n.AfiSafis = []AfiSafi{
+				defaultAfiSafi(AFI_SAFI_TYPE_IPV4_UNICAST, true),
+				defaultAfiSafi(AFI_SAFI_TYPE_IPV6_UNICAST, true),
+			}
+		} else if ipAddr, err := net.ResolveIPAddr("ip", n.Config.NeighborAddress); err != nil {
 			return fmt.Errorf("invalid neighbor address: %s", n.Config.NeighborAddress)
 		} else if ipAddr.IP.To4() != nil {
 			n.AfiSafis = []AfiSafi{defaultAfiSafi(AFI_SAFI_TYPE_IPV4_UNICAST, true)}
