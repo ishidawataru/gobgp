@@ -360,22 +360,28 @@ func (s *Server) MonitorPeerState(arg *Arguments, stream GobgpApi_MonitorPeerSta
 					if len(arg.Name) > 0 && arg.Name != msg.PeerAddress.String() {
 						continue
 					}
+					zonedAddress := func(addr net.IP, zone string) string {
+						if zone == "" {
+							return addr.String()
+						}
+						return fmt.Sprintf("%s%%%s", addr, zone)
+					}
 					if err := stream.Send(&Peer{
 						Conf: &PeerConf{
 							PeerAs:          msg.PeerAS,
 							LocalAs:         msg.LocalAS,
-							NeighborAddress: msg.PeerAddress.String(),
+							NeighborAddress: zonedAddress(msg.PeerAddress, msg.Zone),
 							Id:              msg.PeerID.String(),
 						},
 						Info: &PeerState{
 							PeerAs:          msg.PeerAS,
 							LocalAs:         msg.LocalAS,
-							NeighborAddress: msg.PeerAddress.String(),
+							NeighborAddress: zonedAddress(msg.PeerAddress, msg.Zone),
 							BgpState:        msg.State.String(),
 							AdminState:      msg.AdminState.String(),
 						},
 						Transport: &Transport{
-							LocalAddress: msg.LocalAddress.String(),
+							LocalAddress: zonedAddress(msg.LocalAddress, msg.Zone),
 							LocalPort:    uint32(msg.LocalPort),
 							RemotePort:   uint32(msg.PeerPort),
 						},

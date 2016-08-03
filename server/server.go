@@ -428,14 +428,15 @@ func (server *BgpServer) dropPeerAllRoutes(peer *Peer, families []bgp.RouteFamil
 
 func createWatchEventPeerState(peer *Peer) *WatchEventPeerState {
 	_, rport := peer.fsm.RemoteHostPort()
-	laddr, lport := peer.fsm.LocalHostPort()
+	_, lport := peer.fsm.LocalHostPort()
 	sentOpen := buildopen(peer.fsm.gConf, peer.fsm.pConf)
 	recvOpen := peer.fsm.recvOpen
 	return &WatchEventPeerState{
 		PeerAS:       peer.fsm.peerInfo.AS,
 		LocalAS:      peer.fsm.peerInfo.LocalAS,
 		PeerAddress:  peer.fsm.peerInfo.Address,
-		LocalAddress: net.ParseIP(laddr),
+		LocalAddress: peer.fsm.peerInfo.LocalAddress,
+		Zone:         peer.fsm.peerInfo.Zone,
 		PeerPort:     rport,
 		LocalPort:    lport,
 		PeerID:       peer.fsm.peerInfo.ID,
@@ -2389,6 +2390,7 @@ type WatchEventPeerState struct {
 	LocalAS      uint32
 	PeerAddress  net.IP
 	LocalAddress net.IP
+	Zone         string
 	PeerPort     uint16
 	LocalPort    uint16
 	PeerID       net.IP
