@@ -70,6 +70,7 @@ type PeerInfo struct {
 	LocalAddress            net.IP
 	RouteReflectorClient    bool
 	RouteReflectorClusterID net.IP
+	Zone                    string
 }
 
 func (lhs *PeerInfo) Equal(rhs *PeerInfo) bool {
@@ -81,7 +82,7 @@ func (lhs *PeerInfo) Equal(rhs *PeerInfo) bool {
 		return false
 	}
 
-	if (lhs.AS == rhs.AS) && lhs.ID.Equal(rhs.ID) && lhs.LocalID.Equal(rhs.LocalID) && lhs.Address.Equal(rhs.Address) {
+	if (lhs.AS == rhs.AS) && lhs.ID.Equal(rhs.ID) && lhs.LocalID.Equal(rhs.LocalID) && lhs.Address.Equal(rhs.Address) && lhs.Zone == rhs.Zone {
 		return true
 	}
 	return false
@@ -92,7 +93,11 @@ func (i *PeerInfo) String() string {
 		return "local"
 	}
 	s := bytes.NewBuffer(make([]byte, 0, 64))
-	s.WriteString(fmt.Sprintf("{ %s | ", i.Address))
+	if i.Zone == "" {
+		s.WriteString(fmt.Sprintf("{ %s | ", i.Address))
+	} else {
+		s.WriteString(fmt.Sprintf("{ %s%%%s | ", i.Address, i.Zone))
+	}
 	s.WriteString(fmt.Sprintf("as: %d", i.AS))
 	s.WriteString(fmt.Sprintf(", id: %s", i.ID))
 	if i.RouteReflectorClient {
@@ -104,13 +109,15 @@ func (i *PeerInfo) String() string {
 
 func NewPeerInfo(g *config.Global, p *config.Neighbor) *PeerInfo {
 	id := net.ParseIP(string(p.RouteReflector.Config.RouteReflectorClusterId)).To4()
+	ipaddr, _ := net.ResolveIPAddr("ip", p.Config.NeighborAddress)
 	return &PeerInfo{
 		AS:                      p.Config.PeerAs,
 		LocalAS:                 g.Config.As,
 		LocalID:                 net.ParseIP(g.Config.RouterId).To4(),
-		Address:                 net.ParseIP(p.Config.NeighborAddress),
+		Address:                 ipaddr.IP,
 		RouteReflectorClient:    p.RouteReflector.Config.RouteReflectorClient,
 		RouteReflectorClusterID: id,
+		Zone: ipaddr.Zone,
 	}
 }
 
