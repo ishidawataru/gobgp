@@ -333,10 +333,10 @@ class GoBGPTestBase(unittest.TestCase):
 
         paths = g1.get_adj_rib_out(q1, '30.0.0.0/24')
         self.assertTrue(len(paths) == 1)
-        self.assertTrue(paths[0]['source-id'] == '<nil>')
+        self.assertTrue('source-id' not in paths[0])
         paths = g1.get_adj_rib_out(q2, '30.0.0.0/24')
         self.assertTrue(len(paths) == 1)
-        self.assertTrue(paths[0]['source-id'] == '<nil>')
+        self.assertTrue('source-id' not in paths[0])
 
         g1.local('gobgp global rib del 30.0.0.0/24')
 
@@ -390,6 +390,30 @@ class GoBGPTestBase(unittest.TestCase):
 
         self.assertTrue(cnt == 1)
 
+    def test_21_check_cli_sorted(self):
+        g1 = self.gobgp
+        cnt = 0
+        def next_prefix():
+            for i in range(100, 105):
+                for j in range(100, 105):
+                    yield '{0}.{1}.0.0/24'.format(i, j)
+
+        for p in next_prefix():
+            g1.local('gobgp global rib add {0}'.format(p))
+            cnt += 1
+
+        cnt2 = 0
+        g = next_prefix()
+        n = g.next()
+        for path in g1.local("gobgp global rib", capture=True).split('\n')[1:]:
+            if [elem for elem in path.split(' ') if elem != ''][1] == n:
+                try:
+                    cnt2 += 1
+                    n = g.next()
+                except StopIteration:
+                    break
+
+        self.assertTrue(cnt == cnt2)
 
 if __name__ == '__main__':
     if os.geteuid() is not 0:
