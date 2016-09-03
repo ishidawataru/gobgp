@@ -377,3 +377,12 @@ func (manager *TableManager) GetDestination(path *Path) *Destination {
 	}
 	return t.GetDestination(path.getPrefix())
 }
+
+func (manager *TableManager) ToGlobalPath(name string, path *Path) error {
+	label, err := manager.GetNextLabel(name, path.GetNexthop().String(), path.IsWithdraw)
+	if err != nil {
+		return err
+	}
+	vrf := manager.Vrfs[name]
+	return vrf.ToGlobalPath(path, label)
+}
