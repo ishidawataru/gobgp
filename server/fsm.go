@@ -77,6 +77,8 @@ type FsmOutgoingMsg struct {
 const (
 	HOLDTIME_OPENSENT = 240
 	HOLDTIME_IDLE     = 5
+	FLOP_THRESHOLD    = time.Second * 30
+	MIN_CONNECT_RETRY = 10
 )
 
 type AdminState int
@@ -212,9 +214,26 @@ func (fsm *FSM) StateChange(nextState bgp.FSMState) {
 		"new":    nextState.String(),
 		"reason": fsm.reason,
 	}).Debug("state changed")
+	oldState := fsm.state
+
+	switch oldState {
+	case bgp.BGP_FSM_ESTABLISHED:
+		t := time.Now()
+		if t.Sub(time.Unix(fsm.pConf.Timers.State.Uptime, 0)) < FLOP_THRESHOLD {
+			fsm.pConf.State.Flops++
+		}
+	}
+
 	fsm.state = nextState
+	fsm.pConf.State.SessionState = config.IntToSessionStateMap[int(nextState)]
+
 	switch nextState {
 	case bgp.BGP_FSM_ESTABLISHED:
+
+		laddr, _ := fsm.LocalHostPort()
+		fsm.pConf.Transport.State.LocalAddress = laddr
+		fsm.peerInfo.LocalAddress = net.ParseIP(laddr)
+
 		fsm.pConf.Timers.State.Uptime = time.Now().Unix()
 		fsm.pConf.State.EstablishedCount++
 		// reset the state set by the previous session
@@ -242,6 +261,12 @@ func (fsm *FSM) StateChange(nextState bgp.FSMState) {
 		fallthrough
 	default:
 		fsm.pConf.Timers.State.Downtime = time.Now().Unix()
+	}
+
+	// clear counter
+	if fsm.adminState == ADMIN_STATE_DOWN {
+		fsm.pConf.State = config.NeighborState{}
+		fsm.pConf.Timers.State = config.TimersState{}
 	}
 }
 

@@ -26,11 +26,6 @@ import (
 	"time"
 )
 
-const (
-	FLOP_THRESHOLD    = time.Second * 30
-	MIN_CONNECT_RETRY = 10
-)
-
 type Peer struct {
 	tableId           string
 	fsm               *FSM
