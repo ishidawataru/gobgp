@@ -595,15 +595,10 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) {
 	switch e.MsgType {
 	case FSM_MSG_STATE_CHANGE:
 		nextState := e.MsgData.(bgp.FSMState)
-		oldState := bgp.FSMState(peer.fsm.pConf.State.SessionState.ToInt())
-		peer.fsm.pConf.State.SessionState = config.IntToSessionStateMap[int(nextState)]
+		oldState := peer.fsm.state
 		peer.fsm.StateChange(nextState)
 
 		if oldState == bgp.BGP_FSM_ESTABLISHED {
-			t := time.Now()
-			if t.Sub(time.Unix(peer.fsm.pConf.Timers.State.Uptime, 0)) < FLOP_THRESHOLD {
-				peer.fsm.pConf.State.Flops++
-			}
 			var drop []bgp.RouteFamily
 			if peer.fsm.reason == FSM_GRACEFUL_RESTART {
 				peer.fsm.pConf.GracefulRestart.State.PeerRestarting = true
@@ -630,9 +625,6 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) {
 		peer.outgoing = channels.NewInfiniteChannel()
 		if nextState == bgp.BGP_FSM_ESTABLISHED {
 			// update for export policy
-			laddr, _ := peer.fsm.LocalHostPort()
-			peer.fsm.pConf.Transport.State.LocalAddress = laddr
-			peer.fsm.peerInfo.LocalAddress = net.ParseIP(laddr)
 			deferralExpiredFunc := func(family bgp.RouteFamily) func() {
 				return func() {
 					ch := make(chan struct{})
@@ -699,12 +691,6 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) {
 					os.Exit(0)
 				}
 			}
-			peer.fsm.pConf.Timers.State.Downtime = time.Now().Unix()
-		}
-		// clear counter
-		if peer.fsm.adminState == ADMIN_STATE_DOWN {
-			peer.fsm.pConf.State = config.NeighborState{}
-			peer.fsm.pConf.Timers.State = config.TimersState{}
 		}
 		peer.startFSMHandler(server.fsmincomingCh, server.fsmStateCh)
 		server.broadcastPeerState(peer, oldState)
@@ -934,7 +920,7 @@ func (s *BgpServer) Shutdown() {
 	}
 }
 
-func (s *BgpServer) UpdatePolicy(policy config.RoutingPolicy) (err error) {
+func (s *BgpServer) UpdatePolicy(policy *config.RoutingPolicy) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -950,7 +936,7 @@ func (s *BgpServer) UpdatePolicy(policy config.RoutingPolicy) (err error) {
 			}).Info("call set policy")
 			ap[peer.ID()] = peer.fsm.pConf.ApplyPolicy
 		}
-		err = s.policy.Reset(&policy, ap)
+		err = s.policy.Reset(policy, ap)
 	}
 	return err
 }
@@ -1227,6 +1213,37 @@ func (s *BgpServer) DeleteVrf(name string) (err error) {
 		}
 	}
 	return err
+}
+
+func (s *BgpServer) Update(c *config.Global) (err error) {
+	ch := make(chan struct{})
+	defer func() { <-ch }()
+
+	s.mgmtCh <- func() {
+		defer close(ch)
+		if err = s.active(); err != nil {
+			return
+		}
+
+		p := s.bgpConfig.Global
+		n := *c
+		empty := config.ApplyPolicy{}
+		p.ApplyPolicy = empty
+		n.ApplyPolicy = empty
+		if !p.Equal(&n) {
+			err = fmt.Errorf("Updating global configuration except policy assignment is not supported")
+			return
+		}
+
+		if !s.bgpConfig.Global.ApplyPolicy.Equal(&c.ApplyPolicy) {
+			log.WithFields(log.Fields{
+				"Topic": "Peer",
+			}).Info("Update Global ApplyPolicy")
+			s.policy.Reset(nil, map[string]config.ApplyPolicy{table.GLOBAL_RIB_NAME: c.ApplyPolicy})
+			s.bgpConfig.Global.ApplyPolicy = c.ApplyPolicy
+		}
+	}
+	return nil
 }
 
 func (s *BgpServer) Stop() (err error) {
