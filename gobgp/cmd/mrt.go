@@ -144,9 +144,9 @@ func injectMrt(r string, filename string, count int, skip int, onlyBest bool) er
 							dst.AddNewPath(p)
 							pathList = append(pathList, p)
 						}
-						best, _, _ := dst.Calculate([]string{table.GLOBAL_RIB_NAME})
+						dst.Calculate()
 						for _, p := range pathList {
-							if p == best[table.GLOBAL_RIB_NAME] {
+							if p == dst.GetBestPath(table.GLOBAL_RIB_NAME) {
 								nb, _ := nlri.Serialize()
 								return []*api.Path{&api.Path{
 									Nlri:               nb,

@@ -128,26 +128,108 @@ func (peer *Peer) getAccepted(rfList []bgp.RouteFamily) []*table.Path {
 	return peer.adjRibIn.PathList(rfList, true)
 }
 
-func (peer *Peer) filterpath(path *table.Path, withdrawals []*table.Path) *table.Path {
-	// special handling for RTC nlri
-	// see comments in (*Destination).Calculate()
-	if path != nil && path.GetRouteFamily() == bgp.RF_RTC_UC && !path.IsWithdraw {
-		// if we already sent the same nlri, ignore this
-		if peer.adjRibOut.Exists(path) {
-			return nil
-		}
-		dst := peer.localRib.GetDestination(path)
-		path = nil
-		// we send a path even if it is not a best path
-		for _, p := range dst.GetKnownPathList(peer.TableID()) {
-			// just take care not to send back it
-			if peer.ID() != p.GetSource().Address.String() {
-				path = p
-				break
+func (peer *Peer) filterpath(path *table.Path) *table.Path {
+	if path == nil {
+		return nil
+	}
+	if _, ok := peer.fsm.rfMap[path.GetRouteFamily()]; !ok {
+		return nil
+	}
+
+	//iBGP handling
+	if peer.isIBGPPeer() {
+		ignore := false
+		//RFC4684 Constrained Route Distribution
+		if _, y := peer.fsm.rfMap[bgp.RF_RTC_UC]; y && path.GetRouteFamily() != bgp.RF_RTC_UC {
+			ignore = true
+			for _, ext := range path.GetExtCommunities() {
+				for _, path := range peer.adjRibIn.PathList([]bgp.RouteFamily{bgp.RF_RTC_UC}, true) {
+					rt := path.GetNlri().(*bgp.RouteTargetMembershipNLRI).RouteTarget
+					if rt == nil {
+						ignore = false
+					} else if ext.String() == rt.String() {
+						ignore = false
+						break
+					}
+				}
+				if !ignore {
+					break
+				}
 			}
 		}
+
+		if !path.IsLocal() {
+			ignore = true
+			info := path.GetSource()
+			//if the path comes from eBGP peer
+			if info.AS != peer.fsm.pConf.Config.PeerAs {
+				ignore = false
+			}
+			// RFC4456 8. Avoiding Routing Information Loops
+			// A router that recognizes the ORIGINATOR_ID attribute SHOULD
+			// ignore a route received with its BGP Identifier as the ORIGINATOR_ID.
+			if id := path.GetOriginatorID(); peer.fsm.gConf.Config.RouterId == id.String() {
+				log.WithFields(log.Fields{
+					"Topic":        "Peer",
+					"Key":          peer.ID(),
+					"OriginatorID": id,
+					"Data":         path,
+				}).Debug("Originator ID is mine, ignore")
+				return nil
+			}
+			if info.RouteReflectorClient {
+				ignore = false
+			}
+			if peer.isRouteReflectorClient() {
+				// RFC4456 8. Avoiding Routing Information Loops
+				// If the local CLUSTER_ID is found in the CLUSTER_LIST,
+				// the advertisement received SHOULD be ignored.
+				for _, clusterId := range path.GetClusterList() {
+					if clusterId.Equal(peer.fsm.peerInfo.RouteReflectorClusterID) {
+						log.WithFields(log.Fields{
+							"Topic":     "Peer",
+							"Key":       peer.ID(),
+							"ClusterID": clusterId,
+							"Data":      path,
+						}).Debug("cluster list path attribute has local cluster id, ignore")
+						return nil
+					}
+				}
+				ignore = false
+			}
+		}
+
+		if ignore {
+
+			for _, adv := range peer.adjRibOut.PathList([]bgp.RouteFamily{path.GetRouteFamily()}, false) {
+				// we advertise a route from ebgp,
+				// which is the old best. We got the
+				// new best from ibgp. We don't
+				// advertise the new best and need to
+				// withdraw the old.
+				if path.GetNlri().String() == adv.GetNlri().String() {
+					return adv.Clone(true)
+				}
+			}
+			log.WithFields(log.Fields{
+				"Topic": "Peer",
+				"Key":   peer.ID(),
+				"Data":  path,
+			}).Debug("From same AS, ignore.")
+			return nil
+		}
 	}
-	if path = filterpath(peer, path, withdrawals); path == nil {
+
+	if peer.ID() == path.GetSource().Address.String() {
+		log.WithFields(log.Fields{
+			"Topic": "Peer",
+			"Key":   peer.ID(),
+			"Data":  path,
+		}).Debug("From me, ignore.")
+		return nil
+	}
+
+	if !peer.isRouteServerClient() && isASLoop(peer, path) {
 		return nil
 	}
 
@@ -172,7 +254,7 @@ func (peer *Peer) getBestFromLocal(rfList []bgp.RouteFamily) ([]*table.Path, []*
 	pathList := []*table.Path{}
 	filtered := []*table.Path{}
 	for _, path := range peer.localRib.GetBestPathList(peer.TableID(), rfList) {
-		if p := peer.filterpath(path, nil); p != nil {
+		if p := peer.filterpath(path); p != nil {
 			pathList = append(pathList, p)
 		} else {
 			filtered = append(filtered, path)
@@ -187,26 +269,81 @@ func (peer *Peer) getBestFromLocal(rfList []bgp.RouteFamily) ([]*table.Path, []*
 	return pathList, filtered
 }
 
-func (peer *Peer) processOutgoingPaths(paths, withdrawals []*table.Path) []*table.Path {
+func (peer *Peer) isReadyToSend() bool {
 	if peer.fsm.state != bgp.BGP_FSM_ESTABLISHED {
-		return nil
+		return false
 	}
 	if peer.fsm.pConf.GracefulRestart.State.LocalRestarting {
 		log.WithFields(log.Fields{
 			"Topic": "Peer",
 			"Key":   peer.fsm.pConf.Config.NeighborAddress,
 		}).Debug("now syncing, suppress sending updates")
-		return nil
+		return false
 	}
+	return true
+}
 
+func (peer *Peer) extractOutgoingPaths(dsts []*table.Destination, withdrawals []*table.Path) []*table.Path {
+	outgoing := make([]*table.Path, 0, len(dsts))
+	for _, dst := range dsts {
+		path := dst.GetNewBest(peer.TableID())
+		// RFC4684 3.2. Intra-AS VPN Route Distribution
+		// When processing RT membership NLRIs received from internal iBGP
+		// peers, it is necessary to consider all available iBGP paths for a
+		// given RT prefix, for building the outbound route filter, and **not just
+		// the best path**.
+		if path == nil && dst.Family() == bgp.RF_RTC_UC {
+			old := dst.GetOldBest(peer.TableID())
+			if old == nil || peer.adjRibOut.Exists(old) {
+				continue
+			}
+			// we send a path even if it is not a best path
+			for _, p := range dst.GetKnownPathList(peer.TableID()) {
+				// just take care not to send back it
+				if peer.ID() != p.GetSource().Address.String() {
+					path = p
+					break
+				}
+			}
+		}
+		if path == nil {
+			continue
+		}
+		if peer.ID() == path.GetSource().Address.String() {
+			// Say, gobgp was advertising prefix A and peer P also.
+			// When gobgp withdraws prefix A, best path calculation chooses
+			// the path from P as the best path for prefix A.
+			// For peers other than P, this path should be advertised
+			// (as implicit withdrawal). However for P, we should advertise
+			// the local withdraw path.
+
+			// Note: multiple paths having the same prefix could exist the
+			// withdrawals list in the case of Route Server setup with
+			// import policies modifying paths. In such case, gobgp sends
+			// duplicated update messages; withdraw messages for the same
+			// prefix.
+			// However, currently we don't support local path for Route
+			// Server setup so this is NOT the case.
+			for _, w := range withdrawals {
+				if w.IsLocal() && path.GetNlri().String() == w.GetNlri().String() {
+					outgoing = append(outgoing, w)
+					break
+				}
+			}
+		} else {
+			outgoing = append(outgoing, path)
+		}
+	}
+	return outgoing
+}
+
+func (peer *Peer) processOutgoingPaths(paths []*table.Path) []*table.Path {
 	outgoing := make([]*table.Path, 0, len(paths))
-
 	for _, path := range paths {
-		if p := peer.filterpath(path, withdrawals); p != nil {
+		if p := peer.filterpath(path); p != nil {
 			outgoing = append(outgoing, p)
 		}
 	}
-
 	peer.adjRibOut.Update(outgoing)
 	return outgoing
 }

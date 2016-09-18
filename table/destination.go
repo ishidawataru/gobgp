@@ -117,12 +117,13 @@ func NewPeerInfo(g *config.Global, p *config.Neighbor) *PeerInfo {
 }
 
 type Destination struct {
-	routeFamily   bgp.RouteFamily
-	nlri          bgp.AddrPrefixInterface
-	knownPathList paths
-	withdrawList  paths
-	newPathList   paths
-	RadixKey      string
+	routeFamily      bgp.RouteFamily
+	nlri             bgp.AddrPrefixInterface
+	knownPathList    paths
+	oldKnownPathList paths
+	withdrawList     paths
+	newPathList      paths
+	RadixKey         string
 }
 
 func NewDestination(nlri bgp.AddrPrefixInterface, known ...*Path) *Destination {
@@ -158,6 +159,30 @@ func (dd *Destination) setNlri(nlri bgp.AddrPrefixInterface) {
 
 func (dd *Destination) GetAllKnownPathList() []*Path {
 	return dd.knownPathList
+}
+
+func (dd *Destination) GetNewBest(id string) *Path {
+	old := dd.GetOldBest(id)
+	best := dd.GetBestPath(id)
+	if best != nil && best.Equal(old) {
+		return nil
+	}
+	if best == nil {
+		if old == nil {
+			return nil
+		}
+		return old.Clone(true)
+	}
+	return best.Clone(false)
+}
+
+func (dd *Destination) GetOldBest(id string) *Path {
+	for _, p := range dd.oldKnownPathList {
+		if p.Filtered(id) == POLICY_DIRECTION_NONE {
+			return p
+		}
+	}
+	return nil
 }
 
 func (dd *Destination) GetKnownPathList(id string) []*Path {
@@ -205,9 +230,8 @@ func (dd *Destination) validatePath(path *Path) {
 //
 // Modifies destination's state related to stored paths. Removes withdrawn
 // paths from known paths. Also, adds new paths to known paths.
-func (dest *Destination) Calculate(ids []string) (map[string]*Path, []*Path, []*Path) {
-	best := make(map[string]*Path, len(ids))
-	oldKnownPathList := dest.knownPathList
+func (dest *Destination) Calculate() ([]*Path, []*Path) {
+	dest.oldKnownPathList = dest.knownPathList
 	// First remove the withdrawn paths.
 	withdrawnList := dest.explicitWithdraw()
 	// Do implicit withdrawal
@@ -219,78 +243,45 @@ func (dest *Destination) Calculate(ids []string) (map[string]*Path, []*Path, []*
 	// Compute new best path
 	dest.computeKnownBestPath()
 
-	f := func(id string) *Path {
-		old := func() *Path {
-			for _, p := range oldKnownPathList {
-				if p.Filtered(id) == POLICY_DIRECTION_NONE {
-					return p
-				}
-			}
-			return nil
-		}()
-		best := dest.GetBestPath(id)
-		if best != nil && best.Equal(old) {
-			// RFC4684 3.2. Intra-AS VPN Route Distribution
-			// When processing RT membership NLRIs received from internal iBGP
-			// peers, it is necessary to consider all available iBGP paths for a
-			// given RT prefix, for building the outbound route filter, and not just
-			// the best path.
-			if best.GetRouteFamily() == bgp.RF_RTC_UC {
-				return best
-			}
-			return nil
-		}
-		if best == nil {
-			if old == nil {
-				return nil
-			}
-			return old.Clone(true)
-		}
-		return best
-	}
-
 	var multi []*Path
-	for _, id := range ids {
-		best[id] = f(id)
-		if id == GLOBAL_RIB_NAME && UseMultiplePaths.Enabled {
-			multipath := func(paths []*Path) []*Path {
-				mp := make([]*Path, 0, len(paths))
-				var best *Path
-				for _, path := range paths {
-					if path.Filtered(id) == POLICY_DIRECTION_NONE {
-						if best == nil {
-							best = path
-							mp = append(mp, path)
-						} else if best.Compare(path) == 0 {
-							mp = append(mp, path)
-						}
+	if UseMultiplePaths.Enabled {
+		multipath := func(paths []*Path) []*Path {
+			mp := make([]*Path, 0, len(paths))
+			var best *Path
+			for _, path := range paths {
+				if path.Filtered(GLOBAL_RIB_NAME) == POLICY_DIRECTION_NONE {
+					if best == nil {
+						best = path
+						mp = append(mp, path)
+					} else if best.Compare(path) == 0 {
+						mp = append(mp, path)
 					}
 				}
-				return mp
 			}
-			diff := func(lhs, rhs []*Path) bool {
-				if len(lhs) != len(rhs) {
+			return mp
+		}
+		diff := func(lhs, rhs []*Path) bool {
+			if len(lhs) != len(rhs) {
+				return true
+			}
+			for idx, l := range lhs {
+				if !l.Equal(rhs[idx]) {
 					return true
 				}
-				for idx, l := range lhs {
-					if !l.Equal(rhs[idx]) {
-						return true
-					}
-				}
-				return false
 			}
-			oldM := multipath(oldKnownPathList)
-			newM := multipath(dest.knownPathList)
-			if diff(oldM, newM) {
-				multi = newM
-				if len(newM) == 0 {
-					multi = []*Path{best[id]}
-				}
+			return false
+		}
+		oldM := multipath(dest.oldKnownPathList)
+		newM := multipath(dest.knownPathList)
+		if diff(oldM, newM) {
+			multi = newM
+			if len(newM) == 0 {
+				multi = []*Path{dest.oldKnownPathList[0]}
 			}
 		}
 	}
 
-	return best, withdrawnList, multi
+	return withdrawnList, multi
 }
 
 // Removes withdrawn paths.
