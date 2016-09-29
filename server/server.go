@@ -1754,7 +1754,7 @@ func (s *BgpServer) ShutdownNeighbor(addr string) (err error) {
 	s.mgmtCh <- func() {
 		defer close(ch)
 
-		err = s.resetNeighbor("Neighbor shutdown", addr, bgp.BGP_ERROR_SUB_ADMINISTRATIVE_SHUTDOWN)
+		err = s.resetNeighbor("Neighbor shutdown", addr, bgp.BGP_ERROR_SUB_HARD_RESET)
 	}
 	return err
 }
