@@ -2792,6 +2792,86 @@ func (lhs *MplsLabelRange) Equal(rhs *MplsLabelRange) bool {
 }
 
 //struct for container gobgp:state
+type LongLivedGracefulRestartState struct {
+	// original -> gobgp:enabled
+	//gobgp:enabled's original type is boolean
+	Enabled bool `mapstructure:"enabled"`
+	// original -> gobgp:received
+	//gobgp:received's original type is boolean
+	Received bool `mapstructure:"received"`
+	// original -> gobgp:advertised
+	//gobgp:advertised's original type is boolean
+	Advertised bool `mapstructure:"advertised"`
+	// original -> gobgp:peer-restart-time
+	PeerRestartTime uint32 `mapstructure:"peer-restart-time"`
+	// original -> gobgp:peer-restart-timer-expired
+	//gobgp:peer-restart-timer-expired's original type is boolean
+	PeerRestartTimerExpired bool `mapstructure:"peer-restart-timer-expired"`
+}
+
+func (lhs *LongLivedGracefulRestartState) Equal(rhs *LongLivedGracefulRestartState) bool {
+	if lhs == nil || rhs == nil {
+		return false
+	}
+	if lhs.Enabled != rhs.Enabled {
+		return false
+	}
+	if lhs.Received != rhs.Received {
+		return false
+	}
+	if lhs.Advertised != rhs.Advertised {
+		return false
+	}
+	if lhs.PeerRestartTime != rhs.PeerRestartTime {
+		return false
+	}
+	if lhs.PeerRestartTimerExpired != rhs.PeerRestartTimerExpired {
+		return false
+	}
+	return true
+}
+
+//struct for container gobgp:config
+type LongLivedGracefulRestartConfig struct {
+	// original -> gobgp:enabled
+	//gobgp:enabled's original type is boolean
+	Enabled bool `mapstructure:"enabled"`
+	// original -> gobgp:restart-time
+	RestartTime uint32 `mapstructure:"restart-time"`
+}
+
+func (lhs *LongLivedGracefulRestartConfig) Equal(rhs *LongLivedGracefulRestartConfig) bool {
+	if lhs == nil || rhs == nil {
+		return false
+	}
+	if lhs.Enabled != rhs.Enabled {
+		return false
+	}
+	if lhs.RestartTime != rhs.RestartTime {
+		return false
+	}
+	return true
+}
+
+//struct for container gobgp:long-lived-graceful-restart
+type LongLivedGracefulRestart struct {
+	// original -> gobgp:long-lived-graceful-restart-config
+	Config LongLivedGracefulRestartConfig `mapstructure:"config"`
+	// original -> gobgp:long-lived-graceful-restart-state
+	State LongLivedGracefulRestartState `mapstructure:"state"`
+}
+
+func (lhs *LongLivedGracefulRestart) Equal(rhs *LongLivedGracefulRestart) bool {
+	if lhs == nil || rhs == nil {
+		return false
+	}
+	if !lhs.Config.Equal(&(rhs.Config)) {
+		return false
+	}
+	return true
+}
+
+//struct for container gobgp:state
 type RouteTargetMembershipState struct {
 	// original -> gobgp:deferral-time
 	DeferralTime uint16 `mapstructure:"deferral-time"`
@@ -3454,6 +3534,8 @@ type AfiSafi struct {
 	PrefixLimit PrefixLimit `mapstructure:"prefix-limit"`
 	// original -> gobgp:route-target-membership
 	RouteTargetMembership RouteTargetMembership `mapstructure:"route-target-membership"`
+	// original -> gobgp:long-lived-graceful-restart
+	LongLivedGracefulRestart LongLivedGracefulRestart `mapstructure:"long-lived-graceful-restart"`
 }
 
 func (lhs *AfiSafi) Equal(rhs *AfiSafi) bool {
@@ -3511,6 +3593,9 @@ func (lhs *AfiSafi) Equal(rhs *AfiSafi) bool {
 	if !lhs.RouteTargetMembership.Equal(&(rhs.RouteTargetMembership)) {
 		return false
 	}
+	if !lhs.LongLivedGracefulRestart.Equal(&(rhs.LongLivedGracefulRestart)) {
+		return false
+	}
 	return true
 }
 
@@ -3539,6 +3624,12 @@ type GracefulRestartState struct {
 	Mode Mode `mapstructure:"mode"`
 	// original -> gobgp:deferral-time
 	DeferralTime uint16 `mapstructure:"deferral-time"`
+	// original -> gobgp:notification-enabled
+	//gobgp:notification-enabled's original type is boolean
+	NotificationEnabled bool `mapstructure:"notification-enabled"`
+	// original -> gobgp:long-lived-enabled
+	//gobgp:long-lived-enabled's original type is boolean
+	LongLivedEnabled bool `mapstructure:"long-lived-enabled"`
 }
 
 func (lhs *GracefulRestartState) Equal(rhs *GracefulRestartState) bool {
@@ -3572,6 +3663,12 @@ func (lhs *GracefulRestartState) Equal(rhs *GracefulRestartState) bool {
 	if lhs.DeferralTime != rhs.DeferralTime {
 		return false
 	}
+	if lhs.NotificationEnabled != rhs.NotificationEnabled {
+		return false
+	}
+	if lhs.LongLivedEnabled != rhs.LongLivedEnabled {
+		return false
+	}
 	return true
 }
 
@@ -3590,6 +3687,12 @@ type GracefulRestartConfig struct {
 	HelperOnly bool `mapstructure:"helper-only"`
 	// original -> gobgp:deferral-time
 	DeferralTime uint16 `mapstructure:"deferral-time"`
+	// original -> gobgp:notification-enabled
+	//gobgp:notification-enabled's original type is boolean
+	NotificationEnabled bool `mapstructure:"notification-enabled"`
+	// original -> gobgp:long-lived-enabled
+	//gobgp:long-lived-enabled's original type is boolean
+	LongLivedEnabled bool `mapstructure:"long-lived-enabled"`
 }
 
 func (lhs *GracefulRestartConfig) Equal(rhs *GracefulRestartConfig) bool {
@@ -3609,6 +3712,12 @@ func (lhs *GracefulRestartConfig) Equal(rhs *GracefulRestartConfig) bool {
 		return false
 	}
 	if lhs.DeferralTime != rhs.DeferralTime {
+		return false
+	}
+	if lhs.NotificationEnabled != rhs.NotificationEnabled {
+		return false
+	}
+	if lhs.LongLivedEnabled != rhs.LongLivedEnabled {
 		return false
 	}
 	return true
