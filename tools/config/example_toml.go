@@ -10,53 +10,38 @@ import (
 func main() {
 	b := config.Bgp{
 		Global: config.Global{
-			Config: config.GlobalConfig{
-				As:       12332,
-				RouterId: "10.0.0.1",
-			},
+			As:       12332,
+			RouterId: "10.0.0.1",
 		},
 		Neighbors: []config.Neighbor{
 			config.Neighbor{
-				Config: config.NeighborConfig{
-					PeerAs:          12333,
-					AuthPassword:    "apple",
-					NeighborAddress: "192.168.177.33",
-				},
+				PeerAs:          12333,
+				AuthPassword:    "apple",
+				NeighborAddress: "192.168.177.33",
 				AfiSafis: []config.AfiSafi{
 					config.AfiSafi{
-						Config: config.AfiSafiConfig{
-							AfiSafiName: "ipv4-unicast",
-						},
+						AfiSafiName: "ipv4-unicast",
 					},
 					config.AfiSafi{
-						Config: config.AfiSafiConfig{
-							AfiSafiName: "ipv6-unicast",
-						},
+						AfiSafiName: "ipv6-unicast",
 					},
 				},
 				ApplyPolicy: config.ApplyPolicy{
-
-					Config: config.ApplyPolicyConfig{
-						ImportPolicyList:    []string{"pd1"},
-						DefaultImportPolicy: config.DEFAULT_POLICY_TYPE_ACCEPT_ROUTE,
-					},
+					ImportPolicyList:    []string{"pd1"},
+					DefaultImportPolicy: config.DEFAULT_POLICY_TYPE_ACCEPT_ROUTE,
 				},
 			},
 
 			config.Neighbor{
-				Config: config.NeighborConfig{
-					PeerAs:          12334,
-					AuthPassword:    "orange",
-					NeighborAddress: "192.168.177.32",
-				},
+				PeerAs:          12334,
+				AuthPassword:    "orange",
+				NeighborAddress: "192.168.177.32",
 			},
 
 			config.Neighbor{
-				Config: config.NeighborConfig{
-					PeerAs:          12335,
-					AuthPassword:    "grape",
-					NeighborAddress: "192.168.177.34",
-				},
+				PeerAs:          12335,
+				AuthPassword:    "grape",
+				NeighborAddress: "192.168.177.34",
 			},
 		},
 	}
