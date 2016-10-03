@@ -103,7 +103,7 @@ class ImportPolicy(object):
               'masklength-range': '16..24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -169,7 +169,7 @@ class ExportPolicy(object):
               'masklength-range': '16..24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -255,7 +255,7 @@ class ImportPolicyUpdate(object):
         p1 = {'ip-prefix': '192.168.200.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -303,7 +303,7 @@ class ImportPolicyUpdate(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -383,7 +383,7 @@ class ExportPolicyUpdate(object):
         p1 = {'ip-prefix': '192.168.200.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -430,7 +430,7 @@ class ExportPolicyUpdate(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -525,7 +525,7 @@ class ImportPolicyIPV6(object):
               'masklength-range': '64..128'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -594,7 +594,7 @@ class ExportPolicyIPV6(object):
               'masklength-range': '64..128'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -676,7 +676,7 @@ class ImportPolicyIPV6Update(object):
         p1 = {'ip-prefix': '2001:0:10:20::/64'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -719,7 +719,7 @@ class ImportPolicyIPV6Update(object):
         p0 = {'ip-prefix': '2001:0:10:2::/64'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -797,7 +797,7 @@ class ExportPolicyIPv6Update(object):
         p1 = {'ip-prefix': '2001:0:10:20::/64'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -840,7 +840,7 @@ class ExportPolicyIPv6Update(object):
         p0 = {'ip-prefix': '2001:0:10:2::/64'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -1166,7 +1166,7 @@ class ImportPolicyAsPathMismatchCondition(object):
         q1 = env.q1
         q2 = env.q2
         cs0 = {'community-sets': [{'community-set-name': 'cs0',
-                                   'community-list': ['65100:10']}]}
+                                   'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1226,7 +1226,7 @@ class ImportPolicyCommunityCondition(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1279,7 +1279,7 @@ class ImportPolicyCommunityRegexp(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['6[0-9]+:[0-9]+']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['6[0-9]+:[0-9]+']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1340,7 +1340,7 @@ class ImportPolicyCommunityAction(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1414,7 +1414,7 @@ class ImportPolicyCommunityReplace(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1480,7 +1480,7 @@ class ImportPolicyCommunityRemove(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1564,7 +1564,7 @@ class ImportPolicyCommunityNull(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1638,7 +1638,7 @@ class ExportPolicyCommunityAdd(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1711,7 +1711,7 @@ class ExportPolicyCommunityReplace(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1784,7 +1784,7 @@ class ExportPolicyCommunityRemove(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -1860,7 +1860,7 @@ class ExportPolicyCommunityNull(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets':  [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets':  [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -2308,7 +2308,7 @@ class InPolicyReject(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -2367,7 +2367,7 @@ class InPolicyAccept(object):
         e1 = env.e1
         q1 = env.q1
         q2 = env.q2
-        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-list': ['65100:10']}]}
+        cs0 = {'community-sets': [{'community-set-name': 'cs0', 'community-member-list': ['65100:10']}]}
 
         g1.set_bgp_defined_set(cs0)
 
@@ -2437,7 +2437,7 @@ class InPolicyUpdate(object):
         p1 = {'ip-prefix': '192.168.200.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -2486,7 +2486,7 @@ class InPolicyUpdate(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -2551,7 +2551,7 @@ class ExportPolicyAsPathPrepend(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {'name': 'st0',
@@ -2638,7 +2638,7 @@ class ImportPolicyAsPathPrependLastAS(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {'name': 'st0',
@@ -2715,7 +2715,7 @@ class ExportPolicyAsPathPrependLastAS(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {'name': 'st0',
@@ -2789,7 +2789,7 @@ class ImportPolicyExCommunityOriginCondition(object):
         q2 = env.q2
 
         es0 = {'ext-community-sets': [{'ext-community-set-name': 'es0',
-                                       'ext-community-list': ['SoO:65001.65100:200']}]}
+                                       'ext-community-member-list': ['SoO:65001.65100:200']}]}
 
         g1.set_bgp_defined_set(es0)
 
@@ -2840,7 +2840,7 @@ class ImportPolicyExCommunityTargetCondition(object):
         q2 = env.q2
 
         es0 = {'ext-community-sets': [{'ext-community-set-name': 'es0',
-                                       'ext-community-list': ['RT:6[0-9]+:3[0-9]+']}]}
+                                       'ext-community-member-list': ['RT:6[0-9]+:3[0-9]+']}]}
 
         g1.set_bgp_defined_set(es0)
 
@@ -2893,7 +2893,7 @@ class InPolicyPrefixCondition(object):
         p0 = {'ip-prefix': '192.168.10.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {'name': 'st0',
@@ -2960,7 +2960,7 @@ class ImportPolicyExCommunityAdd(object):
         p0 = {'ip-prefix': '192.168.10.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {
@@ -3040,7 +3040,7 @@ class ImportPolicyExCommunityAdd2(object):
         p0 = {'ip-prefix': '192.168.10.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {
@@ -3125,7 +3125,7 @@ class ImportPolicyExCommunityMultipleAdd(object):
         p0 = {'ip-prefix': '192.168.10.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {
@@ -3210,7 +3210,7 @@ class ExportPolicyExCommunityAdd(object):
         p0 = {'ip-prefix': '192.168.10.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         st0 = {
@@ -3307,7 +3307,7 @@ class InPolicyUpdate2(object):
         p0 = {'ip-prefix': '192.168.20.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0]}
+               'prefixes': [p0]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
@@ -3357,7 +3357,7 @@ class InPolicyUpdate2(object):
         p1 = {'ip-prefix': '192.168.200.0/24'}
 
         ps0 = {'prefix-set-name': 'ps0',
-               'prefix-list': [p0, p1]}
+               'prefixes': [p0, p1]}
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
