@@ -1457,48 +1457,48 @@ func TestCommunityConditionEvaluate(t *testing.T) {
 
 	// create match condition
 	comSet1 := config.CommunitySet{
-		CommunitySetName: "comset1",
-		CommunityList:    []string{"65001:10", "65001:50", "65001:100"},
+		CommunitySetName:    "comset1",
+		CommunityMemberList: []string{"65001:10", "65001:50", "65001:100"},
 	}
 
 	comSet2 := config.CommunitySet{
-		CommunitySetName: "comset2",
-		CommunityList:    []string{"65001:200"},
+		CommunitySetName:    "comset2",
+		CommunityMemberList: []string{"65001:200"},
 	}
 
 	comSet3 := config.CommunitySet{
-		CommunitySetName: "comset3",
-		CommunityList:    []string{"4259905936"},
+		CommunitySetName:    "comset3",
+		CommunityMemberList: []string{"4259905936"},
 	}
 
 	comSet4 := config.CommunitySet{
-		CommunitySetName: "comset4",
-		CommunityList:    []string{"^[0-9]*:300$"},
+		CommunitySetName:    "comset4",
+		CommunityMemberList: []string{"^[0-9]*:300$"},
 	}
 
 	comSet5 := config.CommunitySet{
-		CommunitySetName: "comset5",
-		CommunityList:    []string{"INTERNET"},
+		CommunitySetName:    "comset5",
+		CommunityMemberList: []string{"INTERNET"},
 	}
 
 	comSet6 := config.CommunitySet{
-		CommunitySetName: "comset6",
-		CommunityList:    []string{"NO_EXPORT"},
+		CommunitySetName:    "comset6",
+		CommunityMemberList: []string{"NO_EXPORT"},
 	}
 
 	comSet7 := config.CommunitySet{
-		CommunitySetName: "comset7",
-		CommunityList:    []string{"NO_ADVERTISE"},
+		CommunitySetName:    "comset7",
+		CommunityMemberList: []string{"NO_ADVERTISE"},
 	}
 
 	comSet8 := config.CommunitySet{
-		CommunitySetName: "comset8",
-		CommunityList:    []string{"NO_EXPORT_SUBCONFED"},
+		CommunitySetName:    "comset8",
+		CommunityMemberList: []string{"NO_EXPORT_SUBCONFED"},
 	}
 
 	comSet9 := config.CommunitySet{
 		CommunitySetName: "comset9",
-		CommunityList: []string{
+		CommunityMemberList: []string{
 			"65001:\\d+",
 			"\\d+:\\d00",
 		},
@@ -1506,7 +1506,7 @@ func TestCommunityConditionEvaluate(t *testing.T) {
 
 	comSet10 := config.CommunitySet{
 		CommunitySetName: "comset10",
-		CommunityList: []string{
+		CommunityMemberList: []string{
 			"65001:1",
 			"65001:2",
 			"65001:3",
@@ -1597,13 +1597,13 @@ func TestCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	}
 
 	comSet1 := config.CommunitySet{
-		CommunitySetName: "comset1",
-		CommunityList:    []string{"65001:100", "65001:200", "65001:300"},
+		CommunitySetName:    "comset1",
+		CommunityMemberList: []string{"65001:100", "65001:200", "65001:300"},
 	}
 
 	comSet2 := config.CommunitySet{
-		CommunitySetName: "comset2",
-		CommunityList:    []string{"65050:\\d+"},
+		CommunitySetName:    "comset2",
+		CommunityMemberList: []string{"65050:\\d+"},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.0.0/16", "21..24")
@@ -1895,7 +1895,7 @@ func TestPolicyMatchAndClearCommunities(t *testing.T) {
 	s := createStatement("statement1", "ps1", "ns1", true)
 	// action NULL is obsolate
 	s.Actions.BgpActions.SetCommunity.Options = "REPLACE"
-	s.Actions.BgpActions.SetCommunity.SetCommunityMethod.CommunitiesList = nil
+	s.Actions.BgpActions.SetCommunity.Inline.CommunitiesList = nil
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2000,49 +2000,49 @@ func TestExtCommunityConditionEvaluate(t *testing.T) {
 
 	// create match condition
 	ecomSet1 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet1",
-		ExtCommunityList:    []string{"RT:65001:200"},
+		ExtCommunitySetName:    "ecomSet1",
+		ExtCommunityMemberList: []string{"RT:65001:200"},
 	}
 	ecomSet2 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet2",
-		ExtCommunityList:    []string{"RT:10.0.0.1:300"},
+		ExtCommunitySetName:    "ecomSet2",
+		ExtCommunityMemberList: []string{"RT:10.0.0.1:300"},
 	}
 	ecomSet3 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet3",
-		ExtCommunityList:    []string{fmt.Sprintf("RT:%s:200", convUintStr(65030000))},
+		ExtCommunitySetName:    "ecomSet3",
+		ExtCommunityMemberList: []string{fmt.Sprintf("RT:%s:200", convUintStr(65030000))},
 	}
 	ecomSet4 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet4",
-		ExtCommunityList:    []string{"RT:65002:200"},
+		ExtCommunitySetName:    "ecomSet4",
+		ExtCommunityMemberList: []string{"RT:65002:200"},
 	}
 	ecomSet5 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet5",
-		ExtCommunityList:    []string{"RT:10.0.0.2:300"},
+		ExtCommunitySetName:    "ecomSet5",
+		ExtCommunityMemberList: []string{"RT:10.0.0.2:300"},
 	}
 	ecomSet6 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet6",
-		ExtCommunityList:    []string{fmt.Sprintf("RT:%s:200", convUintStr(65030001))},
+		ExtCommunitySetName:    "ecomSet6",
+		ExtCommunityMemberList: []string{fmt.Sprintf("RT:%s:200", convUintStr(65030001))},
 	}
 	ecomSet7 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet7",
-		ExtCommunityList:    []string{"SoO:65010:300"},
+		ExtCommunitySetName:    "ecomSet7",
+		ExtCommunityMemberList: []string{"SoO:65010:300"},
 	}
 	ecomSet8 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet8",
-		ExtCommunityList:    []string{"SoO:10.0.10.10:[0-9]+"},
+		ExtCommunitySetName:    "ecomSet8",
+		ExtCommunityMemberList: []string{"SoO:10.0.10.10:[0-9]+"},
 	}
 	ecomSet9 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet9",
-		ExtCommunityList:    []string{"RT:[0-9]+:[0-9]+"},
+		ExtCommunitySetName:    "ecomSet9",
+		ExtCommunityMemberList: []string{"RT:[0-9]+:[0-9]+"},
 	}
 	ecomSet10 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet10",
-		ExtCommunityList:    []string{"RT:.+:\\d00", "SoO:.+:\\d00"},
+		ExtCommunitySetName:    "ecomSet10",
+		ExtCommunityMemberList: []string{"RT:.+:\\d00", "SoO:.+:\\d00"},
 	}
 
 	ecomSet11 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet11",
-		ExtCommunityList:    []string{"RT:65001:2", "SoO:11.0.10.10:[0-9]+"},
+		ExtCommunitySetName:    "ecomSet11",
+		ExtCommunityMemberList: []string{"RT:65001:2", "SoO:11.0.10.10:[0-9]+"},
 	}
 
 	m := make(map[string]DefinedSet)
@@ -2181,12 +2181,12 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	}
 
 	ecomSet1 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet1",
-		ExtCommunityList:    []string{"RT:65001:201"},
+		ExtCommunitySetName:    "ecomSet1",
+		ExtCommunityMemberList: []string{"RT:65001:201"},
 	}
 	ecomSet2 := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecomSet2",
-		ExtCommunityList:    []string{"RT:[0-9]+:[0-9]+"},
+		ExtCommunitySetName:    "ecomSet2",
+		ExtCommunityMemberList: []string{"RT:[0-9]+:[0-9]+"},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.1.0/16", "21..24")
@@ -2757,7 +2757,7 @@ func createStatement(name, psname, nsname string, accept bool) config.Statement 
 func createSetCommunity(operation string, community ...string) config.SetCommunity {
 
 	s := config.SetCommunity{
-		SetCommunityMethod: config.SetCommunityMethod{
+		Inline: config.Inline{
 			CommunitiesList: community,
 		},
 		Options: operation,
@@ -2791,7 +2791,7 @@ func createRoutingPolicy(ds config.DefinedSets, pd ...config.PolicyDefinition) c
 func createPrefixSet(name string, prefix string, maskLength string) config.PrefixSet {
 	ps := config.PrefixSet{
 		PrefixSetName: name,
-		PrefixList: []config.Prefix{
+		Prefixes: []config.Prefix{
 			config.Prefix{
 				IpPrefix:        prefix,
 				MasklengthRange: maskLength,
