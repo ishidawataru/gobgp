@@ -70,7 +70,7 @@ func (peer *Peer) TableID() string {
 }
 
 func (peer *Peer) isIBGPPeer() bool {
-	return peer.fsm.pConf.PeerAs == peer.fsm.gConf.As
+	return peer.fsm.pConf.PeerAS == peer.fsm.gConf.AS
 }
 
 func (peer *Peer) isRouteServerClient() bool {
@@ -87,7 +87,7 @@ func (peer *Peer) isGracefulRestartEnabled() bool {
 
 func (peer *Peer) recvedAllEOR() bool {
 	for _, a := range peer.fsm.pConf.AfiSafis {
-		if s := a.MpGracefulRestart.State; s.Enabled && !s.EndOfRibReceived {
+		if s := a.MPGracefulRestart.State; s.Enabled && !s.EndOfRIBReceived {
 			return false
 		}
 	}
@@ -102,7 +102,7 @@ func (peer *Peer) configuredRFlist() []bgp.RouteFamily {
 func (peer *Peer) forwardingPreservedFamilies() ([]bgp.RouteFamily, []bgp.RouteFamily) {
 	list := []bgp.RouteFamily{}
 	for _, a := range peer.fsm.pConf.AfiSafis {
-		if s := a.MpGracefulRestart.State; s.Enabled && s.Received {
+		if s := a.MPGracefulRestart.State; s.Enabled && s.Received {
 			f, _ := bgp.GetRouteFamily(string(a.AfiSafiName))
 			list = append(list, f)
 		}
@@ -394,7 +394,7 @@ func (peer *Peer) ToConfig() *config.Neighbor {
 	}
 	conf.State.Capabilities.LocalList = localCap
 
-	conf.State.RemoteRouterId = peer.fsm.peerInfo.ID.To4().String()
+	conf.State.RemoteRouterID = peer.fsm.peerInfo.ID.To4().String()
 	conf.State.SessionState = config.IntToSessionStateMap[int(peer.fsm.state)]
 	conf.State.AdminState = peer.fsm.adminState.String()
 

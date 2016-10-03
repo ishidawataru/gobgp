@@ -216,22 +216,22 @@ func main() {
 						log.Fatalf("failed to set zebra config: %s", err)
 					}
 				}
-				if len(newConfig.Collector.Url) > 0 {
+				if len(newConfig.Collector.URL) > 0 {
 					if err := bgpServer.StartCollector(&newConfig.Collector); err != nil {
 						log.Fatalf("failed to set collector config: %s", err)
 					}
 				}
-				for _, c := range newConfig.RpkiServers {
+				for _, c := range newConfig.RPKIServers {
 					if err := bgpServer.AddRpki(&c); err != nil {
 						log.Fatalf("failed to set rpki config: %s", err)
 					}
 				}
-				for _, c := range newConfig.BmpServers {
+				for _, c := range newConfig.BMPServers {
 					if err := bgpServer.AddBmp(&c); err != nil {
 						log.Fatalf("failed to set bmp config: %s", err)
 					}
 				}
-				for _, c := range newConfig.MrtDump {
+				for _, c := range newConfig.MRTDump {
 					if len(c.FileName) == 0 {
 						continue
 					}

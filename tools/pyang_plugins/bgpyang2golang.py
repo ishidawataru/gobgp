@@ -778,13 +778,19 @@ def translate_type(key):
     else:
         return key
 
+_abbrs = ['bgp', 'ip', 'med', 'rr', 'as', 'rpki', 'bmp', 'mrt', 'igp', 'url', 'db', 'ttl', 'ebgp', 'ibgp', 'tcp', 'mss', 'mtu', 'rib', 'mp', 'aigp', 'id', 'mpls']
 
 # 'hoge-hoge' -> 'HogeHoge'
 def convert_to_golang(type_string):
     type_string = type_string.replace('_', '-')
     a = type_string.split('.')
-    a = map(lambda x: x.capitalize(), a)  # XXX locale sensitive
-    return '.'.join( ''.join(t.capitalize() for t in x.split('-')) for x in a)
+    def f(t):
+        if t.lower() in _abbrs:
+            return t.upper()
+        else:
+            return t.capitalize()
+    a = map(lambda x: f(x), a)  # XXX locale sensitive
+    return '.'.join( ''.join(f(t) for t in x.split('-')) for x in a)
 
 
 # 'hoge-hoge' -> 'HOGE_HOGE'

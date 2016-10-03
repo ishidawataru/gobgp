@@ -88,7 +88,7 @@ func NewTCPListener(address string, port uint32, ch chan *net.TCPConn) (*TCPList
 }
 
 type BgpServer struct {
-	bgpConfig     config.Bgp
+	bgpConfig     config.BGP
 	fsmincomingCh *channels.InfiniteChannel
 	fsmStateCh    chan *FsmMsg
 	acceptCh      chan *net.TCPConn
@@ -134,7 +134,7 @@ func (server *BgpServer) Listeners(addr string) []*net.TCPListener {
 }
 
 func (s *BgpServer) active() error {
-	if s.bgpConfig.Global.As == 0 {
+	if s.bgpConfig.Global.AS == 0 {
 		return fmt.Errorf("bgp server hasn't started yet")
 	}
 	return nil
@@ -260,7 +260,7 @@ func sendFsmOutgoingMsg(peer *Peer, paths []*table.Path, notification *bgp.BGPMe
 
 func isASLoop(peer *Peer, path *table.Path) bool {
 	for _, as := range path.GetAsList() {
-		if as == peer.fsm.pConf.PeerAs {
+		if as == peer.fsm.pConf.PeerAS {
 			return true
 		}
 	}
@@ -301,13 +301,13 @@ func filterpath(peer *Peer, path *table.Path, withdrawals []*table.Path) *table.
 			ignore = true
 			info := path.GetSource()
 			//if the path comes from eBGP peer
-			if info.AS != peer.fsm.pConf.PeerAs {
+			if info.AS != peer.fsm.pConf.PeerAS {
 				ignore = false
 			}
 			// RFC4456 8. Avoiding Routing Information Loops
 			// A router that recognizes the ORIGINATOR_ID attribute SHOULD
 			// ignore a route received with its BGP Identifier as the ORIGINATOR_ID.
-			if id := path.GetOriginatorID(); peer.fsm.gConf.RouterId == id.String() {
+			if id := path.GetOriginatorID(); peer.fsm.gConf.RouterID == id.String() {
 				log.WithFields(log.Fields{
 					"Topic":        "Peer",
 					"Key":          peer.ID(),
@@ -777,7 +777,7 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) {
 					}
 					for i, a := range peer.fsm.pConf.AfiSafis {
 						if g, _ := bgp.GetRouteFamily(string(a.AfiSafiName)); f == g {
-							peer.fsm.pConf.AfiSafis[i].MpGracefulRestart.State.EndOfRibReceived = true
+							peer.fsm.pConf.AfiSafis[i].MPGracefulRestart.State.EndOfRIBReceived = true
 						}
 					}
 				}
@@ -870,7 +870,7 @@ func (s *BgpServer) StartCollector(c *config.Collector) (err error) {
 
 	s.mgmtCh <- func() {
 		defer close(ch)
-		_, err = NewCollector(s, c.Url, c.DbName, c.TableDumpInterval)
+		_, err = NewCollector(s, c.URL, c.DBName, c.TableDumpInterval)
 	}
 	return err
 }
@@ -889,13 +889,13 @@ func (s *BgpServer) StartZebraClient(c *config.Zebra) (err error) {
 			for _, p := range c.RedistributeRouteTypeList {
 				protos = append(protos, string(p))
 			}
-			s.zclient, err = newZebraClient(s, c.Url, protos, c.Version)
+			s.zclient, err = newZebraClient(s, c.URL, protos, c.Version)
 		}
 	}
 	return err
 }
 
-func (s *BgpServer) AddBmp(c *config.BmpServer) (err error) {
+func (s *BgpServer) AddBmp(c *config.BMPServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -907,7 +907,7 @@ func (s *BgpServer) AddBmp(c *config.BmpServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) DeleteBmp(c *config.BmpServer) (err error) {
+func (s *BgpServer) DeleteBmp(c *config.BMPServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -1028,8 +1028,8 @@ func getMacMobilityExtendedCommunity(etag uint32, mac net.HardwareAddr, evpnPath
 
 func (server *BgpServer) fixupApiPath(vrfId string, pathList []*table.Path) error {
 	pi := &table.PeerInfo{
-		AS:      server.bgpConfig.Global.As,
-		LocalID: net.ParseIP(server.bgpConfig.Global.RouterId).To4(),
+		AS:      server.bgpConfig.Global.AS,
+		LocalID: net.ParseIP(server.bgpConfig.Global.RouterID).To4(),
 	}
 
 	for _, path := range pathList {
@@ -1137,7 +1137,7 @@ func (s *BgpServer) Start(c *config.Global) (err error) {
 	s.mgmtCh <- func() {
 		defer close(ch)
 
-		if s.bgpConfig.Global.As != 0 {
+		if s.bgpConfig.Global.AS != 0 {
 			err = fmt.Errorf("gobgp is already started")
 			return
 		}
@@ -1160,7 +1160,7 @@ func (s *BgpServer) Start(c *config.Global) (err error) {
 		}
 
 		rfs, _ := config.AfiSafis(c.AfiSafis).ToRfList()
-		s.globalRib = table.NewTableManager(rfs, c.MplsLabelRange.MinLabel, c.MplsLabelRange.MaxLabel)
+		s.globalRib = table.NewTableManager(rfs, c.MPLSLabelRange.MinLabel, c.MPLSLabelRange.MaxLabel)
 
 		if err = s.policy.Reset(&config.RoutingPolicy{}, map[string]config.ApplyPolicy{}); err != nil {
 			return
@@ -1170,7 +1170,7 @@ func (s *BgpServer) Start(c *config.Global) (err error) {
 		table.SelectionOptions = c.RouteSelectionOptions
 		table.UseMultiplePaths = c.UseMultiplePaths
 
-		s.roaManager.SetAS(s.bgpConfig.Global.As)
+		s.roaManager.SetAS(s.bgpConfig.Global.AS)
 	}
 	return nil
 }
@@ -1202,8 +1202,8 @@ func (s *BgpServer) AddVrf(name string, rd bgp.RouteDistinguisherInterface, im, 
 		}
 
 		pi := &table.PeerInfo{
-			AS:      s.bgpConfig.Global.As,
-			LocalID: net.ParseIP(s.bgpConfig.Global.RouterId).To4(),
+			AS:      s.bgpConfig.Global.AS,
+			LocalID: net.ParseIP(s.bgpConfig.Global.RouterID).To4(),
 		}
 		if pathList, e := s.globalRib.AddVrf(name, rd, im, ex, pi); e != nil {
 			err = e
@@ -1311,7 +1311,7 @@ func (s *BgpServer) softResetOut(addr string, family bgp.RouteFamily, deferral b
 					"Key":      peer.ID(),
 					"Families": families,
 				}).Debug("deferral timer expired")
-			} else if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); peer.fsm.rfMap[bgp.RF_RTC_UC] && !c.MpGracefulRestart.State.EndOfRibReceived {
+			} else if c := config.GetAfiSafi(peer.fsm.pConf, bgp.RF_RTC_UC); peer.fsm.rfMap[bgp.RF_RTC_UC] && !c.MPGracefulRestart.State.EndOfRIBReceived {
 				log.WithFields(log.Fields{
 					"Topic":    "Peer",
 					"Key":      peer.ID(),
@@ -1517,7 +1517,7 @@ func (s *BgpServer) GetNeighbor() (l []*config.Neighbor) {
 
 func (server *BgpServer) addNeighbor(c *config.Neighbor) error {
 
-	if err := config.SetDefaultNeighborConfigValues(c, server.bgpConfig.Global.As); err != nil {
+	if err := config.SetDefaultNeighborConfigValues(c, server.bgpConfig.Global.AS); err != nil {
 		return err
 	}
 
@@ -1675,7 +1675,7 @@ func (s *BgpServer) UpdateNeighbor(c *config.Neighbor) (policyUpdated bool, err 
 					"Key":   peer.ID(),
 					"State": state,
 				}).Info("update admin-state configuration")
-			} else if original.PeerAs != c.PeerAs {
+			} else if original.PeerAS != c.PeerAS {
 				sub = bgp.BGP_ERROR_SUB_PEER_DECONFIGURED
 			}
 			if err = s.deleteNeighbor(peer.fsm.pConf, bgp.BGP_ERROR_CEASE, sub); err != nil {
@@ -2065,7 +2065,7 @@ func (s *BgpServer) ReplacePolicyAssignment(name string, dir table.PolicyDirecti
 	return err
 }
 
-func (s *BgpServer) EnableMrt(c *config.Mrt) (err error) {
+func (s *BgpServer) EnableMrt(c *config.MRT) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2077,7 +2077,7 @@ func (s *BgpServer) EnableMrt(c *config.Mrt) (err error) {
 	return err
 }
 
-func (s *BgpServer) DisableMrt(c *config.Mrt) (err error) {
+func (s *BgpServer) DisableMrt(c *config.MRT) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2114,7 +2114,7 @@ func (s *BgpServer) ValidateRib(prefix string) (err error) {
 	return err
 }
 
-func (s *BgpServer) GetRpki() (l []*config.RpkiServer, err error) {
+func (s *BgpServer) GetRpki() (l []*config.RPKIServer, err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2138,7 +2138,7 @@ func (s *BgpServer) GetRoa(family bgp.RouteFamily) (l []*ROA, err error) {
 	return l, err
 }
 
-func (s *BgpServer) AddRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) AddRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2150,7 +2150,7 @@ func (s *BgpServer) AddRpki(c *config.RpkiServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) DeleteRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) DeleteRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2162,7 +2162,7 @@ func (s *BgpServer) DeleteRpki(c *config.RpkiServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) EnableRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) EnableRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2174,7 +2174,7 @@ func (s *BgpServer) EnableRpki(c *config.RpkiServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) DisableRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) DisableRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2186,7 +2186,7 @@ func (s *BgpServer) DisableRpki(c *config.RpkiServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) ResetRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) ResetRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -2198,7 +2198,7 @@ func (s *BgpServer) ResetRpki(c *config.RpkiServer) (err error) {
 	return err
 }
 
-func (s *BgpServer) SoftResetRpki(c *config.RpkiServer) (err error) {
+func (s *BgpServer) SoftResetRpki(c *config.RPKIServer) (err error) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 

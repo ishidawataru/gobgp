@@ -95,11 +95,11 @@ func setDefaultNeighborConfigValuesWithViper(v *viper.Viper, n *Neighbor, asn ui
 		v = viper.New()
 	}
 
-	if n.LocalAs == 0 {
-		n.LocalAs = asn
+	if n.LocalAS == 0 {
+		n.LocalAS = asn
 	}
 
-	if n.PeerAs != n.LocalAs {
+	if n.PeerAS != n.LocalAS {
 		n.PeerType = PEER_TYPE_EXTERNAL
 	} else {
 		n.PeerType = PEER_TYPE_INTERNAL
@@ -210,12 +210,12 @@ func SetDefaultGlobalConfigValues(g *Global) error {
 		g.LocalAddressList = []string{"0.0.0.0", "::"}
 	}
 
-	if g.MplsLabelRange.MinLabel == 0 {
-		g.MplsLabelRange.MinLabel = DEFAULT_MPLS_LABEL_MIN
+	if g.MPLSLabelRange.MinLabel == 0 {
+		g.MPLSLabelRange.MinLabel = DEFAULT_MPLS_LABEL_MIN
 	}
 
-	if g.MplsLabelRange.MaxLabel == 0 {
-		g.MplsLabelRange.MaxLabel = DEFAULT_MPLS_LABEL_MAX
+	if g.MPLSLabelRange.MaxLabel == 0 {
+		g.MPLSLabelRange.MaxLabel = DEFAULT_MPLS_LABEL_MAX
 	}
 	return nil
 
@@ -234,15 +234,15 @@ func setDefaultConfigValuesWithViper(v *viper.Viper, b *BgpConfigSet) error {
 		return err
 	}
 
-	for idx, server := range b.BmpServers {
+	for idx, server := range b.BMPServers {
 		if server.Port == 0 {
 			server.Port = bmp.BMP_DEFAULT_PORT
 		}
-		b.BmpServers[idx] = server
+		b.BMPServers[idx] = server
 	}
 
-	if b.Zebra.Url == "" {
-		b.Zebra.Url = "unix:/var/run/quagga/zserv.api"
+	if b.Zebra.URL == "" {
+		b.Zebra.URL = "unix:/var/run/quagga/zserv.api"
 	}
 
 	list, err := extractArray(v.Get("neighbors"))
@@ -255,13 +255,13 @@ func setDefaultConfigValuesWithViper(v *viper.Viper, b *BgpConfigSet) error {
 		if len(list) > idx {
 			vv.Set("neighbor", list[idx])
 		}
-		if err := setDefaultNeighborConfigValuesWithViper(vv, &n, b.Global.As); err != nil {
+		if err := setDefaultNeighborConfigValuesWithViper(vv, &n, b.Global.AS); err != nil {
 			return err
 		}
 		b.Neighbors[idx] = n
 	}
 
-	for _, r := range b.RpkiServers {
+	for _, r := range b.RPKIServers {
 		if r.Port == 0 {
 			r.Port = rtr.RPKI_DEFAULT_PORT
 		}

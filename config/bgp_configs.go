@@ -218,52 +218,52 @@ func (v InstallProtocolType) Validate() error {
 }
 
 // typedef for typedef oc-bgp-pol:bgp-next-hop-type
-type BgpNextHopType string
+type BGPNextHopType string
 
 // typedef for typedef oc-bgp-pol:bgp-set-med-type
-type BgpSetMedType string
+type BGPSetMEDType string
 
 // typedef for identity oc-bgp-pol:bgp-set-community-option-type
-type BgpSetCommunityOptionType string
+type BGPSetCommunityOptionType string
 
 const (
-	BGP_SET_COMMUNITY_OPTION_TYPE_ADD     BgpSetCommunityOptionType = "add"
-	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE  BgpSetCommunityOptionType = "remove"
-	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE BgpSetCommunityOptionType = "replace"
+	BGP_SET_COMMUNITY_OPTION_TYPE_ADD     BGPSetCommunityOptionType = "add"
+	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE  BGPSetCommunityOptionType = "remove"
+	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE BGPSetCommunityOptionType = "replace"
 )
 
-var BgpSetCommunityOptionTypeToIntMap = map[BgpSetCommunityOptionType]int{
+var BGPSetCommunityOptionTypeToIntMap = map[BGPSetCommunityOptionType]int{
 	BGP_SET_COMMUNITY_OPTION_TYPE_ADD:     0,
 	BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE:  1,
 	BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE: 2,
 }
 
-func (v BgpSetCommunityOptionType) ToInt() int {
-	i, ok := BgpSetCommunityOptionTypeToIntMap[v]
+func (v BGPSetCommunityOptionType) ToInt() int {
+	i, ok := BGPSetCommunityOptionTypeToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBgpSetCommunityOptionTypeMap = map[int]BgpSetCommunityOptionType{
+var IntToBGPSetCommunityOptionTypeMap = map[int]BGPSetCommunityOptionType{
 	0: BGP_SET_COMMUNITY_OPTION_TYPE_ADD,
 	1: BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE,
 	2: BGP_SET_COMMUNITY_OPTION_TYPE_REPLACE,
 }
 
-func (v BgpSetCommunityOptionType) Validate() error {
-	if _, ok := BgpSetCommunityOptionTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpSetCommunityOptionType: %s", v)
+func (v BGPSetCommunityOptionType) Validate() error {
+	if _, ok := BGPSetCommunityOptionTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BGPSetCommunityOptionType: %s", v)
 	}
 	return nil
 }
 
 // typedef for typedef oc-bgp-types:rr-cluster-id-type
-type RrClusterIdType string
+type RRClusterIDType string
 
 // typedef for typedef oc-bgp-types:bgp-community-regexp-type
-type BgpCommunityRegexpType StdRegexp
+type BGPCommunityRegexpType StdRegexp
 
 // typedef for identity oc-bgp-types:community-type
 type CommunityType string
@@ -305,10 +305,10 @@ func (v CommunityType) Validate() error {
 }
 
 // typedef for typedef oc-bgp-types:bgp-ext-community-type
-type BgpExtCommunityType string
+type BGPExtCommunityType string
 
 // typedef for typedef oc-bgp-types:bgp-std-community-type
-type BgpStdCommunityType string
+type BGPStdCommunityType string
 
 // typedef for identity oc-bgp-types:peer-type
 type PeerType string
@@ -347,125 +347,125 @@ func (v PeerType) Validate() error {
 type Percentage uint8
 
 // typedef for identity oc-bgp-types:bgp-session-direction
-type BgpSessionDirection string
+type BGPSessionDirection string
 
 const (
-	BGP_SESSION_DIRECTION_INBOUND  BgpSessionDirection = "inbound"
-	BGP_SESSION_DIRECTION_OUTBOUND BgpSessionDirection = "outbound"
+	BGP_SESSION_DIRECTION_INBOUND  BGPSessionDirection = "inbound"
+	BGP_SESSION_DIRECTION_OUTBOUND BGPSessionDirection = "outbound"
 )
 
-var BgpSessionDirectionToIntMap = map[BgpSessionDirection]int{
+var BGPSessionDirectionToIntMap = map[BGPSessionDirection]int{
 	BGP_SESSION_DIRECTION_INBOUND:  0,
 	BGP_SESSION_DIRECTION_OUTBOUND: 1,
 }
 
-func (v BgpSessionDirection) ToInt() int {
-	i, ok := BgpSessionDirectionToIntMap[v]
+func (v BGPSessionDirection) ToInt() int {
+	i, ok := BGPSessionDirectionToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBgpSessionDirectionMap = map[int]BgpSessionDirection{
+var IntToBGPSessionDirectionMap = map[int]BGPSessionDirection{
 	0: BGP_SESSION_DIRECTION_INBOUND,
 	1: BGP_SESSION_DIRECTION_OUTBOUND,
 }
 
-func (v BgpSessionDirection) Validate() error {
-	if _, ok := BgpSessionDirectionToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpSessionDirection: %s", v)
+func (v BGPSessionDirection) Validate() error {
+	if _, ok := BGPSessionDirectionToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BGPSessionDirection: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity oc-bgp-types:bgp-origin-attr-type
-type BgpOriginAttrType string
+type BGPOriginAttrType string
 
 const (
-	BGP_ORIGIN_ATTR_TYPE_IGP        BgpOriginAttrType = "igp"
-	BGP_ORIGIN_ATTR_TYPE_EGP        BgpOriginAttrType = "egp"
-	BGP_ORIGIN_ATTR_TYPE_INCOMPLETE BgpOriginAttrType = "incomplete"
+	BGP_ORIGIN_ATTR_TYPE_IGP        BGPOriginAttrType = "igp"
+	BGP_ORIGIN_ATTR_TYPE_EGP        BGPOriginAttrType = "egp"
+	BGP_ORIGIN_ATTR_TYPE_INCOMPLETE BGPOriginAttrType = "incomplete"
 )
 
-var BgpOriginAttrTypeToIntMap = map[BgpOriginAttrType]int{
+var BGPOriginAttrTypeToIntMap = map[BGPOriginAttrType]int{
 	BGP_ORIGIN_ATTR_TYPE_IGP:        0,
 	BGP_ORIGIN_ATTR_TYPE_EGP:        1,
 	BGP_ORIGIN_ATTR_TYPE_INCOMPLETE: 2,
 }
 
-func (v BgpOriginAttrType) ToInt() int {
-	i, ok := BgpOriginAttrTypeToIntMap[v]
+func (v BGPOriginAttrType) ToInt() int {
+	i, ok := BGPOriginAttrTypeToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBgpOriginAttrTypeMap = map[int]BgpOriginAttrType{
+var IntToBGPOriginAttrTypeMap = map[int]BGPOriginAttrType{
 	0: BGP_ORIGIN_ATTR_TYPE_IGP,
 	1: BGP_ORIGIN_ATTR_TYPE_EGP,
 	2: BGP_ORIGIN_ATTR_TYPE_INCOMPLETE,
 }
 
-func (v BgpOriginAttrType) Validate() error {
-	if _, ok := BgpOriginAttrTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpOriginAttrType: %s", v)
+func (v BGPOriginAttrType) Validate() error {
+	if _, ok := BGPOriginAttrTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BGPOriginAttrType: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity oc-bgp-types:BGP_WELL_KNOWN_STD_COMMUNITY
-type BgpWellKnownStdCommunity string
+type BGPWellKnownStdCommunity string
 
 const (
-	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT           BgpWellKnownStdCommunity = "no-export"
-	BGP_WELL_KNOWN_STD_COMMUNITY_NO_ADVERTISE        BgpWellKnownStdCommunity = "no-advertise"
-	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT_SUBCONFED BgpWellKnownStdCommunity = "no-export-subconfed"
-	BGP_WELL_KNOWN_STD_COMMUNITY_NOPEER              BgpWellKnownStdCommunity = "nopeer"
+	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT           BGPWellKnownStdCommunity = "no-export"
+	BGP_WELL_KNOWN_STD_COMMUNITY_NO_ADVERTISE        BGPWellKnownStdCommunity = "no-advertise"
+	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT_SUBCONFED BGPWellKnownStdCommunity = "no-export-subconfed"
+	BGP_WELL_KNOWN_STD_COMMUNITY_NOPEER              BGPWellKnownStdCommunity = "nopeer"
 )
 
-var BgpWellKnownStdCommunityToIntMap = map[BgpWellKnownStdCommunity]int{
+var BGPWellKnownStdCommunityToIntMap = map[BGPWellKnownStdCommunity]int{
 	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT:           0,
 	BGP_WELL_KNOWN_STD_COMMUNITY_NO_ADVERTISE:        1,
 	BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT_SUBCONFED: 2,
 	BGP_WELL_KNOWN_STD_COMMUNITY_NOPEER:              3,
 }
 
-func (v BgpWellKnownStdCommunity) ToInt() int {
-	i, ok := BgpWellKnownStdCommunityToIntMap[v]
+func (v BGPWellKnownStdCommunity) ToInt() int {
+	i, ok := BGPWellKnownStdCommunityToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBgpWellKnownStdCommunityMap = map[int]BgpWellKnownStdCommunity{
+var IntToBGPWellKnownStdCommunityMap = map[int]BGPWellKnownStdCommunity{
 	0: BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT,
 	1: BGP_WELL_KNOWN_STD_COMMUNITY_NO_ADVERTISE,
 	2: BGP_WELL_KNOWN_STD_COMMUNITY_NO_EXPORT_SUBCONFED,
 	3: BGP_WELL_KNOWN_STD_COMMUNITY_NOPEER,
 }
 
-func (v BgpWellKnownStdCommunity) Validate() error {
-	if _, ok := BgpWellKnownStdCommunityToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpWellKnownStdCommunity: %s", v)
+func (v BGPWellKnownStdCommunity) Validate() error {
+	if _, ok := BGPWellKnownStdCommunityToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BGPWellKnownStdCommunity: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity oc-bgp-types:BGP_CAPABILITY
-type BgpCapability string
+type BGPCapability string
 
 const (
-	BGP_CAPABILITY_MPBGP            BgpCapability = "mpbgp"
-	BGP_CAPABILITY_ROUTE_REFRESH    BgpCapability = "route-refresh"
-	BGP_CAPABILITY_ASN32            BgpCapability = "asn32"
-	BGP_CAPABILITY_GRACEFUL_RESTART BgpCapability = "graceful-restart"
-	BGP_CAPABILITY_ADD_PATHS        BgpCapability = "add-paths"
+	BGP_CAPABILITY_MPBGP            BGPCapability = "mpbgp"
+	BGP_CAPABILITY_ROUTE_REFRESH    BGPCapability = "route-refresh"
+	BGP_CAPABILITY_ASN32            BGPCapability = "asn32"
+	BGP_CAPABILITY_GRACEFUL_RESTART BGPCapability = "graceful-restart"
+	BGP_CAPABILITY_ADD_PATHS        BGPCapability = "add-paths"
 )
 
-var BgpCapabilityToIntMap = map[BgpCapability]int{
+var BGPCapabilityToIntMap = map[BGPCapability]int{
 	BGP_CAPABILITY_MPBGP:            0,
 	BGP_CAPABILITY_ROUTE_REFRESH:    1,
 	BGP_CAPABILITY_ASN32:            2,
@@ -473,15 +473,15 @@ var BgpCapabilityToIntMap = map[BgpCapability]int{
 	BGP_CAPABILITY_ADD_PATHS:        4,
 }
 
-func (v BgpCapability) ToInt() int {
-	i, ok := BgpCapabilityToIntMap[v]
+func (v BGPCapability) ToInt() int {
+	i, ok := BGPCapabilityToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBgpCapabilityMap = map[int]BgpCapability{
+var IntToBGPCapabilityMap = map[int]BGPCapability{
 	0: BGP_CAPABILITY_MPBGP,
 	1: BGP_CAPABILITY_ROUTE_REFRESH,
 	2: BGP_CAPABILITY_ASN32,
@@ -489,42 +489,42 @@ var IntToBgpCapabilityMap = map[int]BgpCapability{
 	4: BGP_CAPABILITY_ADD_PATHS,
 }
 
-func (v BgpCapability) Validate() error {
-	if _, ok := BgpCapabilityToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BgpCapability: %s", v)
+func (v BGPCapability) Validate() error {
+	if _, ok := BGPCapabilityToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BGPCapability: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity oc-bgp-types:REMOVE_PRIVATE_AS_OPTION
-type RemovePrivateAsOption string
+type RemovePrivateASOption string
 
 const (
-	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REMOVE_ALL  RemovePrivateAsOption = "private-as-remove-all"
-	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REPLACE_ALL RemovePrivateAsOption = "private-as-replace-all"
+	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REMOVE_ALL  RemovePrivateASOption = "private-as-remove-all"
+	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REPLACE_ALL RemovePrivateASOption = "private-as-replace-all"
 )
 
-var RemovePrivateAsOptionToIntMap = map[RemovePrivateAsOption]int{
+var RemovePrivateASOptionToIntMap = map[RemovePrivateASOption]int{
 	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REMOVE_ALL:  0,
 	REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REPLACE_ALL: 1,
 }
 
-func (v RemovePrivateAsOption) ToInt() int {
-	i, ok := RemovePrivateAsOptionToIntMap[v]
+func (v RemovePrivateASOption) ToInt() int {
+	i, ok := RemovePrivateASOptionToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToRemovePrivateAsOptionMap = map[int]RemovePrivateAsOption{
+var IntToRemovePrivateASOptionMap = map[int]RemovePrivateASOption{
 	0: REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REMOVE_ALL,
 	1: REMOVE_PRIVATE_AS_OPTION_PRIVATE_AS_REPLACE_ALL,
 }
 
-func (v RemovePrivateAsOption) Validate() error {
-	if _, ok := RemovePrivateAsOptionToIntMap[v]; !ok {
-		return fmt.Errorf("invalid RemovePrivateAsOption: %s", v)
+func (v RemovePrivateASOption) Validate() error {
+	if _, ok := RemovePrivateASOptionToIntMap[v]; !ok {
+		return fmt.Errorf("invalid RemovePrivateASOption: %s", v)
 	}
 	return nil
 }
@@ -845,109 +845,109 @@ func (v Method) Validate() error {
 }
 
 // typedef for identity gobgp:bmp-route-monitoring-policy-type
-type BmpRouteMonitoringPolicyType string
+type BMPRouteMonitoringPolicyType string
 
 const (
-	BMP_ROUTE_MONITORING_POLICY_TYPE_PRE_POLICY  BmpRouteMonitoringPolicyType = "pre-policy"
-	BMP_ROUTE_MONITORING_POLICY_TYPE_POST_POLICY BmpRouteMonitoringPolicyType = "post-policy"
-	BMP_ROUTE_MONITORING_POLICY_TYPE_BOTH        BmpRouteMonitoringPolicyType = "both"
+	BMP_ROUTE_MONITORING_POLICY_TYPE_PRE_POLICY  BMPRouteMonitoringPolicyType = "pre-policy"
+	BMP_ROUTE_MONITORING_POLICY_TYPE_POST_POLICY BMPRouteMonitoringPolicyType = "post-policy"
+	BMP_ROUTE_MONITORING_POLICY_TYPE_BOTH        BMPRouteMonitoringPolicyType = "both"
 )
 
-var BmpRouteMonitoringPolicyTypeToIntMap = map[BmpRouteMonitoringPolicyType]int{
+var BMPRouteMonitoringPolicyTypeToIntMap = map[BMPRouteMonitoringPolicyType]int{
 	BMP_ROUTE_MONITORING_POLICY_TYPE_PRE_POLICY:  0,
 	BMP_ROUTE_MONITORING_POLICY_TYPE_POST_POLICY: 1,
 	BMP_ROUTE_MONITORING_POLICY_TYPE_BOTH:        2,
 }
 
-func (v BmpRouteMonitoringPolicyType) ToInt() int {
-	i, ok := BmpRouteMonitoringPolicyTypeToIntMap[v]
+func (v BMPRouteMonitoringPolicyType) ToInt() int {
+	i, ok := BMPRouteMonitoringPolicyTypeToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToBmpRouteMonitoringPolicyTypeMap = map[int]BmpRouteMonitoringPolicyType{
+var IntToBMPRouteMonitoringPolicyTypeMap = map[int]BMPRouteMonitoringPolicyType{
 	0: BMP_ROUTE_MONITORING_POLICY_TYPE_PRE_POLICY,
 	1: BMP_ROUTE_MONITORING_POLICY_TYPE_POST_POLICY,
 	2: BMP_ROUTE_MONITORING_POLICY_TYPE_BOTH,
 }
 
-func (v BmpRouteMonitoringPolicyType) Validate() error {
-	if _, ok := BmpRouteMonitoringPolicyTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid BmpRouteMonitoringPolicyType: %s", v)
+func (v BMPRouteMonitoringPolicyType) Validate() error {
+	if _, ok := BMPRouteMonitoringPolicyTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid BMPRouteMonitoringPolicyType: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity gobgp:mrt-type
-type MrtType string
+type MRTType string
 
 const (
-	MRT_TYPE_UPDATES MrtType = "updates"
-	MRT_TYPE_TABLE   MrtType = "table"
+	MRT_TYPE_UPDATES MRTType = "updates"
+	MRT_TYPE_TABLE   MRTType = "table"
 )
 
-var MrtTypeToIntMap = map[MrtType]int{
+var MRTTypeToIntMap = map[MRTType]int{
 	MRT_TYPE_UPDATES: 0,
 	MRT_TYPE_TABLE:   1,
 }
 
-func (v MrtType) ToInt() int {
-	i, ok := MrtTypeToIntMap[v]
+func (v MRTType) ToInt() int {
+	i, ok := MRTTypeToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToMrtTypeMap = map[int]MrtType{
+var IntToMRTTypeMap = map[int]MRTType{
 	0: MRT_TYPE_UPDATES,
 	1: MRT_TYPE_TABLE,
 }
 
-func (v MrtType) Validate() error {
-	if _, ok := MrtTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid MrtType: %s", v)
+func (v MRTType) Validate() error {
+	if _, ok := MRTTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid MRTType: %s", v)
 	}
 	return nil
 }
 
 // typedef for identity gobgp:rpki-validation-result-type
-type RpkiValidationResultType string
+type RPKIValidationResultType string
 
 const (
-	RPKI_VALIDATION_RESULT_TYPE_NONE      RpkiValidationResultType = "none"
-	RPKI_VALIDATION_RESULT_TYPE_NOT_FOUND RpkiValidationResultType = "not-found"
-	RPKI_VALIDATION_RESULT_TYPE_VALID     RpkiValidationResultType = "valid"
-	RPKI_VALIDATION_RESULT_TYPE_INVALID   RpkiValidationResultType = "invalid"
+	RPKI_VALIDATION_RESULT_TYPE_NONE      RPKIValidationResultType = "none"
+	RPKI_VALIDATION_RESULT_TYPE_NOT_FOUND RPKIValidationResultType = "not-found"
+	RPKI_VALIDATION_RESULT_TYPE_VALID     RPKIValidationResultType = "valid"
+	RPKI_VALIDATION_RESULT_TYPE_INVALID   RPKIValidationResultType = "invalid"
 )
 
-var RpkiValidationResultTypeToIntMap = map[RpkiValidationResultType]int{
+var RPKIValidationResultTypeToIntMap = map[RPKIValidationResultType]int{
 	RPKI_VALIDATION_RESULT_TYPE_NONE:      0,
 	RPKI_VALIDATION_RESULT_TYPE_NOT_FOUND: 1,
 	RPKI_VALIDATION_RESULT_TYPE_VALID:     2,
 	RPKI_VALIDATION_RESULT_TYPE_INVALID:   3,
 }
 
-func (v RpkiValidationResultType) ToInt() int {
-	i, ok := RpkiValidationResultTypeToIntMap[v]
+func (v RPKIValidationResultType) ToInt() int {
+	i, ok := RPKIValidationResultTypeToIntMap[v]
 	if !ok {
 		return -1
 	}
 	return i
 }
 
-var IntToRpkiValidationResultTypeMap = map[int]RpkiValidationResultType{
+var IntToRPKIValidationResultTypeMap = map[int]RPKIValidationResultType{
 	0: RPKI_VALIDATION_RESULT_TYPE_NONE,
 	1: RPKI_VALIDATION_RESULT_TYPE_NOT_FOUND,
 	2: RPKI_VALIDATION_RESULT_TYPE_VALID,
 	3: RPKI_VALIDATION_RESULT_TYPE_INVALID,
 }
 
-func (v RpkiValidationResultType) Validate() error {
-	if _, ok := RpkiValidationResultTypeToIntMap[v]; !ok {
-		return fmt.Errorf("invalid RpkiValidationResultType: %s", v)
+func (v RPKIValidationResultType) Validate() error {
+	if _, ok := RPKIValidationResultTypeToIntMap[v]; !ok {
+		return fmt.Errorf("invalid RPKIValidationResultType: %s", v)
 	}
 	return nil
 }
@@ -1145,64 +1145,64 @@ func (lhs *SetCommunity) Equal(rhs *SetCommunity) bool {
 }
 
 //struct for container oc-bgp-pol:state
-type SetAsPathPrependState struct {
+type SetASPathPrependState struct {
 	// original -> oc-bgp-pol:repeat-n
 	RepeatN uint8 `mapstructure:"repeat-n"`
 	// original -> gobgp:as
 	// - original type: union
-	As string `mapstructure:"as"`
+	AS string `mapstructure:"as"`
 }
 
-func (lhs *SetAsPathPrependState) Equal(rhs *SetAsPathPrependState) bool {
+func (lhs *SetASPathPrependState) Equal(rhs *SetASPathPrependState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
 	if lhs.RepeatN != rhs.RepeatN {
 		return false
 	}
-	if lhs.As != rhs.As {
+	if lhs.AS != rhs.AS {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp-pol:set-as-path-prepend
-type SetAsPathPrepend struct {
+type SetASPathPrepend struct {
 	// original -> oc-bgp-pol:repeat-n
 	RepeatN uint8 `mapstructure:"repeat-n"`
 	// original -> gobgp:as
 	// - original type: union
-	As string `mapstructure:"as"`
+	AS string `mapstructure:"as"`
 	// original -> oc-bgp-pol:set-as-path-prepend-state
-	State SetAsPathPrependState `mapstructure:"state"`
+	State SetASPathPrependState `mapstructure:"state"`
 }
 
-func (lhs *SetAsPathPrepend) Equal(rhs *SetAsPathPrepend) bool {
+func (lhs *SetASPathPrepend) Equal(rhs *SetASPathPrepend) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
 	if lhs.RepeatN != rhs.RepeatN {
 		return false
 	}
-	if lhs.As != rhs.As {
+	if lhs.AS != rhs.AS {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp-pol:state
-type BgpActionsState struct {
+type BGPActionsState struct {
 	// original -> oc-bgp-pol:set-route-origin
-	SetRouteOrigin BgpOriginAttrType `mapstructure:"set-route-origin"`
+	SetRouteOrigin BGPOriginAttrType `mapstructure:"set-route-origin"`
 	// original -> oc-bgp-pol:set-local-pref
 	SetLocalPref uint32 `mapstructure:"set-local-pref"`
 	// original -> oc-bgp-pol:set-next-hop
-	SetNextHop BgpNextHopType `mapstructure:"set-next-hop"`
+	SetNextHop BGPNextHopType `mapstructure:"set-next-hop"`
 	// original -> oc-bgp-pol:set-med
-	SetMed BgpSetMedType `mapstructure:"set-med"`
+	SetMED BGPSetMEDType `mapstructure:"set-med"`
 }
 
-func (lhs *BgpActionsState) Equal(rhs *BgpActionsState) bool {
+func (lhs *BGPActionsState) Equal(rhs *BGPActionsState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1215,33 +1215,33 @@ func (lhs *BgpActionsState) Equal(rhs *BgpActionsState) bool {
 	if lhs.SetNextHop != rhs.SetNextHop {
 		return false
 	}
-	if lhs.SetMed != rhs.SetMed {
+	if lhs.SetMED != rhs.SetMED {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp-pol:bgp-actions
-type BgpActions struct {
+type BGPActions struct {
 	// original -> oc-bgp-pol:set-route-origin
-	SetRouteOrigin BgpOriginAttrType `mapstructure:"set-route-origin"`
+	SetRouteOrigin BGPOriginAttrType `mapstructure:"set-route-origin"`
 	// original -> oc-bgp-pol:set-local-pref
 	SetLocalPref uint32 `mapstructure:"set-local-pref"`
 	// original -> oc-bgp-pol:set-next-hop
-	SetNextHop BgpNextHopType `mapstructure:"set-next-hop"`
+	SetNextHop BGPNextHopType `mapstructure:"set-next-hop"`
 	// original -> oc-bgp-pol:set-med
-	SetMed BgpSetMedType `mapstructure:"set-med"`
+	SetMED BGPSetMEDType `mapstructure:"set-med"`
 	// original -> oc-bgp-pol:bgp-actions-state
-	State BgpActionsState `mapstructure:"state"`
+	State BGPActionsState `mapstructure:"state"`
 	// original -> oc-bgp-pol:set-as-path-prepend
-	SetAsPathPrepend SetAsPathPrepend `mapstructure:"set-as-path-prepend"`
+	SetASPathPrepend SetASPathPrepend `mapstructure:"set-as-path-prepend"`
 	// original -> oc-bgp-pol:set-community
 	SetCommunity SetCommunity `mapstructure:"set-community"`
 	// original -> oc-bgp-pol:set-ext-community
 	SetExtCommunity SetExtCommunity `mapstructure:"set-ext-community"`
 }
 
-func (lhs *BgpActions) Equal(rhs *BgpActions) bool {
+func (lhs *BGPActions) Equal(rhs *BGPActions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1254,10 +1254,10 @@ func (lhs *BgpActions) Equal(rhs *BgpActions) bool {
 	if lhs.SetNextHop != rhs.SetNextHop {
 		return false
 	}
-	if lhs.SetMed != rhs.SetMed {
+	if lhs.SetMED != rhs.SetMED {
 		return false
 	}
-	if !lhs.SetAsPathPrepend.Equal(&(rhs.SetAsPathPrepend)) {
+	if !lhs.SetASPathPrepend.Equal(&(rhs.SetASPathPrepend)) {
 		return false
 	}
 	if !lhs.SetCommunity.Equal(&(rhs.SetCommunity)) {
@@ -1270,12 +1270,12 @@ func (lhs *BgpActions) Equal(rhs *BgpActions) bool {
 }
 
 //struct for container oc-rpol:state
-type IgpActionsState struct {
+type IGPActionsState struct {
 	// original -> oc-rpol:set-tag
 	SetTag TagType `mapstructure:"set-tag"`
 }
 
-func (lhs *IgpActionsState) Equal(rhs *IgpActionsState) bool {
+func (lhs *IGPActionsState) Equal(rhs *IGPActionsState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1286,14 +1286,14 @@ func (lhs *IgpActionsState) Equal(rhs *IgpActionsState) bool {
 }
 
 //struct for container oc-rpol:igp-actions
-type IgpActions struct {
+type IGPActions struct {
 	// original -> oc-rpol:set-tag
 	SetTag TagType `mapstructure:"set-tag"`
 	// original -> oc-rpol:igp-actions-state
-	State IgpActionsState `mapstructure:"state"`
+	State IGPActionsState `mapstructure:"state"`
 }
 
-func (lhs *IgpActions) Equal(rhs *IgpActions) bool {
+func (lhs *IGPActions) Equal(rhs *IGPActions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1349,9 +1349,9 @@ type Actions struct {
 	// original -> oc-rpol:actions-state
 	State ActionsState `mapstructure:"state"`
 	// original -> oc-rpol:igp-actions
-	IgpActions IgpActions `mapstructure:"igp-actions"`
+	IGPActions IGPActions `mapstructure:"igp-actions"`
 	// original -> oc-bgp-pol:bgp-actions
-	BgpActions BgpActions `mapstructure:"bgp-actions"`
+	BGPActions BGPActions `mapstructure:"bgp-actions"`
 }
 
 func (lhs *Actions) Equal(rhs *Actions) bool {
@@ -1361,28 +1361,28 @@ func (lhs *Actions) Equal(rhs *Actions) bool {
 	if !lhs.RouteDisposition.Equal(&(rhs.RouteDisposition)) {
 		return false
 	}
-	if !lhs.IgpActions.Equal(&(rhs.IgpActions)) {
+	if !lhs.IGPActions.Equal(&(rhs.IGPActions)) {
 		return false
 	}
-	if !lhs.BgpActions.Equal(&(rhs.BgpActions)) {
+	if !lhs.BGPActions.Equal(&(rhs.BGPActions)) {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp-pol:state
-type MatchAsPathSetState struct {
+type MatchASPathSetState struct {
 	// original -> oc-bgp-pol:as-path-set
-	AsPathSet string `mapstructure:"as-path-set"`
+	ASPathSet string `mapstructure:"as-path-set"`
 	// original -> oc-rpol:match-set-options
 	MatchSetOptions MatchSetOptionsType `mapstructure:"match-set-options"`
 }
 
-func (lhs *MatchAsPathSetState) Equal(rhs *MatchAsPathSetState) bool {
+func (lhs *MatchASPathSetState) Equal(rhs *MatchASPathSetState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AsPathSet != rhs.AsPathSet {
+	if lhs.ASPathSet != rhs.ASPathSet {
 		return false
 	}
 	if lhs.MatchSetOptions != rhs.MatchSetOptions {
@@ -1392,20 +1392,20 @@ func (lhs *MatchAsPathSetState) Equal(rhs *MatchAsPathSetState) bool {
 }
 
 //struct for container oc-bgp-pol:match-as-path-set
-type MatchAsPathSet struct {
+type MatchASPathSet struct {
 	// original -> oc-bgp-pol:as-path-set
-	AsPathSet string `mapstructure:"as-path-set"`
+	ASPathSet string `mapstructure:"as-path-set"`
 	// original -> oc-rpol:match-set-options
 	MatchSetOptions MatchSetOptionsType `mapstructure:"match-set-options"`
 	// original -> oc-bgp-pol:match-as-path-set-state
-	State MatchAsPathSetState `mapstructure:"state"`
+	State MatchASPathSetState `mapstructure:"state"`
 }
 
-func (lhs *MatchAsPathSet) Equal(rhs *MatchAsPathSet) bool {
+func (lhs *MatchASPathSet) Equal(rhs *MatchASPathSet) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AsPathSet != rhs.AsPathSet {
+	if lhs.ASPathSet != rhs.ASPathSet {
 		return false
 	}
 	if lhs.MatchSetOptions != rhs.MatchSetOptions {
@@ -1503,14 +1503,14 @@ func (lhs *MatchCommunitySet) Equal(rhs *MatchCommunitySet) bool {
 }
 
 //struct for container oc-bgp-pol:state
-type AsPathLengthState struct {
+type ASPathLengthState struct {
 	// original -> oc-pol-types:operator
 	Operator AttributeComparison `mapstructure:"operator"`
 	// original -> oc-pol-types:value
 	Value uint32 `mapstructure:"value"`
 }
 
-func (lhs *AsPathLengthState) Equal(rhs *AsPathLengthState) bool {
+func (lhs *ASPathLengthState) Equal(rhs *ASPathLengthState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1524,16 +1524,16 @@ func (lhs *AsPathLengthState) Equal(rhs *AsPathLengthState) bool {
 }
 
 //struct for container oc-bgp-pol:as-path-length
-type AsPathLength struct {
+type ASPathLength struct {
 	// original -> oc-pol-types:operator
 	Operator AttributeComparison `mapstructure:"operator"`
 	// original -> oc-pol-types:value
 	Value uint32 `mapstructure:"value"`
 	// original -> oc-bgp-pol:as-path-length-state
-	State AsPathLengthState `mapstructure:"state"`
+	State ASPathLengthState `mapstructure:"state"`
 }
 
-func (lhs *AsPathLength) Equal(rhs *AsPathLength) bool {
+func (lhs *ASPathLength) Equal(rhs *ASPathLength) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1591,11 +1591,11 @@ func (lhs *CommunityCount) Equal(rhs *CommunityCount) bool {
 }
 
 //struct for container oc-bgp-pol:state
-type BgpConditionsState struct {
+type BGPConditionsState struct {
 	// original -> oc-bgp-pol:med-eq
-	MedEq uint32 `mapstructure:"med-eq"`
+	MEDEq uint32 `mapstructure:"med-eq"`
 	// original -> oc-bgp-pol:origin-eq
-	OriginEq BgpOriginAttrType `mapstructure:"origin-eq"`
+	OriginEq BGPOriginAttrType `mapstructure:"origin-eq"`
 	// original -> oc-bgp-pol:next-hop-in
 	// - original type: list of inet:ip-address-no-zone
 	NextHopInList []string `mapstructure:"next-hop-in-list"`
@@ -1607,11 +1607,11 @@ type BgpConditionsState struct {
 	RouteType RouteType `mapstructure:"route-type"`
 }
 
-func (lhs *BgpConditionsState) Equal(rhs *BgpConditionsState) bool {
+func (lhs *BGPConditionsState) Equal(rhs *BGPConditionsState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.MedEq != rhs.MedEq {
+	if lhs.MEDEq != rhs.MEDEq {
 		return false
 	}
 	if lhs.OriginEq != rhs.OriginEq {
@@ -1643,11 +1643,11 @@ func (lhs *BgpConditionsState) Equal(rhs *BgpConditionsState) bool {
 }
 
 //struct for container oc-bgp-pol:bgp-conditions
-type BgpConditions struct {
+type BGPConditions struct {
 	// original -> oc-bgp-pol:med-eq
-	MedEq uint32 `mapstructure:"med-eq"`
+	MEDEq uint32 `mapstructure:"med-eq"`
 	// original -> oc-bgp-pol:origin-eq
-	OriginEq BgpOriginAttrType `mapstructure:"origin-eq"`
+	OriginEq BGPOriginAttrType `mapstructure:"origin-eq"`
 	// original -> oc-bgp-pol:next-hop-in
 	// - original type: list of inet:ip-address-no-zone
 	NextHopInList []string `mapstructure:"next-hop-in-list"`
@@ -1658,26 +1658,26 @@ type BgpConditions struct {
 	// original -> oc-bgp-pol:route-type
 	RouteType RouteType `mapstructure:"route-type"`
 	// original -> oc-bgp-pol:bgp-conditions-state
-	State BgpConditionsState `mapstructure:"state"`
+	State BGPConditionsState `mapstructure:"state"`
 	// original -> oc-bgp-pol:community-count
 	CommunityCount CommunityCount `mapstructure:"community-count"`
 	// original -> oc-bgp-pol:as-path-length
-	AsPathLength AsPathLength `mapstructure:"as-path-length"`
+	ASPathLength ASPathLength `mapstructure:"as-path-length"`
 	// original -> oc-bgp-pol:match-community-set
 	MatchCommunitySet MatchCommunitySet `mapstructure:"match-community-set"`
 	// original -> oc-bgp-pol:match-ext-community-set
 	MatchExtCommunitySet MatchExtCommunitySet `mapstructure:"match-ext-community-set"`
 	// original -> oc-bgp-pol:match-as-path-set
-	MatchAsPathSet MatchAsPathSet `mapstructure:"match-as-path-set"`
+	MatchASPathSet MatchASPathSet `mapstructure:"match-as-path-set"`
 	// original -> gobgp:rpki-validation-result
-	RpkiValidationResult RpkiValidationResultType `mapstructure:"rpki-validation-result"`
+	RPKIValidationResult RPKIValidationResultType `mapstructure:"rpki-validation-result"`
 }
 
-func (lhs *BgpConditions) Equal(rhs *BgpConditions) bool {
+func (lhs *BGPConditions) Equal(rhs *BGPConditions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.MedEq != rhs.MedEq {
+	if lhs.MEDEq != rhs.MEDEq {
 		return false
 	}
 	if lhs.OriginEq != rhs.OriginEq {
@@ -1708,7 +1708,7 @@ func (lhs *BgpConditions) Equal(rhs *BgpConditions) bool {
 	if !lhs.CommunityCount.Equal(&(rhs.CommunityCount)) {
 		return false
 	}
-	if !lhs.AsPathLength.Equal(&(rhs.AsPathLength)) {
+	if !lhs.ASPathLength.Equal(&(rhs.ASPathLength)) {
 		return false
 	}
 	if !lhs.MatchCommunitySet.Equal(&(rhs.MatchCommunitySet)) {
@@ -1717,20 +1717,20 @@ func (lhs *BgpConditions) Equal(rhs *BgpConditions) bool {
 	if !lhs.MatchExtCommunitySet.Equal(&(rhs.MatchExtCommunitySet)) {
 		return false
 	}
-	if !lhs.MatchAsPathSet.Equal(&(rhs.MatchAsPathSet)) {
+	if !lhs.MatchASPathSet.Equal(&(rhs.MatchASPathSet)) {
 		return false
 	}
-	if lhs.RpkiValidationResult != rhs.RpkiValidationResult {
+	if lhs.RPKIValidationResult != rhs.RPKIValidationResult {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-rpol:igp-conditions
-type IgpConditions struct {
+type IGPConditions struct {
 }
 
-func (lhs *IgpConditions) Equal(rhs *IgpConditions) bool {
+func (lhs *IGPConditions) Equal(rhs *IGPConditions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -1951,9 +1951,9 @@ type Conditions struct {
 	// original -> oc-rpol:match-tag-set
 	MatchTagSet MatchTagSet `mapstructure:"match-tag-set"`
 	// original -> oc-rpol:igp-conditions
-	IgpConditions IgpConditions `mapstructure:"igp-conditions"`
+	IGPConditions IGPConditions `mapstructure:"igp-conditions"`
 	// original -> oc-bgp-pol:bgp-conditions
-	BgpConditions BgpConditions `mapstructure:"bgp-conditions"`
+	BGPConditions BGPConditions `mapstructure:"bgp-conditions"`
 }
 
 func (lhs *Conditions) Equal(rhs *Conditions) bool {
@@ -1978,10 +1978,10 @@ func (lhs *Conditions) Equal(rhs *Conditions) bool {
 	if !lhs.MatchTagSet.Equal(&(rhs.MatchTagSet)) {
 		return false
 	}
-	if !lhs.IgpConditions.Equal(&(rhs.IgpConditions)) {
+	if !lhs.IGPConditions.Equal(&(rhs.IGPConditions)) {
 		return false
 	}
-	if !lhs.BgpConditions.Equal(&(rhs.BgpConditions)) {
+	if !lhs.BGPConditions.Equal(&(rhs.BGPConditions)) {
 		return false
 	}
 	return true
@@ -2086,25 +2086,25 @@ func (lhs *PolicyDefinition) Equal(rhs *PolicyDefinition) bool {
 }
 
 //struct for container oc-bgp-pol:state
-type AsPathSetState struct {
+type ASPathSetState struct {
 	// original -> oc-bgp-pol:as-path-set-name
-	AsPathSetName string `mapstructure:"as-path-set-name"`
+	ASPathSetName string `mapstructure:"as-path-set-name"`
 	// original -> oc-bgp-pol:as-path-set-member
-	AsPathSetMemberList []string `mapstructure:"as-path-set-member-list"`
+	ASPathSetMemberList []string `mapstructure:"as-path-set-member-list"`
 }
 
-func (lhs *AsPathSetState) Equal(rhs *AsPathSetState) bool {
+func (lhs *ASPathSetState) Equal(rhs *ASPathSetState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AsPathSetName != rhs.AsPathSetName {
+	if lhs.ASPathSetName != rhs.ASPathSetName {
 		return false
 	}
-	if len(lhs.AsPathSetMemberList) != len(rhs.AsPathSetMemberList) {
+	if len(lhs.ASPathSetMemberList) != len(rhs.ASPathSetMemberList) {
 		return false
 	}
-	for idx, l := range lhs.AsPathSetMemberList {
-		if l != rhs.AsPathSetMemberList[idx] {
+	for idx, l := range lhs.ASPathSetMemberList {
+		if l != rhs.ASPathSetMemberList[idx] {
 			return false
 		}
 	}
@@ -2112,38 +2112,38 @@ func (lhs *AsPathSetState) Equal(rhs *AsPathSetState) bool {
 }
 
 //struct for container oc-bgp-pol:as-path-set
-type AsPathSet struct {
+type ASPathSet struct {
 	// original -> oc-bgp-pol:as-path-set-name
-	AsPathSetName string `mapstructure:"as-path-set-name"`
+	ASPathSetName string `mapstructure:"as-path-set-name"`
 	// original -> oc-bgp-pol:as-path-set-member
-	AsPathSetMemberList []string `mapstructure:"as-path-set-member-list"`
+	ASPathSetMemberList []string `mapstructure:"as-path-set-member-list"`
 	// original -> oc-bgp-pol:as-path-set-name
 	// original -> oc-bgp-pol:as-path-set-state
-	State AsPathSetState `mapstructure:"state"`
+	State ASPathSetState `mapstructure:"state"`
 	// original -> gobgp:as-path
-	AsPathList []string `mapstructure:"as-path-list"`
+	ASPathList []string `mapstructure:"as-path-list"`
 }
 
-func (lhs *AsPathSet) Equal(rhs *AsPathSet) bool {
+func (lhs *ASPathSet) Equal(rhs *ASPathSet) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AsPathSetName != rhs.AsPathSetName {
+	if lhs.ASPathSetName != rhs.ASPathSetName {
 		return false
 	}
-	if len(lhs.AsPathSetMemberList) != len(rhs.AsPathSetMemberList) {
+	if len(lhs.ASPathSetMemberList) != len(rhs.ASPathSetMemberList) {
 		return false
 	}
-	for idx, l := range lhs.AsPathSetMemberList {
-		if l != rhs.AsPathSetMemberList[idx] {
+	for idx, l := range lhs.ASPathSetMemberList {
+		if l != rhs.ASPathSetMemberList[idx] {
 			return false
 		}
 	}
-	if len(lhs.AsPathList) != len(rhs.AsPathList) {
+	if len(lhs.ASPathList) != len(rhs.ASPathList) {
 		return false
 	}
-	for idx, l := range lhs.AsPathList {
-		if l != rhs.AsPathList[idx] {
+	for idx, l := range lhs.ASPathList {
+		if l != rhs.ASPathList[idx] {
 			return false
 		}
 	}
@@ -2265,16 +2265,16 @@ func (lhs *CommunitySet) Equal(rhs *CommunitySet) bool {
 }
 
 //struct for container oc-bgp-pol:bgp-defined-sets
-type BgpDefinedSets struct {
+type BGPDefinedSets struct {
 	// original -> oc-bgp-pol:community-sets
 	CommunitySets []CommunitySet `mapstructure:"community-sets"`
 	// original -> oc-bgp-pol:ext-community-sets
 	ExtCommunitySets []ExtCommunitySet `mapstructure:"ext-community-sets"`
 	// original -> oc-bgp-pol:as-path-sets
-	AsPathSets []AsPathSet `mapstructure:"as-path-sets"`
+	ASPathSets []ASPathSet `mapstructure:"as-path-sets"`
 }
 
-func (lhs *BgpDefinedSets) Equal(rhs *BgpDefinedSets) bool {
+func (lhs *BGPDefinedSets) Equal(rhs *BGPDefinedSets) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2310,16 +2310,16 @@ func (lhs *BgpDefinedSets) Equal(rhs *BgpDefinedSets) bool {
 			}
 		}
 	}
-	if len(lhs.AsPathSets) != len(rhs.AsPathSets) {
+	if len(lhs.ASPathSets) != len(rhs.ASPathSets) {
 		return false
 	}
 	{
-		lmap := make(map[string]*AsPathSet)
-		for i, l := range lhs.AsPathSets {
-			lmap[mapkey(i, string(l.AsPathSetName))] = &lhs.AsPathSets[i]
+		lmap := make(map[string]*ASPathSet)
+		for i, l := range lhs.ASPathSets {
+			lmap[mapkey(i, string(l.ASPathSetName))] = &lhs.ASPathSets[i]
 		}
-		for i, r := range rhs.AsPathSets {
-			if l, y := lmap[mapkey(i, string(r.AsPathSetName))]; !y {
+		for i, r := range rhs.ASPathSets {
+			if l, y := lmap[mapkey(i, string(r.ASPathSetName))]; !y {
 				return false
 			} else if !r.Equal(l) {
 				return false
@@ -2456,7 +2456,7 @@ func (lhs *NeighborSet) Equal(rhs *NeighborSet) bool {
 type PrefixState struct {
 	// original -> oc-rpol:ip-prefix
 	// - original type: inet:ip-prefix
-	IpPrefix string `mapstructure:"ip-prefix"`
+	IPPrefix string `mapstructure:"ip-prefix"`
 	// original -> oc-rpol:masklength-range
 	MasklengthRange string `mapstructure:"masklength-range"`
 }
@@ -2465,7 +2465,7 @@ func (lhs *PrefixState) Equal(rhs *PrefixState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.IpPrefix != rhs.IpPrefix {
+	if lhs.IPPrefix != rhs.IPPrefix {
 		return false
 	}
 	if lhs.MasklengthRange != rhs.MasklengthRange {
@@ -2478,7 +2478,7 @@ func (lhs *PrefixState) Equal(rhs *PrefixState) bool {
 type Prefix struct {
 	// original -> oc-rpol:ip-prefix
 	// - original type: inet:ip-prefix
-	IpPrefix string `mapstructure:"ip-prefix"`
+	IPPrefix string `mapstructure:"ip-prefix"`
 	// original -> oc-rpol:masklength-range
 	MasklengthRange string `mapstructure:"masklength-range"`
 	// original -> oc-rpol:ip-prefix
@@ -2491,7 +2491,7 @@ func (lhs *Prefix) Equal(rhs *Prefix) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.IpPrefix != rhs.IpPrefix {
+	if lhs.IPPrefix != rhs.IPPrefix {
 		return false
 	}
 	if lhs.MasklengthRange != rhs.MasklengthRange {
@@ -2540,10 +2540,10 @@ func (lhs *PrefixSet) Equal(rhs *PrefixSet) bool {
 	{
 		lmap := make(map[string]*Prefix)
 		for i, l := range lhs.Prefixes {
-			lmap[mapkey(i, string(l.IpPrefix+l.MasklengthRange))] = &lhs.Prefixes[i]
+			lmap[mapkey(i, string(l.IPPrefix+l.MasklengthRange))] = &lhs.Prefixes[i]
 		}
 		for i, r := range rhs.Prefixes {
-			if l, y := lmap[mapkey(i, string(r.IpPrefix+r.MasklengthRange))]; !y {
+			if l, y := lmap[mapkey(i, string(r.IPPrefix+r.MasklengthRange))]; !y {
 				return false
 			} else if !r.Equal(l) {
 				return false
@@ -2562,7 +2562,7 @@ type DefinedSets struct {
 	// original -> oc-rpol:tag-sets
 	TagSets []TagSet `mapstructure:"tag-sets"`
 	// original -> oc-bgp-pol:bgp-defined-sets
-	BgpDefinedSets BgpDefinedSets `mapstructure:"bgp-defined-sets"`
+	BGPDefinedSets BGPDefinedSets `mapstructure:"bgp-defined-sets"`
 }
 
 func (lhs *DefinedSets) Equal(rhs *DefinedSets) bool {
@@ -2617,7 +2617,7 @@ func (lhs *DefinedSets) Equal(rhs *DefinedSets) bool {
 			}
 		}
 	}
-	if !lhs.BgpDefinedSets.Equal(&(rhs.BgpDefinedSets)) {
+	if !lhs.BGPDefinedSets.Equal(&(rhs.BGPDefinedSets)) {
 		return false
 	}
 	return true
@@ -2660,9 +2660,9 @@ func (lhs *RoutingPolicy) Equal(rhs *RoutingPolicy) bool {
 //struct for container gobgp:state
 type CollectorState struct {
 	// original -> gobgp:url
-	Url string `mapstructure:"url"`
+	URL string `mapstructure:"url"`
 	// original -> gobgp:db-name
-	DbName string `mapstructure:"db-name"`
+	DBName string `mapstructure:"db-name"`
 	// original -> gobgp:table-dump-interval
 	TableDumpInterval uint64 `mapstructure:"table-dump-interval"`
 }
@@ -2671,10 +2671,10 @@ func (lhs *CollectorState) Equal(rhs *CollectorState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.Url != rhs.Url {
+	if lhs.URL != rhs.URL {
 		return false
 	}
-	if lhs.DbName != rhs.DbName {
+	if lhs.DBName != rhs.DBName {
 		return false
 	}
 	if lhs.TableDumpInterval != rhs.TableDumpInterval {
@@ -2686,9 +2686,9 @@ func (lhs *CollectorState) Equal(rhs *CollectorState) bool {
 //struct for container gobgp:collector
 type Collector struct {
 	// original -> gobgp:url
-	Url string `mapstructure:"url"`
+	URL string `mapstructure:"url"`
 	// original -> gobgp:db-name
-	DbName string `mapstructure:"db-name"`
+	DBName string `mapstructure:"db-name"`
 	// original -> gobgp:table-dump-interval
 	TableDumpInterval uint64 `mapstructure:"table-dump-interval"`
 	// original -> gobgp:collector-state
@@ -2699,10 +2699,10 @@ func (lhs *Collector) Equal(rhs *Collector) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.Url != rhs.Url {
+	if lhs.URL != rhs.URL {
 		return false
 	}
-	if lhs.DbName != rhs.DbName {
+	if lhs.DBName != rhs.DBName {
 		return false
 	}
 	if lhs.TableDumpInterval != rhs.TableDumpInterval {
@@ -2717,7 +2717,7 @@ type ZebraState struct {
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
 	// original -> gobgp:url
-	Url string `mapstructure:"url"`
+	URL string `mapstructure:"url"`
 	// original -> gobgp:redistribute-route-type
 	RedistributeRouteTypeList []InstallProtocolType `mapstructure:"redistribute-route-type-list"`
 	// original -> gobgp:version
@@ -2731,7 +2731,7 @@ func (lhs *ZebraState) Equal(rhs *ZebraState) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.Url != rhs.Url {
+	if lhs.URL != rhs.URL {
 		return false
 	}
 	if len(lhs.RedistributeRouteTypeList) != len(rhs.RedistributeRouteTypeList) {
@@ -2754,7 +2754,7 @@ type Zebra struct {
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
 	// original -> gobgp:url
-	Url string `mapstructure:"url"`
+	URL string `mapstructure:"url"`
 	// original -> gobgp:redistribute-route-type
 	RedistributeRouteTypeList []InstallProtocolType `mapstructure:"redistribute-route-type-list"`
 	// original -> gobgp:version
@@ -2770,7 +2770,7 @@ func (lhs *Zebra) Equal(rhs *Zebra) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.Url != rhs.Url {
+	if lhs.URL != rhs.URL {
 		return false
 	}
 	if len(lhs.RedistributeRouteTypeList) != len(rhs.RedistributeRouteTypeList) {
@@ -2788,9 +2788,9 @@ func (lhs *Zebra) Equal(rhs *Zebra) bool {
 }
 
 //struct for container gobgp:mrt
-type Mrt struct {
+type MRT struct {
 	// original -> gobgp:dump-type
-	DumpType MrtType `mapstructure:"dump-type"`
+	DumpType MRTType `mapstructure:"dump-type"`
 	// original -> gobgp:file-name
 	FileName string `mapstructure:"file-name"`
 	// original -> gobgp:table-name
@@ -2802,7 +2802,7 @@ type Mrt struct {
 	// original -> gobgp:file-name
 }
 
-func (lhs *Mrt) Equal(rhs *Mrt) bool {
+func (lhs *MRT) Equal(rhs *MRT) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2825,10 +2825,10 @@ func (lhs *Mrt) Equal(rhs *Mrt) bool {
 }
 
 //struct for container gobgp:state
-type BmpServerState struct {
+type BMPServerState struct {
 }
 
-func (lhs *BmpServerState) Equal(rhs *BmpServerState) bool {
+func (lhs *BMPServerState) Equal(rhs *BMPServerState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2836,20 +2836,20 @@ func (lhs *BmpServerState) Equal(rhs *BmpServerState) bool {
 }
 
 //struct for container gobgp:bmp-server
-type BmpServer struct {
+type BMPServer struct {
 	// original -> gobgp:address
 	// - original type: inet:ip-address
 	Address string `mapstructure:"address"`
 	// original -> gobgp:port
 	Port uint32 `mapstructure:"port"`
 	// original -> gobgp:route-monitoring-policy
-	RouteMonitoringPolicy BmpRouteMonitoringPolicyType `mapstructure:"route-monitoring-policy"`
+	RouteMonitoringPolicy BMPRouteMonitoringPolicyType `mapstructure:"route-monitoring-policy"`
 	// original -> gobgp:address
 	// original -> gobgp:bmp-server-state
-	State BmpServerState `mapstructure:"state"`
+	State BMPServerState `mapstructure:"state"`
 }
 
-func (lhs *BmpServer) Equal(rhs *BmpServer) bool {
+func (lhs *BMPServer) Equal(rhs *BMPServer) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2866,7 +2866,7 @@ func (lhs *BmpServer) Equal(rhs *BmpServer) bool {
 }
 
 //struct for container gobgp:rpki-received
-type RpkiReceived struct {
+type RPKIReceived struct {
 	// original -> gobgp:serial-notify
 	SerialNotify int64 `mapstructure:"serial-notify"`
 	// original -> gobgp:cache-reset
@@ -2883,7 +2883,7 @@ type RpkiReceived struct {
 	Error int64 `mapstructure:"error"`
 }
 
-func (lhs *RpkiReceived) Equal(rhs *RpkiReceived) bool {
+func (lhs *RPKIReceived) Equal(rhs *RPKIReceived) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2912,7 +2912,7 @@ func (lhs *RpkiReceived) Equal(rhs *RpkiReceived) bool {
 }
 
 //struct for container gobgp:rpki-sent
-type RpkiSent struct {
+type RPKISent struct {
 	// original -> gobgp:serial-query
 	SerialQuery int64 `mapstructure:"serial-query"`
 	// original -> gobgp:reset-query
@@ -2921,7 +2921,7 @@ type RpkiSent struct {
 	Error int64 `mapstructure:"error"`
 }
 
-func (lhs *RpkiSent) Equal(rhs *RpkiSent) bool {
+func (lhs *RPKISent) Equal(rhs *RPKISent) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -2938,28 +2938,28 @@ func (lhs *RpkiSent) Equal(rhs *RpkiSent) bool {
 }
 
 //struct for container gobgp:rpki-messages
-type RpkiMessages struct {
+type RPKIMessages struct {
 	// original -> gobgp:rpki-sent
-	RpkiSent RpkiSent `mapstructure:"rpki-sent"`
+	RPKISent RPKISent `mapstructure:"rpki-sent"`
 	// original -> gobgp:rpki-received
-	RpkiReceived RpkiReceived `mapstructure:"rpki-received"`
+	RPKIReceived RPKIReceived `mapstructure:"rpki-received"`
 }
 
-func (lhs *RpkiMessages) Equal(rhs *RpkiMessages) bool {
+func (lhs *RPKIMessages) Equal(rhs *RPKIMessages) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if !lhs.RpkiSent.Equal(&(rhs.RpkiSent)) {
+	if !lhs.RPKISent.Equal(&(rhs.RPKISent)) {
 		return false
 	}
-	if !lhs.RpkiReceived.Equal(&(rhs.RpkiReceived)) {
+	if !lhs.RPKIReceived.Equal(&(rhs.RPKIReceived)) {
 		return false
 	}
 	return true
 }
 
 //struct for container gobgp:state
-type RpkiServerState struct {
+type RPKIServerState struct {
 	// original -> gobgp:up
 	// - original type: boolean
 	Up bool `mapstructure:"up"`
@@ -2980,10 +2980,10 @@ type RpkiServerState struct {
 	// original -> gobgp:last-pdu-recv-time
 	LastPduRecvTime int64 `mapstructure:"last-pdu-recv-time"`
 	// original -> gobgp:rpki-messages
-	RpkiMessages RpkiMessages `mapstructure:"rpki-messages"`
+	RPKIMessages RPKIMessages `mapstructure:"rpki-messages"`
 }
 
-func (lhs *RpkiServerState) Equal(rhs *RpkiServerState) bool {
+func (lhs *RPKIServerState) Equal(rhs *RPKIServerState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -3014,14 +3014,14 @@ func (lhs *RpkiServerState) Equal(rhs *RpkiServerState) bool {
 	if lhs.LastPduRecvTime != rhs.LastPduRecvTime {
 		return false
 	}
-	if !lhs.RpkiMessages.Equal(&(rhs.RpkiMessages)) {
+	if !lhs.RPKIMessages.Equal(&(rhs.RPKIMessages)) {
 		return false
 	}
 	return true
 }
 
 //struct for container gobgp:rpki-server
-type RpkiServer struct {
+type RPKIServer struct {
 	// original -> gobgp:address
 	// - original type: inet:ip-address
 	Address string `mapstructure:"address"`
@@ -3037,10 +3037,10 @@ type RpkiServer struct {
 	Preference uint8 `mapstructure:"preference"`
 	// original -> gobgp:address
 	// original -> gobgp:rpki-server-state
-	State RpkiServerState `mapstructure:"state"`
+	State RPKIServerState `mapstructure:"state"`
 }
 
-func (lhs *RpkiServer) Equal(rhs *RpkiServer) bool {
+func (lhs *RPKIServer) Equal(rhs *RPKIServer) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -3071,16 +3071,16 @@ type PeerGroupState struct {
 	PeerGroupName string `mapstructure:"peer-group-name"`
 	// original -> oc-bgp:peer-as
 	// - original type: inet:as-number
-	PeerAs uint32 `mapstructure:"peer-as"`
+	PeerAS uint32 `mapstructure:"peer-as"`
 	// original -> oc-bgp:local-as
 	// - original type: inet:as-number
-	LocalAs uint32 `mapstructure:"local-as"`
+	LocalAS uint32 `mapstructure:"local-as"`
 	// original -> oc-bgp:peer-type
 	PeerType PeerType `mapstructure:"peer-type"`
 	// original -> oc-bgp:auth-password
 	AuthPassword string `mapstructure:"auth-password"`
 	// original -> oc-bgp:remove-private-as
-	RemovePrivateAs RemovePrivateAsOption `mapstructure:"remove-private-as"`
+	RemovePrivateAS RemovePrivateASOption `mapstructure:"remove-private-as"`
 	// original -> oc-bgp:route-flap-damping
 	// - original type: boolean
 	RouteFlapDamping bool `mapstructure:"route-flap-damping"`
@@ -3101,10 +3101,10 @@ func (lhs *PeerGroupState) Equal(rhs *PeerGroupState) bool {
 	if lhs.PeerGroupName != rhs.PeerGroupName {
 		return false
 	}
-	if lhs.PeerAs != rhs.PeerAs {
+	if lhs.PeerAS != rhs.PeerAS {
 		return false
 	}
-	if lhs.LocalAs != rhs.LocalAs {
+	if lhs.LocalAS != rhs.LocalAS {
 		return false
 	}
 	if lhs.PeerType != rhs.PeerType {
@@ -3113,7 +3113,7 @@ func (lhs *PeerGroupState) Equal(rhs *PeerGroupState) bool {
 	if lhs.AuthPassword != rhs.AuthPassword {
 		return false
 	}
-	if lhs.RemovePrivateAs != rhs.RemovePrivateAs {
+	if lhs.RemovePrivateAS != rhs.RemovePrivateAS {
 		return false
 	}
 	if lhs.RouteFlapDamping != rhs.RouteFlapDamping {
@@ -3140,16 +3140,16 @@ type PeerGroup struct {
 	PeerGroupName string `mapstructure:"peer-group-name"`
 	// original -> oc-bgp:peer-as
 	// - original type: inet:as-number
-	PeerAs uint32 `mapstructure:"peer-as"`
+	PeerAS uint32 `mapstructure:"peer-as"`
 	// original -> oc-bgp:local-as
 	// - original type: inet:as-number
-	LocalAs uint32 `mapstructure:"local-as"`
+	LocalAS uint32 `mapstructure:"local-as"`
 	// original -> oc-bgp:peer-type
 	PeerType PeerType `mapstructure:"peer-type"`
 	// original -> oc-bgp:auth-password
 	AuthPassword string `mapstructure:"auth-password"`
 	// original -> oc-bgp:remove-private-as
-	RemovePrivateAs RemovePrivateAsOption `mapstructure:"remove-private-as"`
+	RemovePrivateAS RemovePrivateASOption `mapstructure:"remove-private-as"`
 	// original -> oc-bgp:route-flap-damping
 	// - original type: boolean
 	RouteFlapDamping bool `mapstructure:"route-flap-damping"`
@@ -3171,11 +3171,11 @@ type PeerGroup struct {
 	// original -> oc-bgp:logging-options
 	LoggingOptions LoggingOptions `mapstructure:"logging-options"`
 	// original -> oc-bgp:ebgp-multihop
-	EbgpMultihop EbgpMultihop `mapstructure:"ebgp-multihop"`
+	EBGPMultihop EBGPMultihop `mapstructure:"ebgp-multihop"`
 	// original -> oc-bgp:route-reflector
 	RouteReflector RouteReflector `mapstructure:"route-reflector"`
 	// original -> oc-bgp:as-path-options
-	AsPathOptions AsPathOptions `mapstructure:"as-path-options"`
+	ASPathOptions ASPathOptions `mapstructure:"as-path-options"`
 	// original -> oc-bgp:add-paths
 	AddPaths AddPaths `mapstructure:"add-paths"`
 	// original -> oc-bgp:use-multiple-paths
@@ -3195,10 +3195,10 @@ func (lhs *PeerGroup) Equal(rhs *PeerGroup) bool {
 	if lhs.PeerGroupName != rhs.PeerGroupName {
 		return false
 	}
-	if lhs.PeerAs != rhs.PeerAs {
+	if lhs.PeerAS != rhs.PeerAS {
 		return false
 	}
-	if lhs.LocalAs != rhs.LocalAs {
+	if lhs.LocalAS != rhs.LocalAS {
 		return false
 	}
 	if lhs.PeerType != rhs.PeerType {
@@ -3207,7 +3207,7 @@ func (lhs *PeerGroup) Equal(rhs *PeerGroup) bool {
 	if lhs.AuthPassword != rhs.AuthPassword {
 		return false
 	}
-	if lhs.RemovePrivateAs != rhs.RemovePrivateAs {
+	if lhs.RemovePrivateAS != rhs.RemovePrivateAS {
 		return false
 	}
 	if lhs.RouteFlapDamping != rhs.RouteFlapDamping {
@@ -3234,13 +3234,13 @@ func (lhs *PeerGroup) Equal(rhs *PeerGroup) bool {
 	if !lhs.LoggingOptions.Equal(&(rhs.LoggingOptions)) {
 		return false
 	}
-	if !lhs.EbgpMultihop.Equal(&(rhs.EbgpMultihop)) {
+	if !lhs.EBGPMultihop.Equal(&(rhs.EBGPMultihop)) {
 		return false
 	}
 	if !lhs.RouteReflector.Equal(&(rhs.RouteReflector)) {
 		return false
 	}
-	if !lhs.AsPathOptions.Equal(&(rhs.AsPathOptions)) {
+	if !lhs.ASPathOptions.Equal(&(rhs.ASPathOptions)) {
 		return false
 	}
 	if !lhs.AddPaths.Equal(&(rhs.AddPaths)) {
@@ -3367,46 +3367,46 @@ func (lhs *AddPaths) Equal(rhs *AddPaths) bool {
 }
 
 //struct for container oc-bgp:state
-type AsPathOptionsState struct {
+type ASPathOptionsState struct {
 	// original -> oc-bgp:allow-own-as
-	AllowOwnAs uint8 `mapstructure:"allow-own-as"`
+	AllowOwnAS uint8 `mapstructure:"allow-own-as"`
 	// original -> oc-bgp:replace-peer-as
 	// - original type: boolean
-	ReplacePeerAs bool `mapstructure:"replace-peer-as"`
+	ReplacePeerAS bool `mapstructure:"replace-peer-as"`
 }
 
-func (lhs *AsPathOptionsState) Equal(rhs *AsPathOptionsState) bool {
+func (lhs *ASPathOptionsState) Equal(rhs *ASPathOptionsState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AllowOwnAs != rhs.AllowOwnAs {
+	if lhs.AllowOwnAS != rhs.AllowOwnAS {
 		return false
 	}
-	if lhs.ReplacePeerAs != rhs.ReplacePeerAs {
+	if lhs.ReplacePeerAS != rhs.ReplacePeerAS {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp:as-path-options
-type AsPathOptions struct {
+type ASPathOptions struct {
 	// original -> oc-bgp:allow-own-as
-	AllowOwnAs uint8 `mapstructure:"allow-own-as"`
+	AllowOwnAS uint8 `mapstructure:"allow-own-as"`
 	// original -> oc-bgp:replace-peer-as
 	// - original type: boolean
-	ReplacePeerAs bool `mapstructure:"replace-peer-as"`
+	ReplacePeerAS bool `mapstructure:"replace-peer-as"`
 	// original -> oc-bgp:as-path-options-state
-	State AsPathOptionsState `mapstructure:"state"`
+	State ASPathOptionsState `mapstructure:"state"`
 }
 
-func (lhs *AsPathOptions) Equal(rhs *AsPathOptions) bool {
+func (lhs *ASPathOptions) Equal(rhs *ASPathOptions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AllowOwnAs != rhs.AllowOwnAs {
+	if lhs.AllowOwnAS != rhs.AllowOwnAS {
 		return false
 	}
-	if lhs.ReplacePeerAs != rhs.ReplacePeerAs {
+	if lhs.ReplacePeerAS != rhs.ReplacePeerAS {
 		return false
 	}
 	return true
@@ -3415,7 +3415,7 @@ func (lhs *AsPathOptions) Equal(rhs *AsPathOptions) bool {
 //struct for container oc-bgp:state
 type RouteReflectorState struct {
 	// original -> oc-bgp:route-reflector-cluster-id
-	RouteReflectorClusterId RrClusterIdType `mapstructure:"route-reflector-cluster-id"`
+	RouteReflectorClusterID RRClusterIDType `mapstructure:"route-reflector-cluster-id"`
 	// original -> oc-bgp:route-reflector-client
 	// - original type: boolean
 	RouteReflectorClient bool `mapstructure:"route-reflector-client"`
@@ -3425,7 +3425,7 @@ func (lhs *RouteReflectorState) Equal(rhs *RouteReflectorState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.RouteReflectorClusterId != rhs.RouteReflectorClusterId {
+	if lhs.RouteReflectorClusterID != rhs.RouteReflectorClusterID {
 		return false
 	}
 	if lhs.RouteReflectorClient != rhs.RouteReflectorClient {
@@ -3437,7 +3437,7 @@ func (lhs *RouteReflectorState) Equal(rhs *RouteReflectorState) bool {
 //struct for container oc-bgp:route-reflector
 type RouteReflector struct {
 	// original -> oc-bgp:route-reflector-cluster-id
-	RouteReflectorClusterId RrClusterIdType `mapstructure:"route-reflector-cluster-id"`
+	RouteReflectorClusterID RRClusterIDType `mapstructure:"route-reflector-cluster-id"`
 	// original -> oc-bgp:route-reflector-client
 	// - original type: boolean
 	RouteReflectorClient bool `mapstructure:"route-reflector-client"`
@@ -3449,7 +3449,7 @@ func (lhs *RouteReflector) Equal(rhs *RouteReflector) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.RouteReflectorClusterId != rhs.RouteReflectorClusterId {
+	if lhs.RouteReflectorClusterID != rhs.RouteReflectorClusterID {
 		return false
 	}
 	if lhs.RouteReflectorClient != rhs.RouteReflectorClient {
@@ -3459,46 +3459,46 @@ func (lhs *RouteReflector) Equal(rhs *RouteReflector) bool {
 }
 
 //struct for container oc-bgp:state
-type EbgpMultihopState struct {
+type EBGPMultihopState struct {
 	// original -> oc-bgp:enabled
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
 	// original -> oc-bgp:multihop-ttl
-	MultihopTtl uint8 `mapstructure:"multihop-ttl"`
+	MultihopTTL uint8 `mapstructure:"multihop-ttl"`
 }
 
-func (lhs *EbgpMultihopState) Equal(rhs *EbgpMultihopState) bool {
+func (lhs *EBGPMultihopState) Equal(rhs *EBGPMultihopState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.MultihopTtl != rhs.MultihopTtl {
+	if lhs.MultihopTTL != rhs.MultihopTTL {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp:ebgp-multihop
-type EbgpMultihop struct {
+type EBGPMultihop struct {
 	// original -> oc-bgp:enabled
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
 	// original -> oc-bgp:multihop-ttl
-	MultihopTtl uint8 `mapstructure:"multihop-ttl"`
+	MultihopTTL uint8 `mapstructure:"multihop-ttl"`
 	// original -> oc-bgp:ebgp-multihop-state
-	State EbgpMultihopState `mapstructure:"state"`
+	State EBGPMultihopState `mapstructure:"state"`
 }
 
-func (lhs *EbgpMultihop) Equal(rhs *EbgpMultihop) bool {
+func (lhs *EBGPMultihop) Equal(rhs *EBGPMultihop) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.MultihopTtl != rhs.MultihopTtl {
+	if lhs.MultihopTTL != rhs.MultihopTTL {
 		return false
 	}
 	return true
@@ -3544,7 +3544,7 @@ func (lhs *LoggingOptions) Equal(rhs *LoggingOptions) bool {
 type ErrorHandlingState struct {
 	// original -> oc-bgp:treat-as-withdraw
 	// - original type: boolean
-	TreatAsWithdraw bool `mapstructure:"treat-as-withdraw"`
+	TreatASWithdraw bool `mapstructure:"treat-as-withdraw"`
 	// original -> oc-bgp:erroneous-update-messages
 	ErroneousUpdateMessages uint32 `mapstructure:"erroneous-update-messages"`
 }
@@ -3553,7 +3553,7 @@ func (lhs *ErrorHandlingState) Equal(rhs *ErrorHandlingState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.TreatAsWithdraw != rhs.TreatAsWithdraw {
+	if lhs.TreatASWithdraw != rhs.TreatASWithdraw {
 		return false
 	}
 	if lhs.ErroneousUpdateMessages != rhs.ErroneousUpdateMessages {
@@ -3566,7 +3566,7 @@ func (lhs *ErrorHandlingState) Equal(rhs *ErrorHandlingState) bool {
 type ErrorHandling struct {
 	// original -> oc-bgp:treat-as-withdraw
 	// - original type: boolean
-	TreatAsWithdraw bool `mapstructure:"treat-as-withdraw"`
+	TreatASWithdraw bool `mapstructure:"treat-as-withdraw"`
 	// original -> oc-bgp:error-handling-state
 	State ErrorHandlingState `mapstructure:"state"`
 }
@@ -3575,7 +3575,7 @@ func (lhs *ErrorHandling) Equal(rhs *ErrorHandling) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.TreatAsWithdraw != rhs.TreatAsWithdraw {
+	if lhs.TreatASWithdraw != rhs.TreatASWithdraw {
 		return false
 	}
 	return true
@@ -3584,10 +3584,10 @@ func (lhs *ErrorHandling) Equal(rhs *ErrorHandling) bool {
 //struct for container oc-bgp:state
 type TransportState struct {
 	// original -> oc-bgp:tcp-mss
-	TcpMss uint16 `mapstructure:"tcp-mss"`
+	TCPMSS uint16 `mapstructure:"tcp-mss"`
 	// original -> oc-bgp:mtu-discovery
 	// - original type: boolean
-	MtuDiscovery bool `mapstructure:"mtu-discovery"`
+	MTUDiscovery bool `mapstructure:"mtu-discovery"`
 	// original -> oc-bgp:passive-mode
 	// - original type: boolean
 	PassiveMode bool `mapstructure:"passive-mode"`
@@ -3609,10 +3609,10 @@ func (lhs *TransportState) Equal(rhs *TransportState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.TcpMss != rhs.TcpMss {
+	if lhs.TCPMSS != rhs.TCPMSS {
 		return false
 	}
-	if lhs.MtuDiscovery != rhs.MtuDiscovery {
+	if lhs.MTUDiscovery != rhs.MTUDiscovery {
 		return false
 	}
 	if lhs.PassiveMode != rhs.PassiveMode {
@@ -3636,10 +3636,10 @@ func (lhs *TransportState) Equal(rhs *TransportState) bool {
 //struct for container oc-bgp:transport
 type Transport struct {
 	// original -> oc-bgp:tcp-mss
-	TcpMss uint16 `mapstructure:"tcp-mss"`
+	TCPMSS uint16 `mapstructure:"tcp-mss"`
 	// original -> oc-bgp:mtu-discovery
 	// - original type: boolean
-	MtuDiscovery bool `mapstructure:"mtu-discovery"`
+	MTUDiscovery bool `mapstructure:"mtu-discovery"`
 	// original -> oc-bgp:passive-mode
 	// - original type: boolean
 	PassiveMode bool `mapstructure:"passive-mode"`
@@ -3657,10 +3657,10 @@ func (lhs *Transport) Equal(rhs *Transport) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.TcpMss != rhs.TcpMss {
+	if lhs.TCPMSS != rhs.TCPMSS {
 		return false
 	}
-	if lhs.MtuDiscovery != rhs.MtuDiscovery {
+	if lhs.MTUDiscovery != rhs.MTUDiscovery {
 		return false
 	}
 	if lhs.PassiveMode != rhs.PassiveMode {
@@ -3991,16 +3991,16 @@ type NeighborState struct {
 	Enabled bool `mapstructure:"enabled"`
 	// original -> oc-bgp:peer-as
 	// - original type: inet:as-number
-	PeerAs uint32 `mapstructure:"peer-as"`
+	PeerAS uint32 `mapstructure:"peer-as"`
 	// original -> oc-bgp:local-as
 	// - original type: inet:as-number
-	LocalAs uint32 `mapstructure:"local-as"`
+	LocalAS uint32 `mapstructure:"local-as"`
 	// original -> oc-bgp:peer-type
 	PeerType PeerType `mapstructure:"peer-type"`
 	// original -> oc-bgp:auth-password
 	AuthPassword string `mapstructure:"auth-password"`
 	// original -> oc-bgp:remove-private-as
-	RemovePrivateAs RemovePrivateAsOption `mapstructure:"remove-private-as"`
+	RemovePrivateAS RemovePrivateASOption `mapstructure:"remove-private-as"`
 	// original -> oc-bgp:route-flap-damping
 	// - original type: boolean
 	RouteFlapDamping bool `mapstructure:"route-flap-damping"`
@@ -4016,7 +4016,7 @@ type NeighborState struct {
 	// - original type: yang:counter64
 	EstablishedTransitions uint64 `mapstructure:"established-transitions"`
 	// original -> oc-bgp:supported-capabilities
-	SupportedCapabilitiesList []BgpCapability `mapstructure:"supported-capabilities-list"`
+	SupportedCapabilitiesList []BGPCapability `mapstructure:"supported-capabilities-list"`
 	// original -> oc-bgp:messages
 	Messages Messages `mapstructure:"messages"`
 	// original -> oc-bgp:queues
@@ -4038,7 +4038,7 @@ type NeighborState struct {
 	// original -> gobgp:neighbor-interface
 	NeighborInterface string `mapstructure:"neighbor-interface"`
 	// original -> gobgp:remote-router-id
-	RemoteRouterId string `mapstructure:"remote-router-id"`
+	RemoteRouterID string `mapstructure:"remote-router-id"`
 }
 
 func (lhs *NeighborState) Equal(rhs *NeighborState) bool {
@@ -4054,10 +4054,10 @@ func (lhs *NeighborState) Equal(rhs *NeighborState) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.PeerAs != rhs.PeerAs {
+	if lhs.PeerAS != rhs.PeerAS {
 		return false
 	}
-	if lhs.LocalAs != rhs.LocalAs {
+	if lhs.LocalAS != rhs.LocalAS {
 		return false
 	}
 	if lhs.PeerType != rhs.PeerType {
@@ -4066,7 +4066,7 @@ func (lhs *NeighborState) Equal(rhs *NeighborState) bool {
 	if lhs.AuthPassword != rhs.AuthPassword {
 		return false
 	}
-	if lhs.RemovePrivateAs != rhs.RemovePrivateAs {
+	if lhs.RemovePrivateAS != rhs.RemovePrivateAS {
 		return false
 	}
 	if lhs.RouteFlapDamping != rhs.RouteFlapDamping {
@@ -4122,7 +4122,7 @@ func (lhs *NeighborState) Equal(rhs *NeighborState) bool {
 	if lhs.NeighborInterface != rhs.NeighborInterface {
 		return false
 	}
-	if lhs.RemoteRouterId != rhs.RemoteRouterId {
+	if lhs.RemoteRouterID != rhs.RemoteRouterID {
 		return false
 	}
 	return true
@@ -4140,16 +4140,16 @@ type Neighbor struct {
 	Enabled bool `mapstructure:"enabled"`
 	// original -> oc-bgp:peer-as
 	// - original type: inet:as-number
-	PeerAs uint32 `mapstructure:"peer-as"`
+	PeerAS uint32 `mapstructure:"peer-as"`
 	// original -> oc-bgp:local-as
 	// - original type: inet:as-number
-	LocalAs uint32 `mapstructure:"local-as"`
+	LocalAS uint32 `mapstructure:"local-as"`
 	// original -> oc-bgp:peer-type
 	PeerType PeerType `mapstructure:"peer-type"`
 	// original -> oc-bgp:auth-password
 	AuthPassword string `mapstructure:"auth-password"`
 	// original -> oc-bgp:remove-private-as
-	RemovePrivateAs RemovePrivateAsOption `mapstructure:"remove-private-as"`
+	RemovePrivateAS RemovePrivateASOption `mapstructure:"remove-private-as"`
 	// original -> oc-bgp:route-flap-damping
 	// - original type: boolean
 	RouteFlapDamping bool `mapstructure:"route-flap-damping"`
@@ -4176,11 +4176,11 @@ type Neighbor struct {
 	// original -> oc-bgp:logging-options
 	LoggingOptions LoggingOptions `mapstructure:"logging-options"`
 	// original -> oc-bgp:ebgp-multihop
-	EbgpMultihop EbgpMultihop `mapstructure:"ebgp-multihop"`
+	EBGPMultihop EBGPMultihop `mapstructure:"ebgp-multihop"`
 	// original -> oc-bgp:route-reflector
 	RouteReflector RouteReflector `mapstructure:"route-reflector"`
 	// original -> oc-bgp:as-path-options
-	AsPathOptions AsPathOptions `mapstructure:"as-path-options"`
+	ASPathOptions ASPathOptions `mapstructure:"as-path-options"`
 	// original -> oc-bgp:add-paths
 	AddPaths AddPaths `mapstructure:"add-paths"`
 	// original -> oc-bgp:use-multiple-paths
@@ -4206,10 +4206,10 @@ func (lhs *Neighbor) Equal(rhs *Neighbor) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if lhs.PeerAs != rhs.PeerAs {
+	if lhs.PeerAS != rhs.PeerAS {
 		return false
 	}
-	if lhs.LocalAs != rhs.LocalAs {
+	if lhs.LocalAS != rhs.LocalAS {
 		return false
 	}
 	if lhs.PeerType != rhs.PeerType {
@@ -4218,7 +4218,7 @@ func (lhs *Neighbor) Equal(rhs *Neighbor) bool {
 	if lhs.AuthPassword != rhs.AuthPassword {
 		return false
 	}
-	if lhs.RemovePrivateAs != rhs.RemovePrivateAs {
+	if lhs.RemovePrivateAS != rhs.RemovePrivateAS {
 		return false
 	}
 	if lhs.RouteFlapDamping != rhs.RouteFlapDamping {
@@ -4251,13 +4251,13 @@ func (lhs *Neighbor) Equal(rhs *Neighbor) bool {
 	if !lhs.LoggingOptions.Equal(&(rhs.LoggingOptions)) {
 		return false
 	}
-	if !lhs.EbgpMultihop.Equal(&(rhs.EbgpMultihop)) {
+	if !lhs.EBGPMultihop.Equal(&(rhs.EBGPMultihop)) {
 		return false
 	}
 	if !lhs.RouteReflector.Equal(&(rhs.RouteReflector)) {
 		return false
 	}
-	if !lhs.AsPathOptions.Equal(&(rhs.AsPathOptions)) {
+	if !lhs.ASPathOptions.Equal(&(rhs.ASPathOptions)) {
 		return false
 	}
 	if !lhs.AddPaths.Equal(&(rhs.AddPaths)) {
@@ -4292,14 +4292,14 @@ func (lhs *Neighbor) Equal(rhs *Neighbor) bool {
 }
 
 //struct for container gobgp:mpls-label-range
-type MplsLabelRange struct {
+type MPLSLabelRange struct {
 	// original -> gobgp:min-label
 	MinLabel uint32 `mapstructure:"min-label"`
 	// original -> gobgp:max-label
 	MaxLabel uint32 `mapstructure:"max-label"`
 }
 
-func (lhs *MplsLabelRange) Equal(rhs *MplsLabelRange) bool {
+func (lhs *MPLSLabelRange) Equal(rhs *MPLSLabelRange) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -4727,7 +4727,7 @@ func (lhs *ApplyPolicy) Equal(rhs *ApplyPolicy) bool {
 }
 
 //struct for container oc-bgp:state
-type MpGracefulRestartState struct {
+type MPGracefulRestartState struct {
 	// original -> oc-bgp:enabled
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
@@ -4739,13 +4739,13 @@ type MpGracefulRestartState struct {
 	Advertised bool `mapstructure:"advertised"`
 	// original -> gobgp:end-of-rib-received
 	// - original type: boolean
-	EndOfRibReceived bool `mapstructure:"end-of-rib-received"`
+	EndOfRIBReceived bool `mapstructure:"end-of-rib-received"`
 	// original -> gobgp:end-of-rib-sent
 	// - original type: boolean
-	EndOfRibSent bool `mapstructure:"end-of-rib-sent"`
+	EndOfRIBSent bool `mapstructure:"end-of-rib-sent"`
 }
 
-func (lhs *MpGracefulRestartState) Equal(rhs *MpGracefulRestartState) bool {
+func (lhs *MPGracefulRestartState) Equal(rhs *MPGracefulRestartState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -4758,25 +4758,25 @@ func (lhs *MpGracefulRestartState) Equal(rhs *MpGracefulRestartState) bool {
 	if lhs.Advertised != rhs.Advertised {
 		return false
 	}
-	if lhs.EndOfRibReceived != rhs.EndOfRibReceived {
+	if lhs.EndOfRIBReceived != rhs.EndOfRIBReceived {
 		return false
 	}
-	if lhs.EndOfRibSent != rhs.EndOfRibSent {
+	if lhs.EndOfRIBSent != rhs.EndOfRIBSent {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp:graceful-restart
-type MpGracefulRestart struct {
+type MPGracefulRestart struct {
 	// original -> oc-bgp:enabled
 	// - original type: boolean
 	Enabled bool `mapstructure:"enabled"`
 	// original -> oc-bgp:mp-graceful-restart-state
-	State MpGracefulRestartState `mapstructure:"state"`
+	State MPGracefulRestartState `mapstructure:"state"`
 }
 
-func (lhs *MpGracefulRestart) Equal(rhs *MpGracefulRestart) bool {
+func (lhs *MPGracefulRestart) Equal(rhs *MPGracefulRestart) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -4829,7 +4829,7 @@ type AfiSafi struct {
 	// original -> oc-bgp:afi-safi-state
 	State AfiSafiState `mapstructure:"state"`
 	// original -> oc-bgp:mp-graceful-restart
-	MpGracefulRestart MpGracefulRestart `mapstructure:"mp-graceful-restart"`
+	MPGracefulRestart MPGracefulRestart `mapstructure:"mp-graceful-restart"`
 	// original -> oc-bgp:route-selection-options
 	RouteSelectionOptions RouteSelectionOptions `mapstructure:"route-selection-options"`
 	// original -> oc-bgp:use-multiple-paths
@@ -4872,7 +4872,7 @@ func (lhs *AfiSafi) Equal(rhs *AfiSafi) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if !lhs.MpGracefulRestart.Equal(&(rhs.MpGracefulRestart)) {
+	if !lhs.MPGracefulRestart.Equal(&(rhs.MPGracefulRestart)) {
 		return false
 	}
 	if !lhs.RouteSelectionOptions.Equal(&(rhs.RouteSelectionOptions)) {
@@ -4927,44 +4927,44 @@ func (lhs *AfiSafi) Equal(rhs *AfiSafi) bool {
 type RouteSelectionOptionsState struct {
 	// original -> oc-bgp:always-compare-med
 	// - original type: boolean
-	AlwaysCompareMed bool `mapstructure:"always-compare-med"`
+	AlwaysCompareMED bool `mapstructure:"always-compare-med"`
 	// original -> oc-bgp:ignore-as-path-length
 	// - original type: boolean
-	IgnoreAsPathLength bool `mapstructure:"ignore-as-path-length"`
+	IgnoreASPathLength bool `mapstructure:"ignore-as-path-length"`
 	// original -> oc-bgp:external-compare-router-id
 	// - original type: boolean
-	ExternalCompareRouterId bool `mapstructure:"external-compare-router-id"`
+	ExternalCompareRouterID bool `mapstructure:"external-compare-router-id"`
 	// original -> oc-bgp:advertise-inactive-routes
 	// - original type: boolean
 	AdvertiseInactiveRoutes bool `mapstructure:"advertise-inactive-routes"`
 	// original -> oc-bgp:enable-aigp
 	// - original type: boolean
-	EnableAigp bool `mapstructure:"enable-aigp"`
+	EnableAIGP bool `mapstructure:"enable-aigp"`
 	// original -> oc-bgp:ignore-next-hop-igp-metric
 	// - original type: boolean
-	IgnoreNextHopIgpMetric bool `mapstructure:"ignore-next-hop-igp-metric"`
+	IgnoreNextHopIGPMetric bool `mapstructure:"ignore-next-hop-igp-metric"`
 }
 
 func (lhs *RouteSelectionOptionsState) Equal(rhs *RouteSelectionOptionsState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AlwaysCompareMed != rhs.AlwaysCompareMed {
+	if lhs.AlwaysCompareMED != rhs.AlwaysCompareMED {
 		return false
 	}
-	if lhs.IgnoreAsPathLength != rhs.IgnoreAsPathLength {
+	if lhs.IgnoreASPathLength != rhs.IgnoreASPathLength {
 		return false
 	}
-	if lhs.ExternalCompareRouterId != rhs.ExternalCompareRouterId {
+	if lhs.ExternalCompareRouterID != rhs.ExternalCompareRouterID {
 		return false
 	}
 	if lhs.AdvertiseInactiveRoutes != rhs.AdvertiseInactiveRoutes {
 		return false
 	}
-	if lhs.EnableAigp != rhs.EnableAigp {
+	if lhs.EnableAIGP != rhs.EnableAIGP {
 		return false
 	}
-	if lhs.IgnoreNextHopIgpMetric != rhs.IgnoreNextHopIgpMetric {
+	if lhs.IgnoreNextHopIGPMetric != rhs.IgnoreNextHopIGPMetric {
 		return false
 	}
 	return true
@@ -4974,22 +4974,22 @@ func (lhs *RouteSelectionOptionsState) Equal(rhs *RouteSelectionOptionsState) bo
 type RouteSelectionOptions struct {
 	// original -> oc-bgp:always-compare-med
 	// - original type: boolean
-	AlwaysCompareMed bool `mapstructure:"always-compare-med"`
+	AlwaysCompareMED bool `mapstructure:"always-compare-med"`
 	// original -> oc-bgp:ignore-as-path-length
 	// - original type: boolean
-	IgnoreAsPathLength bool `mapstructure:"ignore-as-path-length"`
+	IgnoreASPathLength bool `mapstructure:"ignore-as-path-length"`
 	// original -> oc-bgp:external-compare-router-id
 	// - original type: boolean
-	ExternalCompareRouterId bool `mapstructure:"external-compare-router-id"`
+	ExternalCompareRouterID bool `mapstructure:"external-compare-router-id"`
 	// original -> oc-bgp:advertise-inactive-routes
 	// - original type: boolean
 	AdvertiseInactiveRoutes bool `mapstructure:"advertise-inactive-routes"`
 	// original -> oc-bgp:enable-aigp
 	// - original type: boolean
-	EnableAigp bool `mapstructure:"enable-aigp"`
+	EnableAIGP bool `mapstructure:"enable-aigp"`
 	// original -> oc-bgp:ignore-next-hop-igp-metric
 	// - original type: boolean
-	IgnoreNextHopIgpMetric bool `mapstructure:"ignore-next-hop-igp-metric"`
+	IgnoreNextHopIGPMetric bool `mapstructure:"ignore-next-hop-igp-metric"`
 	// original -> oc-bgp:route-selection-options-state
 	State RouteSelectionOptionsState `mapstructure:"state"`
 }
@@ -4998,34 +4998,34 @@ func (lhs *RouteSelectionOptions) Equal(rhs *RouteSelectionOptions) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AlwaysCompareMed != rhs.AlwaysCompareMed {
+	if lhs.AlwaysCompareMED != rhs.AlwaysCompareMED {
 		return false
 	}
-	if lhs.IgnoreAsPathLength != rhs.IgnoreAsPathLength {
+	if lhs.IgnoreASPathLength != rhs.IgnoreASPathLength {
 		return false
 	}
-	if lhs.ExternalCompareRouterId != rhs.ExternalCompareRouterId {
+	if lhs.ExternalCompareRouterID != rhs.ExternalCompareRouterID {
 		return false
 	}
 	if lhs.AdvertiseInactiveRoutes != rhs.AdvertiseInactiveRoutes {
 		return false
 	}
-	if lhs.EnableAigp != rhs.EnableAigp {
+	if lhs.EnableAIGP != rhs.EnableAIGP {
 		return false
 	}
-	if lhs.IgnoreNextHopIgpMetric != rhs.IgnoreNextHopIgpMetric {
+	if lhs.IgnoreNextHopIGPMetric != rhs.IgnoreNextHopIGPMetric {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp:state
-type IbgpState struct {
+type IBGPState struct {
 	// original -> oc-bgp:maximum-paths
 	MaximumPaths uint32 `mapstructure:"maximum-paths"`
 }
 
-func (lhs *IbgpState) Equal(rhs *IbgpState) bool {
+func (lhs *IBGPState) Equal(rhs *IBGPState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -5036,14 +5036,14 @@ func (lhs *IbgpState) Equal(rhs *IbgpState) bool {
 }
 
 //struct for container oc-bgp:ibgp
-type Ibgp struct {
+type IBGP struct {
 	// original -> oc-bgp:maximum-paths
 	MaximumPaths uint32 `mapstructure:"maximum-paths"`
 	// original -> oc-bgp:ibgp-state
-	State IbgpState `mapstructure:"state"`
+	State IBGPState `mapstructure:"state"`
 }
 
-func (lhs *Ibgp) Equal(rhs *Ibgp) bool {
+func (lhs *IBGP) Equal(rhs *IBGP) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -5054,19 +5054,19 @@ func (lhs *Ibgp) Equal(rhs *Ibgp) bool {
 }
 
 //struct for container oc-bgp:state
-type EbgpState struct {
+type EBGPState struct {
 	// original -> oc-bgp:allow-multiple-as
 	// - original type: boolean
-	AllowMultipleAs bool `mapstructure:"allow-multiple-as"`
+	AllowMultipleAS bool `mapstructure:"allow-multiple-as"`
 	// original -> oc-bgp:maximum-paths
 	MaximumPaths uint32 `mapstructure:"maximum-paths"`
 }
 
-func (lhs *EbgpState) Equal(rhs *EbgpState) bool {
+func (lhs *EBGPState) Equal(rhs *EBGPState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AllowMultipleAs != rhs.AllowMultipleAs {
+	if lhs.AllowMultipleAS != rhs.AllowMultipleAS {
 		return false
 	}
 	if lhs.MaximumPaths != rhs.MaximumPaths {
@@ -5076,21 +5076,21 @@ func (lhs *EbgpState) Equal(rhs *EbgpState) bool {
 }
 
 //struct for container oc-bgp:ebgp
-type Ebgp struct {
+type EBGP struct {
 	// original -> oc-bgp:allow-multiple-as
 	// - original type: boolean
-	AllowMultipleAs bool `mapstructure:"allow-multiple-as"`
+	AllowMultipleAS bool `mapstructure:"allow-multiple-as"`
 	// original -> oc-bgp:maximum-paths
 	MaximumPaths uint32 `mapstructure:"maximum-paths"`
 	// original -> oc-bgp:ebgp-state
-	State EbgpState `mapstructure:"state"`
+	State EBGPState `mapstructure:"state"`
 }
 
-func (lhs *Ebgp) Equal(rhs *Ebgp) bool {
+func (lhs *EBGP) Equal(rhs *EBGP) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.AllowMultipleAs != rhs.AllowMultipleAs {
+	if lhs.AllowMultipleAS != rhs.AllowMultipleAS {
 		return false
 	}
 	if lhs.MaximumPaths != rhs.MaximumPaths {
@@ -5124,9 +5124,9 @@ type UseMultiplePaths struct {
 	// original -> oc-bgp:use-multiple-paths-state
 	State UseMultiplePathsState `mapstructure:"state"`
 	// original -> oc-bgp:ebgp
-	Ebgp Ebgp `mapstructure:"ebgp"`
+	EBGP EBGP `mapstructure:"ebgp"`
 	// original -> oc-bgp:ibgp
-	Ibgp Ibgp `mapstructure:"ibgp"`
+	IBGP IBGP `mapstructure:"ibgp"`
 }
 
 func (lhs *UseMultiplePaths) Equal(rhs *UseMultiplePaths) bool {
@@ -5136,10 +5136,10 @@ func (lhs *UseMultiplePaths) Equal(rhs *UseMultiplePaths) bool {
 	if lhs.Enabled != rhs.Enabled {
 		return false
 	}
-	if !lhs.Ebgp.Equal(&(rhs.Ebgp)) {
+	if !lhs.EBGP.Equal(&(rhs.EBGP)) {
 		return false
 	}
-	if !lhs.Ibgp.Equal(&(rhs.Ibgp)) {
+	if !lhs.IBGP.Equal(&(rhs.IBGP)) {
 		return false
 	}
 	return true
@@ -5257,7 +5257,7 @@ type ConfederationState struct {
 	Identifier uint32 `mapstructure:"identifier"`
 	// original -> oc-bgp:member-as
 	// - original type: list of inet:as-number
-	MemberAsList []uint32 `mapstructure:"member-as-list"`
+	MemberASList []uint32 `mapstructure:"member-as-list"`
 }
 
 func (lhs *ConfederationState) Equal(rhs *ConfederationState) bool {
@@ -5270,11 +5270,11 @@ func (lhs *ConfederationState) Equal(rhs *ConfederationState) bool {
 	if lhs.Identifier != rhs.Identifier {
 		return false
 	}
-	if len(lhs.MemberAsList) != len(rhs.MemberAsList) {
+	if len(lhs.MemberASList) != len(rhs.MemberASList) {
 		return false
 	}
-	for idx, l := range lhs.MemberAsList {
-		if l != rhs.MemberAsList[idx] {
+	for idx, l := range lhs.MemberASList {
+		if l != rhs.MemberASList[idx] {
 			return false
 		}
 	}
@@ -5291,7 +5291,7 @@ type Confederation struct {
 	Identifier uint32 `mapstructure:"identifier"`
 	// original -> oc-bgp:member-as
 	// - original type: list of inet:as-number
-	MemberAsList []uint32 `mapstructure:"member-as-list"`
+	MemberASList []uint32 `mapstructure:"member-as-list"`
 	// original -> oc-bgp:confederation-state
 	State ConfederationState `mapstructure:"state"`
 }
@@ -5306,11 +5306,11 @@ func (lhs *Confederation) Equal(rhs *Confederation) bool {
 	if lhs.Identifier != rhs.Identifier {
 		return false
 	}
-	if len(lhs.MemberAsList) != len(rhs.MemberAsList) {
+	if len(lhs.MemberASList) != len(rhs.MemberASList) {
 		return false
 	}
-	for idx, l := range lhs.MemberAsList {
-		if l != rhs.MemberAsList[idx] {
+	for idx, l := range lhs.MemberASList {
+		if l != rhs.MemberASList[idx] {
 			return false
 		}
 	}
@@ -5365,10 +5365,10 @@ func (lhs *DefaultRouteDistance) Equal(rhs *DefaultRouteDistance) bool {
 type GlobalState struct {
 	// original -> oc-bgp:as
 	// - original type: inet:as-number
-	As uint32 `mapstructure:"as"`
+	AS uint32 `mapstructure:"as"`
 	// original -> oc-bgp:router-id
 	// - original type: yang:dotted-quad
-	RouterId string `mapstructure:"router-id"`
+	RouterID string `mapstructure:"router-id"`
 	// original -> oc-bgp:total-paths
 	TotalPaths uint32 `mapstructure:"total-paths"`
 	// original -> oc-bgp:total-prefixes
@@ -5383,10 +5383,10 @@ func (lhs *GlobalState) Equal(rhs *GlobalState) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.As != rhs.As {
+	if lhs.AS != rhs.AS {
 		return false
 	}
-	if lhs.RouterId != rhs.RouterId {
+	if lhs.RouterID != rhs.RouterID {
 		return false
 	}
 	if lhs.TotalPaths != rhs.TotalPaths {
@@ -5413,10 +5413,10 @@ func (lhs *GlobalState) Equal(rhs *GlobalState) bool {
 type Global struct {
 	// original -> oc-bgp:as
 	// - original type: inet:as-number
-	As uint32 `mapstructure:"as"`
+	AS uint32 `mapstructure:"as"`
 	// original -> oc-bgp:router-id
 	// - original type: yang:dotted-quad
-	RouterId string `mapstructure:"router-id"`
+	RouterID string `mapstructure:"router-id"`
 	// original -> gobgp:port
 	Port int32 `mapstructure:"port"`
 	// original -> gobgp:local-address
@@ -5438,17 +5438,17 @@ type Global struct {
 	// original -> oc-rpol:apply-policy
 	ApplyPolicy ApplyPolicy `mapstructure:"apply-policy"`
 	// original -> gobgp:mpls-label-range
-	MplsLabelRange MplsLabelRange `mapstructure:"mpls-label-range"`
+	MPLSLabelRange MPLSLabelRange `mapstructure:"mpls-label-range"`
 }
 
 func (lhs *Global) Equal(rhs *Global) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
-	if lhs.As != rhs.As {
+	if lhs.AS != rhs.AS {
 		return false
 	}
-	if lhs.RouterId != rhs.RouterId {
+	if lhs.RouterID != rhs.RouterID {
 		return false
 	}
 	if lhs.Port != rhs.Port {
@@ -5496,14 +5496,14 @@ func (lhs *Global) Equal(rhs *Global) bool {
 	if !lhs.ApplyPolicy.Equal(&(rhs.ApplyPolicy)) {
 		return false
 	}
-	if !lhs.MplsLabelRange.Equal(&(rhs.MplsLabelRange)) {
+	if !lhs.MPLSLabelRange.Equal(&(rhs.MPLSLabelRange)) {
 		return false
 	}
 	return true
 }
 
 //struct for container oc-bgp:bgp
-type Bgp struct {
+type BGP struct {
 	// original -> oc-bgp:global
 	Global Global `mapstructure:"global"`
 	// original -> oc-bgp:neighbors
@@ -5511,18 +5511,18 @@ type Bgp struct {
 	// original -> oc-bgp:peer-groups
 	PeerGroups []PeerGroup `mapstructure:"peer-groups"`
 	// original -> gobgp:rpki-servers
-	RpkiServers []RpkiServer `mapstructure:"rpki-servers"`
+	RPKIServers []RPKIServer `mapstructure:"rpki-servers"`
 	// original -> gobgp:bmp-servers
-	BmpServers []BmpServer `mapstructure:"bmp-servers"`
+	BMPServers []BMPServer `mapstructure:"bmp-servers"`
 	// original -> gobgp:mrt-dump
-	MrtDump []Mrt `mapstructure:"mrt-dump"`
+	MRTDump []MRT `mapstructure:"mrt-dump"`
 	// original -> gobgp:zebra
 	Zebra Zebra `mapstructure:"zebra"`
 	// original -> gobgp:collector
 	Collector Collector `mapstructure:"collector"`
 }
 
-func (lhs *Bgp) Equal(rhs *Bgp) bool {
+func (lhs *BGP) Equal(rhs *BGP) bool {
 	if lhs == nil || rhs == nil {
 		return false
 	}
@@ -5561,15 +5561,15 @@ func (lhs *Bgp) Equal(rhs *Bgp) bool {
 			}
 		}
 	}
-	if len(lhs.RpkiServers) != len(rhs.RpkiServers) {
+	if len(lhs.RPKIServers) != len(rhs.RPKIServers) {
 		return false
 	}
 	{
-		lmap := make(map[string]*RpkiServer)
-		for i, l := range lhs.RpkiServers {
-			lmap[mapkey(i, string(l.Address))] = &lhs.RpkiServers[i]
+		lmap := make(map[string]*RPKIServer)
+		for i, l := range lhs.RPKIServers {
+			lmap[mapkey(i, string(l.Address))] = &lhs.RPKIServers[i]
 		}
-		for i, r := range rhs.RpkiServers {
+		for i, r := range rhs.RPKIServers {
 			if l, y := lmap[mapkey(i, string(r.Address))]; !y {
 				return false
 			} else if !r.Equal(l) {
@@ -5577,15 +5577,15 @@ func (lhs *Bgp) Equal(rhs *Bgp) bool {
 			}
 		}
 	}
-	if len(lhs.BmpServers) != len(rhs.BmpServers) {
+	if len(lhs.BMPServers) != len(rhs.BMPServers) {
 		return false
 	}
 	{
-		lmap := make(map[string]*BmpServer)
-		for i, l := range lhs.BmpServers {
-			lmap[mapkey(i, string(l.Address))] = &lhs.BmpServers[i]
+		lmap := make(map[string]*BMPServer)
+		for i, l := range lhs.BMPServers {
+			lmap[mapkey(i, string(l.Address))] = &lhs.BMPServers[i]
 		}
-		for i, r := range rhs.BmpServers {
+		for i, r := range rhs.BMPServers {
 			if l, y := lmap[mapkey(i, string(r.Address))]; !y {
 				return false
 			} else if !r.Equal(l) {
@@ -5593,15 +5593,15 @@ func (lhs *Bgp) Equal(rhs *Bgp) bool {
 			}
 		}
 	}
-	if len(lhs.MrtDump) != len(rhs.MrtDump) {
+	if len(lhs.MRTDump) != len(rhs.MRTDump) {
 		return false
 	}
 	{
-		lmap := make(map[string]*Mrt)
-		for i, l := range lhs.MrtDump {
-			lmap[mapkey(i, string(l.FileName))] = &lhs.MrtDump[i]
+		lmap := make(map[string]*MRT)
+		for i, l := range lhs.MRTDump {
+			lmap[mapkey(i, string(l.FileName))] = &lhs.MRTDump[i]
 		}
-		for i, r := range rhs.MrtDump {
+		for i, r := range rhs.MRTDump {
 			if l, y := lmap[mapkey(i, string(r.FileName))]; !y {
 				return false
 			} else if !r.Equal(l) {

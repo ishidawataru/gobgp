@@ -469,8 +469,8 @@ func (h *FSMHandler) active() (bgp.FSMState, FsmStateReason) {
 			fsm.conn = conn
 			if fsm.pConf.PeerType == config.PEER_TYPE_EXTERNAL {
 				ttl := 1
-				if fsm.pConf.EbgpMultihop.Enabled == true {
-					ttl = int(fsm.pConf.EbgpMultihop.MultihopTtl)
+				if fsm.pConf.EBGPMultihop.Enabled == true {
+					ttl = int(fsm.pConf.EBGPMultihop.MultihopTTL)
 				}
 				if ttl != 0 {
 					SetTcpTTLSockopts(conn.(*net.TCPConn), ttl)
@@ -516,7 +516,7 @@ func capabilitiesFromConfig(pConf *config.Neighbor) []bgp.ParameterCapabilityInt
 		family, _ := bgp.GetRouteFamily(string(rf.AfiSafiName))
 		caps = append(caps, bgp.NewCapMultiProtocol(family))
 	}
-	caps = append(caps, bgp.NewCapFourOctetASNumber(pConf.LocalAs))
+	caps = append(caps, bgp.NewCapFourOctetASNumber(pConf.LocalAS))
 
 	if c := pConf.GracefulRestart; c.Enabled {
 		tuples := []*bgp.CapGracefulRestartTuple{}
@@ -529,7 +529,7 @@ func capabilitiesFromConfig(pConf *config.Neighbor) []bgp.ParameterCapabilityInt
 
 		if !c.HelperOnly {
 			for i, rf := range pConf.AfiSafis {
-				if rf.MpGracefulRestart.Enabled {
+				if rf.MPGracefulRestart.Enabled {
 					k, _ := bgp.GetRouteFamily(string(rf.AfiSafiName))
 					// When restarting, always flag forwaring bit.
 					// This can be a lie, depending on how gobgpd is used.
@@ -539,7 +539,7 @@ func capabilitiesFromConfig(pConf *config.Neighbor) []bgp.ParameterCapabilityInt
 					// relation to bgpd, this behavior is ok.
 					// TODO consideration of other use-cases
 					tuples = append(tuples, bgp.NewCapGracefulRestartTuple(k, restarting))
-					pConf.AfiSafis[i].MpGracefulRestart.State.Advertised = true
+					pConf.AfiSafis[i].MPGracefulRestart.State.Advertised = true
 				}
 			}
 		}
@@ -553,11 +553,11 @@ func buildopen(gConf *config.Global, pConf *config.Neighbor) *bgp.BGPMessage {
 	caps := capabilitiesFromConfig(pConf)
 	opt := bgp.NewOptionParameterCapability(caps)
 	holdTime := uint16(pConf.Timers.HoldTime)
-	as := pConf.LocalAs
+	as := pConf.LocalAS
 	if as > (1<<16)-1 {
 		as = bgp.AS_TRANS
 	}
-	return bgp.NewBGPOpenMessage(uint16(as), holdTime, gConf.RouterId,
+	return bgp.NewBGPOpenMessage(uint16(as), holdTime, gConf.RouterID,
 		[]bgp.OptionParameterInterface{opt})
 }
 
@@ -798,7 +798,7 @@ func (h *FSMHandler) opensent() (bgp.FSMState, FsmStateReason) {
 				if m.Header.Type == bgp.BGP_MSG_OPEN {
 					fsm.recvOpen = m
 					body := m.Body.(*bgp.BGPOpen)
-					err := bgp.ValidateOpenMsg(body, fsm.pConf.PeerAs)
+					err := bgp.ValidateOpenMsg(body, fsm.pConf.PeerAS)
 					if err != nil {
 						fsm.sendNotificationFromErrorMsg(err.(*bgp.MessageError))
 						return bgp.BGP_FSM_IDLE, FSM_INVALID_MSG
@@ -836,8 +836,8 @@ func (h *FSMHandler) opensent() (bgp.FSMState, FsmStateReason) {
 							n := bgp.AddressFamilyNameMap[bgp.AfiSafiToRouteFamily(t.AFI, t.SAFI)]
 							for i, a := range fsm.pConf.AfiSafis {
 								if string(a.AfiSafiName) == n {
-									fsm.pConf.AfiSafis[i].MpGracefulRestart.State.Enabled = true
-									fsm.pConf.AfiSafis[i].MpGracefulRestart.State.Received = true
+									fsm.pConf.AfiSafis[i].MPGracefulRestart.State.Enabled = true
+									fsm.pConf.AfiSafis[i].MPGracefulRestart.State.Received = true
 									break
 								}
 							}

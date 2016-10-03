@@ -47,13 +47,13 @@ func TestPrefixCalcurateNoRange(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nlri)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/24", MasklengthRange: ""})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/24", MasklengthRange: ""})
 	match1 := pl1.Match(path)
 	assert.Equal(t, true, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/23", MasklengthRange: ""})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/23", MasklengthRange: ""})
 	match2 := pl2.Match(path)
 	assert.Equal(t, false, match2)
-	pl3, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
+	pl3, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
 	match3 := pl3.Match(path)
 	assert.Equal(t, true, match3)
 }
@@ -71,10 +71,10 @@ func TestPrefixCalcurateAddress(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nlri)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "10.11.0.0/16", MasklengthRange: "21..24"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "10.11.0.0/16", MasklengthRange: "21..24"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, true, match2)
 }
@@ -92,10 +92,10 @@ func TestPrefixCalcurateLength(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nlri)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.64.0/24", MasklengthRange: "21..24"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.64.0/24", MasklengthRange: "21..24"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.64.0/16", MasklengthRange: "21..24"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.64.0/16", MasklengthRange: "21..24"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, true, match2)
 }
@@ -113,13 +113,13 @@ func TestPrefixCalcurateLengthRange(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nlri)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "21..23"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/16", MasklengthRange: "21..23"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "25..26"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/16", MasklengthRange: "25..26"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, false, match2)
-	pl3, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
+	pl3, _ := NewPrefix(config.Prefix{IPPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
 	match3 := pl3.Match(path)
 	assert.Equal(t, true, match3)
 }
@@ -138,13 +138,13 @@ func TestPrefixCalcurateNoRangeIPv6(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nil)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: ""})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: ""})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123:1::/64", MasklengthRange: ""})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123:1::/64", MasklengthRange: ""})
 	match2 := pl2.Match(path)
 	assert.Equal(t, true, match2)
-	pl3, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: "64..80"})
+	pl3, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: "64..80"})
 	match3 := pl3.Match(path)
 	assert.Equal(t, true, match3)
 }
@@ -162,10 +162,10 @@ func TestPrefixCalcurateAddressIPv6(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nil)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:128::/48", MasklengthRange: "64..80"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:128::/48", MasklengthRange: "64..80"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: "64..80"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: "64..80"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, true, match2)
 }
@@ -183,10 +183,10 @@ func TestPrefixCalcurateLengthIPv6(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nil)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123:64::/64", MasklengthRange: "64..80"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123:64::/64", MasklengthRange: "64..80"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123:64::/48", MasklengthRange: "64..80"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123:64::/48", MasklengthRange: "64..80"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, true, match2)
 }
@@ -204,13 +204,13 @@ func TestPrefixCalcurateLengthRangeIPv6(t *testing.T) {
 	updateMsg := bgp.NewBGPUpdateMessage(nil, pathAttributes, nil)
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 	// test
-	pl1, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: "62..63"})
+	pl1, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: "62..63"})
 	match1 := pl1.Match(path)
 	assert.Equal(t, false, match1)
-	pl2, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: "65..66"})
+	pl2, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: "65..66"})
 	match2 := pl2.Match(path)
 	assert.Equal(t, false, match2)
-	pl3, _ := NewPrefix(config.Prefix{IpPrefix: "2001:123:123::/48", MasklengthRange: "63..65"})
+	pl3, _ := NewPrefix(config.Prefix{IPPrefix: "2001:123:123::/48", MasklengthRange: "63..65"})
 	match3 := pl3.Match(path)
 	assert.Equal(t, true, match3)
 }
@@ -475,7 +475,7 @@ func TestAsPathLengthConditionEvaluate(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create match condition
-	asPathLength := config.AsPathLength{
+	asPathLength := config.ASPathLength{
 		Operator: "eq",
 		Value:    5,
 	}
@@ -485,7 +485,7 @@ func TestAsPathLengthConditionEvaluate(t *testing.T) {
 	assert.Equal(t, true, c.Evaluate(path, nil))
 
 	// create match condition
-	asPathLength = config.AsPathLength{
+	asPathLength = config.ASPathLength{
 		Operator: "ge",
 		Value:    3,
 	}
@@ -495,7 +495,7 @@ func TestAsPathLengthConditionEvaluate(t *testing.T) {
 	assert.Equal(t, true, c.Evaluate(path, nil))
 
 	// create match condition
-	asPathLength = config.AsPathLength{
+	asPathLength = config.ASPathLength{
 		Operator: "le",
 		Value:    3,
 	}
@@ -532,13 +532,13 @@ func TestAsPathLengthConditionWithOtherCondition(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	// create match condition
-	asPathLength := config.AsPathLength{
+	asPathLength := config.ASPathLength{
 		Operator: "le",
 		Value:    10,
 	}
 
 	s := createStatement("statement1", "ps1", "ns1", false)
-	s.Conditions.BgpConditions.AsPathLength = asPathLength
+	s.Conditions.BGPConditions.ASPathLength = asPathLength
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
 
@@ -582,7 +582,7 @@ func TestAs4PathLengthConditionEvaluate(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create match condition
-	asPathLength := config.AsPathLength{
+	asPathLength := config.ASPathLength{
 		Operator: "eq",
 		Value:    5,
 	}
@@ -592,7 +592,7 @@ func TestAs4PathLengthConditionEvaluate(t *testing.T) {
 	assert.Equal(t, true, c.Evaluate(path, nil))
 
 	// create match condition
-	asPathLength = config.AsPathLength{
+	asPathLength = config.ASPathLength{
 		Operator: "ge",
 		Value:    3,
 	}
@@ -602,7 +602,7 @@ func TestAs4PathLengthConditionEvaluate(t *testing.T) {
 	assert.Equal(t, true, c.Evaluate(path, nil))
 
 	// create match condition
-	asPathLength = config.AsPathLength{
+	asPathLength = config.ASPathLength{
 		Operator: "le",
 		Value:    3,
 	}
@@ -658,13 +658,13 @@ func TestAs4PathLengthConditionWithOtherCondition(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	// create match condition
-	asPathLength := config.AsPathLength{
+	asPathLength := config.ASPathLength{
 		Operator: "le",
 		Value:    10,
 	}
 
 	s := createStatement("statement1", "ps1", "ns1", false)
-	s.Conditions.BgpConditions.AsPathLength = asPathLength
+	s.Conditions.BGPConditions.ASPathLength = asPathLength
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
 
@@ -707,46 +707,46 @@ func TestAsPathConditionEvaluate(t *testing.T) {
 	path2 := ProcessMessage(updateMsg2, peer, time.Now())[0]
 
 	// create match condition
-	asPathSet1 := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{"^65001"},
+	asPathSet1 := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{"^65001"},
 	}
 
-	asPathSet2 := config.AsPathSet{
-		AsPathSetName: "asset2",
-		AsPathList:    []string{"65005$"},
+	asPathSet2 := config.ASPathSet{
+		ASPathSetName: "asset2",
+		ASPathList:    []string{"65005$"},
 	}
 
-	asPathSet3 := config.AsPathSet{
-		AsPathSetName: "asset3",
-		AsPathList:    []string{"65004", "65005$"},
+	asPathSet3 := config.ASPathSet{
+		ASPathSetName: "asset3",
+		ASPathList:    []string{"65004", "65005$"},
 	}
 
-	asPathSet4 := config.AsPathSet{
-		AsPathSetName: "asset4",
-		AsPathList:    []string{"65000$"},
+	asPathSet4 := config.ASPathSet{
+		ASPathSetName: "asset4",
+		ASPathList:    []string{"65000$"},
 	}
 
-	asPathSet5 := config.AsPathSet{
-		AsPathSetName: "asset5",
-		AsPathList:    []string{"65010"},
+	asPathSet5 := config.ASPathSet{
+		ASPathSetName: "asset5",
+		ASPathList:    []string{"65010"},
 	}
 
-	asPathSet6 := config.AsPathSet{
-		AsPathSetName: "asset6",
-		AsPathList:    []string{"^65010$"},
+	asPathSet6 := config.ASPathSet{
+		ASPathSetName: "asset6",
+		ASPathList:    []string{"^65010$"},
 	}
 
 	m := make(map[string]DefinedSet)
-	for _, s := range []config.AsPathSet{asPathSet1, asPathSet2, asPathSet3,
+	for _, s := range []config.ASPathSet{asPathSet1, asPathSet2, asPathSet3,
 		asPathSet4, asPathSet5, asPathSet6} {
 		a, _ := NewAsPathSet(s)
-		m[s.AsPathSetName] = a
+		m[s.ASPathSetName] = a
 	}
 
 	createAspathC := func(name string, option config.MatchSetOptionsType) *AsPathCondition {
-		matchSet := config.MatchAsPathSet{}
-		matchSet.AsPathSet = name
+		matchSet := config.MatchASPathSet{}
+		matchSet.ASPathSet = name
 		matchSet.MatchSetOptions = option
 		p, _ := NewAsPathCondition(matchSet)
 		if v, ok := m[name]; ok {
@@ -795,61 +795,61 @@ func TestMultipleAsPathConditionEvaluate(t *testing.T) {
 	path1 := ProcessMessage(updateMsg1, peer, time.Now())[0]
 
 	// create match condition
-	asPathSet1 := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{"^65001_65000"},
+	asPathSet1 := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{"^65001_65000"},
 	}
 
-	asPathSet2 := config.AsPathSet{
-		AsPathSetName: "asset2",
-		AsPathList:    []string{"65004_65005$"},
+	asPathSet2 := config.ASPathSet{
+		ASPathSetName: "asset2",
+		ASPathList:    []string{"65004_65005$"},
 	}
 
-	asPathSet3 := config.AsPathSet{
-		AsPathSetName: "asset3",
-		AsPathList:    []string{"65001_65000_54000"},
+	asPathSet3 := config.ASPathSet{
+		ASPathSetName: "asset3",
+		ASPathList:    []string{"65001_65000_54000"},
 	}
 
-	asPathSet4 := config.AsPathSet{
-		AsPathSetName: "asset4",
-		AsPathList:    []string{"54000_65004_65005"},
+	asPathSet4 := config.ASPathSet{
+		ASPathSetName: "asset4",
+		ASPathList:    []string{"54000_65004_65005"},
 	}
 
-	asPathSet5 := config.AsPathSet{
-		AsPathSetName: "asset5",
-		AsPathList:    []string{"^65001 65000 54000 65004 65005$"},
+	asPathSet5 := config.ASPathSet{
+		ASPathSetName: "asset5",
+		ASPathList:    []string{"^65001 65000 54000 65004 65005$"},
 	}
 
-	asPathSet6 := config.AsPathSet{
-		AsPathSetName: "asset6",
-		AsPathList:    []string{".*_[0-9]+_65005"},
+	asPathSet6 := config.ASPathSet{
+		ASPathSetName: "asset6",
+		ASPathList:    []string{".*_[0-9]+_65005"},
 	}
 
-	asPathSet7 := config.AsPathSet{
-		AsPathSetName: "asset7",
-		AsPathList:    []string{".*_5[0-9]+_[0-9]+"},
+	asPathSet7 := config.ASPathSet{
+		ASPathSetName: "asset7",
+		ASPathList:    []string{".*_5[0-9]+_[0-9]+"},
 	}
 
-	asPathSet8 := config.AsPathSet{
-		AsPathSetName: "asset8",
-		AsPathList:    []string{"6[0-9]+_6[0-9]+_5[0-9]+"},
+	asPathSet8 := config.ASPathSet{
+		ASPathSetName: "asset8",
+		ASPathList:    []string{"6[0-9]+_6[0-9]+_5[0-9]+"},
 	}
 
-	asPathSet9 := config.AsPathSet{
-		AsPathSetName: "asset9",
-		AsPathList:    []string{"6[0-9]+__6[0-9]+"},
+	asPathSet9 := config.ASPathSet{
+		ASPathSetName: "asset9",
+		ASPathList:    []string{"6[0-9]+__6[0-9]+"},
 	}
 
 	m := make(map[string]DefinedSet)
-	for _, s := range []config.AsPathSet{asPathSet1, asPathSet2, asPathSet3,
+	for _, s := range []config.ASPathSet{asPathSet1, asPathSet2, asPathSet3,
 		asPathSet4, asPathSet5, asPathSet6, asPathSet7, asPathSet8, asPathSet9} {
 		a, _ := NewAsPathSet(s)
-		m[s.AsPathSetName] = a
+		m[s.ASPathSetName] = a
 	}
 
 	createAspathC := func(name string, option config.MatchSetOptionsType) *AsPathCondition {
-		matchSet := config.MatchAsPathSet{}
-		matchSet.AsPathSet = name
+		matchSet := config.MatchASPathSet{}
+		matchSet.ASPathSet = name
 		matchSet.MatchSetOptions = option
 		p, _ := NewAsPathCondition(matchSet)
 		if v, ok := m[name]; ok {
@@ -939,12 +939,12 @@ func TestAsPathCondition(t *testing.T) {
 	}
 
 	for k, v := range tests {
-		s, _ := NewAsPathSet(config.AsPathSet{
-			AsPathSetName: k,
-			AsPathList:    []string{k},
+		s, _ := NewAsPathSet(config.ASPathSet{
+			ASPathSetName: k,
+			ASPathList:    []string{k},
 		})
-		c, _ := NewAsPathCondition(config.MatchAsPathSet{
-			AsPathSet:       k,
+		c, _ := NewAsPathCondition(config.MatchASPathSet{
+			ASPathSet:       k,
 			MatchSetOptions: config.MATCH_SET_OPTIONS_TYPE_ANY,
 		})
 		c.set = s
@@ -982,9 +982,9 @@ func TestAsPathConditionWithOtherCondition(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create policy
-	asPathSet := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{"65005$"},
+	asPathSet := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{"65005$"},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.1.0/16", "21..24")
@@ -993,10 +993,10 @@ func TestAsPathConditionWithOtherCondition(t *testing.T) {
 	ds := config.DefinedSets{}
 	ds.PrefixSets = []config.PrefixSet{ps}
 	ds.NeighborSets = []config.NeighborSet{ns}
-	ds.BgpDefinedSets.AsPathSets = []config.AsPathSet{asPathSet}
+	ds.BGPDefinedSets.ASPathSets = []config.ASPathSet{asPathSet}
 
 	s := createStatement("statement1", "ps1", "ns1", false)
-	s.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
+	s.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1048,55 +1048,55 @@ func TestAs4PathConditionEvaluate(t *testing.T) {
 	path2 := ProcessMessage(updateMsg2, peer, time.Now())[0]
 
 	// create match condition
-	asPathSet1 := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
+	asPathSet1 := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
 	}
 
-	asPathSet2 := config.AsPathSet{
-		AsPathSetName: "asset2",
-		AsPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
+	asPathSet2 := config.ASPathSet{
+		ASPathSetName: "asset2",
+		ASPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
 	}
 
-	asPathSet3 := config.AsPathSet{
-		AsPathSetName: "asset3",
-		AsPathList: []string{
+	asPathSet3 := config.ASPathSet{
+		ASPathSetName: "asset3",
+		ASPathList: []string{
 			fmt.Sprintf("%d", createAs4Value("65004.1")),
 			fmt.Sprintf("%d$", createAs4Value("65005.1")),
 		},
 	}
 
-	asPathSet4 := config.AsPathSet{
-		AsPathSetName: "asset4",
-		AsPathList: []string{
+	asPathSet4 := config.ASPathSet{
+		ASPathSetName: "asset4",
+		ASPathList: []string{
 			fmt.Sprintf("%d$", createAs4Value("65000.1")),
 		},
 	}
 
-	asPathSet5 := config.AsPathSet{
-		AsPathSetName: "asset5",
-		AsPathList: []string{
+	asPathSet5 := config.ASPathSet{
+		ASPathSetName: "asset5",
+		ASPathList: []string{
 			fmt.Sprintf("%d", createAs4Value("65010.1")),
 		},
 	}
 
-	asPathSet6 := config.AsPathSet{
-		AsPathSetName: "asset6",
-		AsPathList: []string{
+	asPathSet6 := config.ASPathSet{
+		ASPathSetName: "asset6",
+		ASPathList: []string{
 			fmt.Sprintf("%d$", createAs4Value("65010.1")),
 		},
 	}
 
 	m := make(map[string]DefinedSet)
-	for _, s := range []config.AsPathSet{asPathSet1, asPathSet2, asPathSet3,
+	for _, s := range []config.ASPathSet{asPathSet1, asPathSet2, asPathSet3,
 		asPathSet4, asPathSet5, asPathSet6} {
 		a, _ := NewAsPathSet(s)
-		m[s.AsPathSetName] = a
+		m[s.ASPathSetName] = a
 	}
 
 	createAspathC := func(name string, option config.MatchSetOptionsType) *AsPathCondition {
-		matchSet := config.MatchAsPathSet{}
-		matchSet.AsPathSet = name
+		matchSet := config.MatchASPathSet{}
+		matchSet.ASPathSet = name
 		matchSet.MatchSetOptions = option
 		p, _ := NewAsPathCondition(matchSet)
 		if v, ok := m[name]; ok {
@@ -1154,73 +1154,73 @@ func TestMultipleAs4PathConditionEvaluate(t *testing.T) {
 	path1 := ProcessMessage(updateMsg1, peer, time.Now())[0]
 
 	// create match condition
-	asPathSet1 := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList: []string{
+	asPathSet1 := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList: []string{
 			fmt.Sprintf("^%d_%d", createAs4Value("65001.1"), createAs4Value("65000.1")),
 		},
 	}
 
-	asPathSet2 := config.AsPathSet{
-		AsPathSetName: "asset2",
-		AsPathList: []string{
+	asPathSet2 := config.ASPathSet{
+		ASPathSetName: "asset2",
+		ASPathList: []string{
 			fmt.Sprintf("%d_%d$", createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
-	asPathSet3 := config.AsPathSet{
-		AsPathSetName: "asset3",
-		AsPathList: []string{
+	asPathSet3 := config.ASPathSet{
+		ASPathSetName: "asset3",
+		ASPathList: []string{
 			fmt.Sprintf("%d_%d_%d", createAs4Value("65001.1"), createAs4Value("65000.1"), createAs4Value("54000.1")),
 		},
 	}
 
-	asPathSet4 := config.AsPathSet{
-		AsPathSetName: "asset4",
-		AsPathList: []string{
+	asPathSet4 := config.ASPathSet{
+		ASPathSetName: "asset4",
+		ASPathList: []string{
 			fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
-	asPathSet5 := config.AsPathSet{
-		AsPathSetName: "asset5",
-		AsPathList: []string{
+	asPathSet5 := config.ASPathSet{
+		ASPathSetName: "asset5",
+		ASPathList: []string{
 			fmt.Sprintf("^%d %d %d %d %d$", createAs4Value("65001.1"), createAs4Value("65000.1"), createAs4Value("54000.1"), createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
-	asPathSet6 := config.AsPathSet{
-		AsPathSetName: "asset6",
-		AsPathList: []string{
+	asPathSet6 := config.ASPathSet{
+		ASPathSetName: "asset6",
+		ASPathList: []string{
 			fmt.Sprintf(".*_[0-9]+_%d", createAs4Value("65005.1")),
 		},
 	}
 
-	asPathSet7 := config.AsPathSet{
-		AsPathSetName: "asset7",
-		AsPathList:    []string{".*_3[0-9]+_[0-9]+"},
+	asPathSet7 := config.ASPathSet{
+		ASPathSetName: "asset7",
+		ASPathList:    []string{".*_3[0-9]+_[0-9]+"},
 	}
 
-	asPathSet8 := config.AsPathSet{
-		AsPathSetName: "asset8",
-		AsPathList:    []string{"4[0-9]+_4[0-9]+_3[0-9]+"},
+	asPathSet8 := config.ASPathSet{
+		ASPathSetName: "asset8",
+		ASPathList:    []string{"4[0-9]+_4[0-9]+_3[0-9]+"},
 	}
 
-	asPathSet9 := config.AsPathSet{
-		AsPathSetName: "asset9",
-		AsPathList:    []string{"4[0-9]+__4[0-9]+"},
+	asPathSet9 := config.ASPathSet{
+		ASPathSetName: "asset9",
+		ASPathList:    []string{"4[0-9]+__4[0-9]+"},
 	}
 
 	m := make(map[string]DefinedSet)
-	for _, s := range []config.AsPathSet{asPathSet1, asPathSet2, asPathSet3,
+	for _, s := range []config.ASPathSet{asPathSet1, asPathSet2, asPathSet3,
 		asPathSet4, asPathSet5, asPathSet6, asPathSet7, asPathSet8, asPathSet9} {
 		a, _ := NewAsPathSet(s)
-		m[s.AsPathSetName] = a
+		m[s.ASPathSetName] = a
 	}
 
 	createAspathC := func(name string, option config.MatchSetOptionsType) *AsPathCondition {
-		matchSet := config.MatchAsPathSet{}
-		matchSet.AsPathSet = name
+		matchSet := config.MatchASPathSet{}
+		matchSet.ASPathSet = name
 		matchSet.MatchSetOptions = option
 		p, _ := NewAsPathCondition(matchSet)
 		if v, ok := m[name]; ok {
@@ -1282,9 +1282,9 @@ func TestAs4PathConditionWithOtherCondition(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create policy
-	asPathSet := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
+	asPathSet := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.1.0/16", "21..24")
@@ -1293,10 +1293,10 @@ func TestAs4PathConditionWithOtherCondition(t *testing.T) {
 	ds := config.DefinedSets{}
 	ds.PrefixSets = []config.PrefixSet{ps}
 	ds.NeighborSets = []config.NeighborSet{ns}
-	ds.BgpDefinedSets.AsPathSets = []config.AsPathSet{asPathSet}
+	ds.BGPDefinedSets.ASPathSets = []config.ASPathSet{asPathSet}
 
 	s := createStatement("statement1", "ps1", "ns1", false)
-	s.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
+	s.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1341,51 +1341,51 @@ func TestAs4PathConditionEvaluateMixedWith2byteAS(t *testing.T) {
 	path1 := ProcessMessage(updateMsg1, peer, time.Now())[0]
 
 	// create match condition
-	asPathSet1 := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
+	asPathSet1 := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
 	}
 
-	asPathSet2 := config.AsPathSet{
-		AsPathSetName: "asset2",
-		AsPathList:    []string{"4000$"},
+	asPathSet2 := config.ASPathSet{
+		ASPathSetName: "asset2",
+		ASPathList:    []string{"4000$"},
 	}
 
-	asPathSet3 := config.AsPathSet{
-		AsPathSetName: "asset3",
-		AsPathList:    []string{fmt.Sprintf("%d", createAs4Value("65004.1")), "4000$"},
+	asPathSet3 := config.ASPathSet{
+		ASPathSetName: "asset3",
+		ASPathList:    []string{fmt.Sprintf("%d", createAs4Value("65004.1")), "4000$"},
 	}
 
-	asPathSet4 := config.AsPathSet{
-		AsPathSetName: "asset4",
-		AsPathList:    []string{fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), 100, 5000)},
+	asPathSet4 := config.ASPathSet{
+		ASPathSetName: "asset4",
+		ASPathList:    []string{fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), 100, 5000)},
 	}
 
-	asPathSet5 := config.AsPathSet{
-		AsPathSetName: "asset5",
-		AsPathList:    []string{".*_[0-9]+_100"},
+	asPathSet5 := config.ASPathSet{
+		ASPathSetName: "asset5",
+		ASPathList:    []string{".*_[0-9]+_100"},
 	}
 
-	asPathSet6 := config.AsPathSet{
-		AsPathSetName: "asset6",
-		AsPathList:    []string{".*_3[0-9]+_[0]+"},
+	asPathSet6 := config.ASPathSet{
+		ASPathSetName: "asset6",
+		ASPathList:    []string{".*_3[0-9]+_[0]+"},
 	}
 
-	asPathSet7 := config.AsPathSet{
-		AsPathSetName: "asset7",
-		AsPathList:    []string{".*_3[0-9]+_[1]+"},
+	asPathSet7 := config.ASPathSet{
+		ASPathSetName: "asset7",
+		ASPathList:    []string{".*_3[0-9]+_[1]+"},
 	}
 
 	m := make(map[string]DefinedSet)
-	for _, s := range []config.AsPathSet{asPathSet1, asPathSet2, asPathSet3,
+	for _, s := range []config.ASPathSet{asPathSet1, asPathSet2, asPathSet3,
 		asPathSet4, asPathSet5, asPathSet6, asPathSet7} {
 		a, _ := NewAsPathSet(s)
-		m[s.AsPathSetName] = a
+		m[s.ASPathSetName] = a
 	}
 
 	createAspathC := func(name string, option config.MatchSetOptionsType) *AsPathCondition {
-		matchSet := config.MatchAsPathSet{}
-		matchSet.AsPathSet = name
+		matchSet := config.MatchASPathSet{}
+		matchSet.ASPathSet = name
 		matchSet.MatchSetOptions = option
 		p, _ := NewAsPathCondition(matchSet)
 		if v, ok := m[name]; ok {
@@ -1591,9 +1591,9 @@ func TestCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create policy
-	asPathSet := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{"65005$"},
+	asPathSet := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{"65005$"},
 	}
 
 	comSet1 := config.CommunitySet{
@@ -1612,16 +1612,16 @@ func TestCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	ds := config.DefinedSets{}
 	ds.PrefixSets = []config.PrefixSet{ps}
 	ds.NeighborSets = []config.NeighborSet{ns}
-	ds.BgpDefinedSets.AsPathSets = []config.AsPathSet{asPathSet}
-	ds.BgpDefinedSets.CommunitySets = []config.CommunitySet{comSet1, comSet2}
+	ds.BGPDefinedSets.ASPathSets = []config.ASPathSet{asPathSet}
+	ds.BGPDefinedSets.CommunitySets = []config.CommunitySet{comSet1, comSet2}
 
 	s1 := createStatement("statement1", "ps1", "ns1", false)
-	s1.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
-	s1.Conditions.BgpConditions.MatchCommunitySet.CommunitySet = "comset1"
+	s1.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
+	s1.Conditions.BGPConditions.MatchCommunitySet.CommunitySet = "comset1"
 
 	s2 := createStatement("statement2", "ps1", "ns1", false)
-	s2.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
-	s2.Conditions.BgpConditions.MatchCommunitySet.CommunitySet = "comset2"
+	s2.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
+	s2.Conditions.BGPConditions.MatchCommunitySet.CommunitySet = "comset2"
 
 	pd1 := createPolicyDefinition("pd1", s1)
 	pd2 := createPolicyDefinition("pd2", s2)
@@ -1667,7 +1667,7 @@ func TestPolicyMatchAndAddCommunities(t *testing.T) {
 	community := "65000:100"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetCommunity = createSetCommunity("ADD", community)
+	s.Actions.BGPActions.SetCommunity = createSetCommunity("ADD", community)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1712,7 +1712,7 @@ func TestPolicyMatchAndReplaceCommunities(t *testing.T) {
 	community := "65000:100"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetCommunity = createSetCommunity("REPLACE", community)
+	s.Actions.BGPActions.SetCommunity = createSetCommunity("REPLACE", community)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1757,7 +1757,7 @@ func TestPolicyMatchAndRemoveCommunities(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetCommunity = createSetCommunity("REMOVE", community1)
+	s.Actions.BGPActions.SetCommunity = createSetCommunity("REMOVE", community1)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1803,7 +1803,7 @@ func TestPolicyMatchAndRemoveCommunitiesRegexp(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetCommunity = createSetCommunity("REMOVE", ".*:100")
+	s.Actions.BGPActions.SetCommunity = createSetCommunity("REMOVE", ".*:100")
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1849,7 +1849,7 @@ func TestPolicyMatchAndRemoveCommunitiesRegexp2(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetCommunity = createSetCommunity("REMOVE", "^(0|45686):[0-9]+")
+	s.Actions.BGPActions.SetCommunity = createSetCommunity("REMOVE", "^(0|45686):[0-9]+")
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1894,8 +1894,8 @@ func TestPolicyMatchAndClearCommunities(t *testing.T) {
 
 	s := createStatement("statement1", "ps1", "ns1", true)
 	// action NULL is obsolate
-	s.Actions.BgpActions.SetCommunity.Options = "REPLACE"
-	s.Actions.BgpActions.SetCommunity.Inline.CommunitiesList = nil
+	s.Actions.BGPActions.SetCommunity.Options = "REPLACE"
+	s.Actions.BGPActions.SetCommunity.Inline.CommunitiesList = nil
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -1933,7 +1933,7 @@ func TestExtCommunityConditionEvaluate(t *testing.T) {
 		LocalAdmin:   200,
 		IsTransitive: true,
 	}
-	eComIpPrefix1 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix1 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_TARGET),
 		IPv4:         net.ParseIP("10.0.0.1"),
 		LocalAdmin:   300,
@@ -1951,7 +1951,7 @@ func TestExtCommunityConditionEvaluate(t *testing.T) {
 		LocalAdmin:   200,
 		IsTransitive: false,
 	}
-	eComIpPrefix2 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix2 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_TARGET),
 		IPv4:         net.ParseIP("10.0.0.2"),
 		LocalAdmin:   300,
@@ -1969,7 +1969,7 @@ func TestExtCommunityConditionEvaluate(t *testing.T) {
 		LocalAdmin:   300,
 		IsTransitive: true,
 	}
-	eComIpPrefix3 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix3 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_ORIGIN),
 		IPv4:         net.ParseIP("10.0.10.10"),
 		LocalAdmin:   400,
@@ -1981,8 +1981,8 @@ func TestExtCommunityConditionEvaluate(t *testing.T) {
 		LocalAdmin:   500,
 		IsTransitive: true,
 	}
-	ec := []bgp.ExtendedCommunityInterface{eComAsSpecific1, eComIpPrefix1, eComAs4Specific1, eComAsSpecific2,
-		eComIpPrefix2, eComAs4Specific2, eComAsSpecific3, eComIpPrefix3, eComAs4Specific3}
+	ec := []bgp.ExtendedCommunityInterface{eComAsSpecific1, eComIPPrefix1, eComAs4Specific1, eComAsSpecific2,
+		eComIPPrefix2, eComAs4Specific2, eComAsSpecific3, eComIPPrefix3, eComAs4Specific3}
 	extCommunities := bgp.NewPathAttributeExtendedCommunities(ec)
 
 	pathAttributes := []bgp.PathAttributeInterface{origin, aspath, nexthop, med, extCommunities}
@@ -2116,7 +2116,7 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 		LocalAdmin:   200,
 		IsTransitive: true,
 	}
-	eComIpPrefix1 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix1 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_TARGET),
 		IPv4:         net.ParseIP("10.0.0.1"),
 		LocalAdmin:   300,
@@ -2134,7 +2134,7 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 		LocalAdmin:   200,
 		IsTransitive: false,
 	}
-	eComIpPrefix2 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix2 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_TARGET),
 		IPv4:         net.ParseIP("10.0.0.2"),
 		LocalAdmin:   300,
@@ -2152,7 +2152,7 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 		LocalAdmin:   300,
 		IsTransitive: true,
 	}
-	eComIpPrefix3 := &bgp.IPv4AddressSpecificExtended{
+	eComIPPrefix3 := &bgp.IPv4AddressSpecificExtended{
 		SubType:      bgp.ExtendedCommunityAttrSubType(bgp.EC_SUBTYPE_ROUTE_ORIGIN),
 		IPv4:         net.ParseIP("10.0.10.10"),
 		LocalAdmin:   400,
@@ -2164,8 +2164,8 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 		LocalAdmin:   500,
 		IsTransitive: true,
 	}
-	ec := []bgp.ExtendedCommunityInterface{eComAsSpecific1, eComIpPrefix1, eComAs4Specific1, eComAsSpecific2,
-		eComIpPrefix2, eComAs4Specific2, eComAsSpecific3, eComIpPrefix3, eComAs4Specific3}
+	ec := []bgp.ExtendedCommunityInterface{eComAsSpecific1, eComIPPrefix1, eComAs4Specific1, eComAsSpecific2,
+		eComIPPrefix2, eComAs4Specific2, eComAsSpecific3, eComIPPrefix3, eComAs4Specific3}
 	extCommunities := bgp.NewPathAttributeExtendedCommunities(ec)
 
 	pathAttributes := []bgp.PathAttributeInterface{origin, aspath, nexthop, med, extCommunities}
@@ -2175,9 +2175,9 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	path := ProcessMessage(updateMsg, peer, time.Now())[0]
 
 	// create policy
-	asPathSet := config.AsPathSet{
-		AsPathSetName: "asset1",
-		AsPathList:    []string{"65005$"},
+	asPathSet := config.ASPathSet{
+		ASPathSetName: "asset1",
+		ASPathList:    []string{"65005$"},
 	}
 
 	ecomSet1 := config.ExtCommunitySet{
@@ -2195,16 +2195,16 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 	ds := config.DefinedSets{}
 	ds.PrefixSets = []config.PrefixSet{ps}
 	ds.NeighborSets = []config.NeighborSet{ns}
-	ds.BgpDefinedSets.AsPathSets = []config.AsPathSet{asPathSet}
-	ds.BgpDefinedSets.ExtCommunitySets = []config.ExtCommunitySet{ecomSet1, ecomSet2}
+	ds.BGPDefinedSets.ASPathSets = []config.ASPathSet{asPathSet}
+	ds.BGPDefinedSets.ExtCommunitySets = []config.ExtCommunitySet{ecomSet1, ecomSet2}
 
 	s1 := createStatement("statement1", "ps1", "ns1", false)
-	s1.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
-	s1.Conditions.BgpConditions.MatchExtCommunitySet.ExtCommunitySet = "ecomSet1"
+	s1.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
+	s1.Conditions.BGPConditions.MatchExtCommunitySet.ExtCommunitySet = "ecomSet1"
 
 	s2 := createStatement("statement2", "ps1", "ns1", false)
-	s2.Conditions.BgpConditions.MatchAsPathSet.AsPathSet = "asset1"
-	s2.Conditions.BgpConditions.MatchExtCommunitySet.ExtCommunitySet = "ecomSet2"
+	s2.Conditions.BGPConditions.MatchASPathSet.ASPathSet = "asset1"
+	s2.Conditions.BGPConditions.MatchExtCommunitySet.ExtCommunitySet = "ecomSet2"
 
 	pd1 := createPolicyDefinition("pd1", s1)
 	pd2 := createPolicyDefinition("pd2", s2)
@@ -2249,7 +2249,7 @@ func TestPolicyMatchAndReplaceMed(t *testing.T) {
 
 	m := "200"
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2294,7 +2294,7 @@ func TestPolicyMatchAndAddingMed(t *testing.T) {
 	m := "+200"
 	ma := "300"
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2339,7 +2339,7 @@ func TestPolicyMatchAndAddingMedOverFlow(t *testing.T) {
 	ma := "1"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2385,7 +2385,7 @@ func TestPolicyMatchAndSubtractMed(t *testing.T) {
 	ma := "50"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2431,7 +2431,7 @@ func TestPolicyMatchAndSubtractMedUnderFlow(t *testing.T) {
 	ma := "100"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2474,7 +2474,7 @@ func TestPolicyMatchWhenPathHaveNotMed(t *testing.T) {
 
 	m := "-50"
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetMed = config.BgpSetMedType(m)
+	s.Actions.BGPActions.SetMED = config.BGPSetMEDType(m)
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2521,8 +2521,8 @@ func TestPolicyAsPathPrepend(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetAsPathPrepend.As = "65002"
-	s.Actions.BgpActions.SetAsPathPrepend.RepeatN = 10
+	s.Actions.BGPActions.SetASPathPrepend.AS = "65002"
+	s.Actions.BGPActions.SetASPathPrepend.RepeatN = 10
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2565,8 +2565,8 @@ func TestPolicyAsPathPrependLastAs(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetAsPathPrepend.As = "last-as"
-	s.Actions.BgpActions.SetAsPathPrepend.RepeatN = 5
+	s.Actions.BGPActions.SetASPathPrepend.AS = "last-as"
+	s.Actions.BGPActions.SetASPathPrepend.RepeatN = 5
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2615,8 +2615,8 @@ func TestPolicyAs4PathPrepend(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetAsPathPrepend.As = fmt.Sprintf("%d", createAs4Value("65002.1"))
-	s.Actions.BgpActions.SetAsPathPrepend.RepeatN = 10
+	s.Actions.BGPActions.SetASPathPrepend.AS = fmt.Sprintf("%d", createAs4Value("65002.1"))
+	s.Actions.BGPActions.SetASPathPrepend.RepeatN = 10
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2671,8 +2671,8 @@ func TestPolicyAs4PathPrependLastAs(t *testing.T) {
 	ds.NeighborSets = []config.NeighborSet{ns}
 
 	s := createStatement("statement1", "ps1", "ns1", true)
-	s.Actions.BgpActions.SetAsPathPrepend.As = "last-as"
-	s.Actions.BgpActions.SetAsPathPrepend.RepeatN = 5
+	s.Actions.BGPActions.SetASPathPrepend.AS = "last-as"
+	s.Actions.BGPActions.SetASPathPrepend.RepeatN = 5
 
 	pd := createPolicyDefinition("pd1", s)
 	pl := createRoutingPolicy(ds, pd)
@@ -2793,7 +2793,7 @@ func createPrefixSet(name string, prefix string, maskLength string) config.Prefi
 		PrefixSetName: name,
 		Prefixes: []config.Prefix{
 			config.Prefix{
-				IpPrefix:        prefix,
+				IPPrefix:        prefix,
 				MasklengthRange: maskLength,
 			}},
 	}

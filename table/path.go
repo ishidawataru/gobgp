@@ -56,7 +56,7 @@ type originInfo struct {
 	source             *PeerInfo
 	timestamp          time.Time
 	noImplicitWithdraw bool
-	validation         config.RpkiValidationResultType
+	validation         config.RPKIValidationResultType
 	isFromExternal     bool
 	key                string
 	uuid               []byte
@@ -184,7 +184,7 @@ func (path *Path) UpdatePathAttrs(global *config.Global, peer *config.Neighbor) 
 		}
 
 		// AS_PATH handling
-		path.PrependAsn(peer.LocalAs, 1)
+		path.PrependAsn(peer.LocalAS, 1)
 
 		// MED Handling
 		if med := path.getPathAttr(bgp.BGP_ATTR_TYPE_MULTI_EXIT_DISC); med != nil && !path.IsLocal() {
@@ -234,7 +234,7 @@ func (path *Path) UpdatePathAttrs(global *config.Global, peer *config.Neighbor) 
 			}
 			// When an RR reflects a route, it MUST prepend the local CLUSTER_ID to the CLUSTER_LIST.
 			// If the CLUSTER_LIST is empty, it MUST create a new one.
-			id := string(peer.RouteReflector.RouteReflectorClusterId)
+			id := string(peer.RouteReflector.RouteReflectorClusterID)
 			if p := path.getPathAttr(bgp.BGP_ATTR_TYPE_CLUSTER_LIST); p == nil {
 				path.setPathAttr(bgp.NewPathAttributeClusterList([]string{id}))
 			} else {
@@ -296,11 +296,11 @@ func (path *Path) NoImplicitWithdraw() bool {
 	return path.OriginInfo().noImplicitWithdraw
 }
 
-func (path *Path) Validation() config.RpkiValidationResultType {
+func (path *Path) Validation() config.RPKIValidationResultType {
 	return path.OriginInfo().validation
 }
 
-func (path *Path) SetValidation(r config.RpkiValidationResultType) {
+func (path *Path) SetValidation(r config.RPKIValidationResultType) {
 	path.OriginInfo().validation = r
 }
 
@@ -565,25 +565,25 @@ func (path *Path) GetAsString() string {
 }
 
 func (path *Path) GetAsList() []uint32 {
-	return path.getAsListofSpecificType(true, true)
+	return path.getASListofSpecificType(true, true)
 
 }
 
 func (path *Path) GetAsSeqList() []uint32 {
-	return path.getAsListofSpecificType(true, false)
+	return path.getASListofSpecificType(true, false)
 
 }
 
-func (path *Path) getAsListofSpecificType(getAsSeq, getAsSet bool) []uint32 {
+func (path *Path) getASListofSpecificType(getASSeq, getASSet bool) []uint32 {
 	asList := []uint32{}
 	if aspath := path.GetAsPath(); aspath != nil {
 		for _, paramIf := range aspath.Value {
 			segment := paramIf.(*bgp.As4PathParam)
-			if getAsSeq && segment.Type == bgp.BGP_ASPATH_ATTR_TYPE_SEQ {
+			if getASSeq && segment.Type == bgp.BGP_ASPATH_ATTR_TYPE_SEQ {
 				asList = append(asList, segment.AS...)
 				continue
 			}
-			if getAsSet && segment.Type == bgp.BGP_ASPATH_ATTR_TYPE_SET {
+			if getASSet && segment.Type == bgp.BGP_ASPATH_ATTR_TYPE_SET {
 				asList = append(asList, segment.AS...)
 			} else {
 				asList = append(asList, 0)
