@@ -39,6 +39,63 @@ const (
 	INTERFACE_LINKDETECTION = 0x04
 )
 
+type LINK_TYPE uint32
+
+const (
+	LINK_TYPE_UNKNOWN LINK_TYPE = iota
+	LINK_TYPE_ETHER
+	LINK_TYPE_EETHER
+	LINK_TYPE_AX25
+	LINK_TYPE_PRONET
+	LINK_TYPE_IEEE802
+	LINK_TYPE_ARCNET
+	LINK_TYPE_APPLETLK
+	LINK_TYPE_DLCI
+	LINK_TYPE_ATM
+	LINK_TYPE_METRICOM
+	LINK_TYPE_IEEE1394
+	LINK_TYPE_EUI64
+	LINK_TYPE_INFINIBAND
+	LINK_TYPE_SLIP
+	LINK_TYPE_CSLIP
+	LINK_TYPE_SLIP6
+	LINK_TYPE_CSLIP6
+	LINK_TYPE_RSRVD
+	LINK_TYPE_ADAPT
+	LINK_TYPE_ROSE
+	LINK_TYPE_X25
+	LINK_TYPE_PPP
+	LINK_TYPE_CHDLC
+	LINK_TYPE_LAPB
+	LINK_TYPE_RAWHDLC
+	LINK_TYPE_IPIP
+	LINK_TYPE_IPIP6
+	LINK_TYPE_FRAD
+	LINK_TYPE_SKIP
+	LINK_TYPE_LOOPBACK
+	LINK_TYPE_LOCALTLK
+	LINK_TYPE_FDDI
+	LINK_TYPE_SIT
+	LINK_TYPE_IPDDP
+	LINK_TYPE_IPGRE
+	LINK_TYPE_IP6GRE
+	LINK_TYPE_PIMREG
+	LINK_TYPE_HIPPI
+	LINK_TYPE_ECONET
+	LINK_TYPE_IRDA
+	LINK_TYPE_FCPP
+	LINK_TYPE_FCAL
+	LINK_TYPE_FCPL
+	LINK_TYPE_FCFABRIC
+	LINK_TYPE_IEEE802_TR
+	LINK_TYPE_IEEE80211
+	LINK_TYPE_IEEE80211_RADIOTAP
+	LINK_TYPE_IEEE802154
+	LINK_TYPE_IEEE802154_PHY
+)
+
+const VRF_DEFAULT = 0
+
 func HeaderSize(version uint8) uint16 {
 	switch version {
 	case 3:
@@ -340,12 +397,13 @@ func (c *Client) Send(m *Message) {
 	c.outgoing <- m
 }
 
-func (c *Client) SendCommand(command API_TYPE, body Body) error {
+func (c *Client) SendCommand(command API_TYPE, vrfId uint16, body Body) error {
 	m := &Message{
 		Header: Header{
 			Len:     HeaderSize(c.Version),
 			Marker:  HEADER_MARKER,
 			Version: c.Version,
+			VrfId:   vrfId,
 			Command: command,
 		},
 		Body: body,
@@ -359,25 +417,25 @@ func (c *Client) SendHello() error {
 		body := &HelloBody{
 			RedistDefault: c.redistDefault,
 		}
-		return c.SendCommand(HELLO, body)
+		return c.SendCommand(HELLO, VRF_DEFAULT, body)
 	}
 	return nil
 }
 
 func (c *Client) SendRouterIDAdd() error {
-	return c.SendCommand(ROUTER_ID_ADD, nil)
+	return c.SendCommand(ROUTER_ID_ADD, VRF_DEFAULT, nil)
 }
 
 func (c *Client) SendInterfaceAdd() error {
-	return c.SendCommand(INTERFACE_ADD, nil)
+	return c.SendCommand(INTERFACE_ADD, VRF_DEFAULT, nil)
 }
 
-func (c *Client) SendRedistribute(t ROUTE_TYPE) error {
+func (c *Client) SendRedistribute(t ROUTE_TYPE, vrfId uint16) error {
 	if c.redistDefault != t {
 		body := &RedistributeBody{
 			Redist: t,
 		}
-		if e := c.SendCommand(REDISTRIBUTE_ADD, body); e != nil {
+		if e := c.SendCommand(REDISTRIBUTE_ADD, vrfId, body); e != nil {
 			return e
 		}
 	}
@@ -391,7 +449,7 @@ func (c *Client) SendRedistributeDelete(t ROUTE_TYPE) error {
 		body := &RedistributeBody{
 			Redist: t,
 		}
-		if e := c.SendCommand(REDISTRIBUTE_DELETE, body); e != nil {
+		if e := c.SendCommand(REDISTRIBUTE_DELETE, VRF_DEFAULT, body); e != nil {
 			return e
 		}
 	} else {
@@ -447,7 +505,7 @@ func (h *Header) DecodeFromBytes(data []byte) error {
 }
 
 type Body interface {
-	DecodeFromBytes([]byte) error
+	DecodeFromBytes([]byte, uint8) error
 	Serialize() ([]byte, error)
 }
 
@@ -455,7 +513,7 @@ type HelloBody struct {
 	RedistDefault ROUTE_TYPE
 }
 
-func (b *HelloBody) DecodeFromBytes(data []byte) error {
+func (b *HelloBody) DecodeFromBytes(data []byte, version uint8) error {
 	b.RedistDefault = ROUTE_TYPE(data[0])
 	return nil
 }
@@ -468,7 +526,7 @@ type RedistributeBody struct {
 	Redist ROUTE_TYPE
 }
 
-func (b *RedistributeBody) DecodeFromBytes(data []byte) error {
+func (b *RedistributeBody) DecodeFromBytes(data []byte, version uint8) error {
 	b.Redist = ROUTE_TYPE(data[0])
 	return nil
 }
@@ -486,10 +544,11 @@ type InterfaceUpdateBody struct {
 	MTU          uint32
 	MTU6         uint32
 	Bandwidth    uint32
+	Linktype     LINK_TYPE
 	HardwareAddr net.HardwareAddr
 }
 
-func (b *InterfaceUpdateBody) DecodeFromBytes(data []byte) error {
+func (b *InterfaceUpdateBody) DecodeFromBytes(data []byte, version uint8) error {
 	if len(data) < INTERFACE_NAMSIZ+29 {
 		return fmt.Errorf("lack of bytes. need %d but %d", INTERFACE_NAMSIZ+29, len(data))
 	}
@@ -503,9 +562,17 @@ func (b *InterfaceUpdateBody) DecodeFromBytes(data []byte) error {
 	b.MTU = binary.BigEndian.Uint32(data[17:21])
 	b.MTU6 = binary.BigEndian.Uint32(data[21:25])
 	b.Bandwidth = binary.BigEndian.Uint32(data[25:29])
-	l := binary.BigEndian.Uint32(data[29:33])
+	data = data[29:]
+	if version > 2 {
+		b.Linktype = LINK_TYPE(binary.BigEndian.Uint32(data[:4]))
+		data = data[4:]
+	}
+	l := binary.BigEndian.Uint32(data[:4])
 	if l > 0 {
-		b.HardwareAddr = data[33 : 33+l]
+		if len(data) < 4+int(l) {
+			return fmt.Errorf("lack of bytes. need %d but %d", 4+l, len(data))
+		}
+		b.HardwareAddr = data[4 : 4+l]
 	}
 	return nil
 }
@@ -515,7 +582,7 @@ func (b *InterfaceUpdateBody) Serialize() ([]byte, error) {
 }
 
 func (b *InterfaceUpdateBody) String() string {
-	s := fmt.Sprintf("name: %s, idx: %d, status: %s, flags: %s, metric: %d, mtu: %d, mtu6: %d, bandwidth: %d", b.Name, b.Index, b.Status, intfflag2string(b.Flags), b.Metric, b.MTU, b.MTU6, b.Bandwidth)
+	s := fmt.Sprintf("name: %s, idx: %d, status: %s, flags: %s, metric: %d, mtu: %d, mtu6: %d, bandwidth: %d, linktype: %s", b.Name, b.Index, b.Status, intfflag2string(b.Flags), b.Metric, b.MTU, b.MTU6, b.Bandwidth, b.Linktype)
 	if len(b.HardwareAddr) > 0 {
 		return s + fmt.Sprintf(", mac: %s", b.HardwareAddr)
 	}
@@ -529,7 +596,7 @@ type InterfaceAddressUpdateBody struct {
 	Length uint8
 }
 
-func (b *InterfaceAddressUpdateBody) DecodeFromBytes(data []byte) error {
+func (b *InterfaceAddressUpdateBody) DecodeFromBytes(data []byte, version uint8) error {
 	b.Index = binary.BigEndian.Uint32(data[:4])
 	b.Flags = data[4]
 	family := data[5]
@@ -560,7 +627,7 @@ type RouterIDUpdateBody struct {
 	Prefix net.IP
 }
 
-func (b *RouterIDUpdateBody) DecodeFromBytes(data []byte) error {
+func (b *RouterIDUpdateBody) DecodeFromBytes(data []byte, version uint8) error {
 	family := data[0]
 	var addrlen int8
 	switch family {
@@ -652,7 +719,7 @@ func (b *IPRouteBody) Serialize() ([]byte, error) {
 	return buf, nil
 }
 
-func (b *IPRouteBody) DecodeFromBytes(data []byte) error {
+func (b *IPRouteBody) DecodeFromBytes(data []byte, version uint8) error {
 
 	isV4 := b.Api == IPV4_ROUTE_ADD || b.Api == IPV4_ROUTE_DELETE
 	var addrLen uint8 = net.IPv4len
@@ -778,7 +845,7 @@ func (b *NexthopLookupBody) Serialize() ([]byte, error) {
 	return buf, nil
 }
 
-func (b *NexthopLookupBody) DecodeFromBytes(data []byte) error {
+func (b *NexthopLookupBody) DecodeFromBytes(data []byte, version uint8) error {
 
 	isV4 := b.Api == IPV4_NEXTHOP_LOOKUP
 	var addrLen uint8 = net.IPv4len
@@ -874,7 +941,7 @@ func (b *ImportLookupBody) Serialize() ([]byte, error) {
 	return buf, nil
 }
 
-func (b *ImportLookupBody) DecodeFromBytes(data []byte) error {
+func (b *ImportLookupBody) DecodeFromBytes(data []byte, version uint8) error {
 
 	var addrLen uint8 = net.IPv4len
 
@@ -987,7 +1054,7 @@ func ParseMessage(hdr *Header, data []byte) (*Message, error) {
 	default:
 		return nil, fmt.Errorf("Unknown zapi command: %d", m.Header.Command)
 	}
-	err := m.Body.DecodeFromBytes(data)
+	err := m.Body.DecodeFromBytes(data, m.Header.Version)
 	if err != nil {
 		return nil, err
 	}
