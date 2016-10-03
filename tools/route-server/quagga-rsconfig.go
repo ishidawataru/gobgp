@@ -35,10 +35,10 @@ func (qt *QuaggaConfig) Config() *bytes.Buffer {
 
 	buf.WriteString("hostname bgpd\n")
 	buf.WriteString("password zebra\n")
-	buf.WriteString(fmt.Sprintf("router bgp %d\n", qt.config.PeerAs))
+	buf.WriteString(fmt.Sprintf("router bgp %d\n", qt.config.PeerAS))
 	buf.WriteString(fmt.Sprintf("bgp router-id 192.168.0.%d\n", qt.id))
 	buf.WriteString(fmt.Sprintf("network 192.168.%d.0/24\n", qt.id))
-	buf.WriteString(fmt.Sprintf("neighbor %s remote-as %d\n", qt.serverIP, qt.gobgpConfig.As))
+	buf.WriteString(fmt.Sprintf("neighbor %s remote-as %d\n", qt.serverIP, qt.gobgpConfig.AS))
 	buf.WriteString(fmt.Sprintf("neighbor %s password %s\n", qt.serverIP, qt.config.AuthPassword))
 	buf.WriteString("log file /var/log/quagga/bgpd.log")
 	return buf
@@ -47,14 +47,14 @@ func (qt *QuaggaConfig) Config() *bytes.Buffer {
 func create_config_files(nr int, outputDir string) {
 	quaggaConfigList := make([]*QuaggaConfig, 0)
 
-	gobgpConf := config.Bgp{}
-	gobgpConf.Global.As = 65000
-	gobgpConf.Global.RouterId = "192.168.255.1"
+	gobgpConf := config.BGP{}
+	gobgpConf.Global.AS = 65000
+	gobgpConf.Global.RouterID = "192.168.255.1"
 
 	for i := 1; i < nr+1; i++ {
 
 		c := config.Neighbor{}
-		c.PeerAs = 65000 + uint32(i)
+		c.PeerAS = 65000 + uint32(i)
 		c.NeighborAddress = fmt.Sprintf("10.0.0.%d", i)
 		c.AuthPassword = fmt.Sprintf("hoge%d", i)
 
