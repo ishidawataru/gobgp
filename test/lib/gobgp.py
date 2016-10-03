@@ -235,10 +235,9 @@ class GoBGPContainer(BGPContainer):
             self._create_config_zebra()
 
     def _create_config_bgp(self):
-        config = {'global': 'as': self.asn, 
+        config = {'global': {'as': self.asn, 
                             'router-id': self.router_id,
-                            'route-selection-options':{'external-compare-router-id': True},
-                 }
+                            'route-selection-options':{'external-compare-router-id': True}}}
 
         if self.zebra:
             config['global']['use-multiple-paths'] = {'enabled': True}
