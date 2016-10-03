@@ -64,7 +64,7 @@ func policy() config.RoutingPolicy {
 
 	ps := config.PrefixSet{
 		PrefixSetName: "ps1",
-		PrefixList: []config.Prefix{
+		Prefixes: []config.Prefix{
 			config.Prefix{
 				IpPrefix:        "10.3.192.0/21",
 				MasklengthRange: "21..24",
@@ -77,13 +77,13 @@ func policy() config.RoutingPolicy {
 	}
 
 	cs := config.CommunitySet{
-		CommunitySetName: "community1",
-		CommunityList:    []string{"65100:10"},
+		CommunitySetName:    "community1",
+		CommunityMemberList: []string{"65100:10"},
 	}
 
 	ecs := config.ExtCommunitySet{
-		ExtCommunitySetName: "ecommunity1",
-		ExtCommunityList:    []string{"RT:65001:200"},
+		ExtCommunitySetName:    "ecommunity1",
+		ExtCommunityMemberList: []string{"RT:65001:200"},
 	}
 
 	as := config.AsPathSet{
@@ -147,10 +147,10 @@ func policy() config.RoutingPolicy {
 			},
 			BgpActions: config.BgpActions{
 				SetCommunity: config.SetCommunity{
-					SetCommunityMethod: config.SetCommunityMethod{
+					Options: "ADD",
+					Inline: config.Inline{
 						CommunitiesList: []string{"65100:20"},
 					},
-					Options: "ADD",
 				},
 				SetMed: "-200",
 			},
