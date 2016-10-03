@@ -107,7 +107,7 @@ class ImportPolicy(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -173,7 +173,7 @@ class ExportPolicy(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -259,7 +259,7 @@ class ImportPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -307,7 +307,7 @@ class ImportPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -387,7 +387,7 @@ class ExportPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -434,7 +434,7 @@ class ExportPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -529,7 +529,7 @@ class ImportPolicyIPV6(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -598,7 +598,7 @@ class ExportPolicyIPV6(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -680,7 +680,7 @@ class ImportPolicyIPV6Update(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -723,7 +723,7 @@ class ImportPolicyIPV6Update(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -801,7 +801,7 @@ class ExportPolicyIPv6Update(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -844,7 +844,7 @@ class ExportPolicyIPv6Update(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[q2]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -2441,7 +2441,7 @@ class InPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -2490,7 +2490,7 @@ class InPolicyUpdate(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -3311,7 +3311,7 @@ class InPolicyUpdate2(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
@@ -3361,7 +3361,7 @@ class InPolicyUpdate2(object):
         g1.set_prefix_set(ps0)
 
         ns0 = {'neighbor-set-name': 'ns0',
-               'neighbor-info-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
+               'address-list': [g1.peers[e1]['neigh_addr'].split('/')[0]]}
         g1.set_neighbor_set(ns0)
 
         st0 = {'name': 'st0',
