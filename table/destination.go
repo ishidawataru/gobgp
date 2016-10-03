@@ -28,8 +28,8 @@ import (
 	"github.com/osrg/gobgp/packet/bgp"
 )
 
-var SelectionOptions config.RouteSelectionOptionsConfig
-var UseMultiplePaths config.UseMultiplePathsConfig
+var SelectionOptions config.RouteSelectionOptions
+var UseMultiplePaths config.UseMultiplePaths
 
 type BestPathReason string
 
@@ -105,13 +105,13 @@ func (i *PeerInfo) String() string {
 }
 
 func NewPeerInfo(g *config.Global, p *config.Neighbor) *PeerInfo {
-	id := net.ParseIP(string(p.RouteReflector.Config.RouteReflectorClusterId)).To4()
+	id := net.ParseIP(string(p.RouteReflector.RouteReflectorClusterId)).To4()
 	return &PeerInfo{
-		AS:                      p.Config.PeerAs,
-		LocalAS:                 g.Config.As,
-		LocalID:                 net.ParseIP(g.Config.RouterId).To4(),
-		Address:                 net.ParseIP(p.Config.NeighborAddress),
-		RouteReflectorClient:    p.RouteReflector.Config.RouteReflectorClient,
+		AS:                      p.PeerAs,
+		LocalAS:                 g.As,
+		LocalID:                 net.ParseIP(g.RouterId).To4(),
+		Address:                 net.ParseIP(p.NeighborAddress),
+		RouteReflectorClient:    p.RouteReflector.RouteReflectorClient,
 		RouteReflectorClusterID: id,
 	}
 }

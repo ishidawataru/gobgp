@@ -109,7 +109,7 @@ func (m *mrtWriter) loop() error {
 				t := uint32(time.Now().Unix())
 				peers := make([]*mrt.Peer, 0, len(m.Neighbor))
 				for _, pconf := range m.Neighbor {
-					peers = append(peers, mrt.NewPeer(pconf.State.RemoteRouterId, pconf.Config.NeighborAddress, pconf.Config.PeerAs, true))
+					peers = append(peers, mrt.NewPeer(pconf.State.RemoteRouterId, pconf.NeighborAddress, pconf.PeerAs, true))
 				}
 				if bm, err := mrt.NewMRTMessage(t, mrt.TABLE_DUMPv2, mrt.PEER_INDEX_TABLE, mrt.NewPeerIndexTable(m.RouterId, "", peers)); err != nil {
 					break
@@ -119,7 +119,7 @@ func (m *mrtWriter) loop() error {
 
 				idx := func(p *table.Path) uint16 {
 					for i, pconf := range m.Neighbor {
-						if p.GetSource().Address.String() == pconf.Config.NeighborAddress {
+						if p.GetSource().Address.String() == pconf.NeighborAddress {
 							return uint16(i)
 						}
 					}
@@ -301,7 +301,7 @@ type mrtManager struct {
 	writer    map[string]*mrtWriter
 }
 
-func (m *mrtManager) enable(c *config.MrtConfig) error {
+func (m *mrtManager) enable(c *config.Mrt) error {
 	if _, ok := m.writer[c.FileName]; ok {
 		return fmt.Errorf("%s already exists", c.FileName)
 	}
@@ -347,7 +347,7 @@ func (m *mrtManager) enable(c *config.MrtConfig) error {
 	return err
 }
 
-func (m *mrtManager) disable(c *config.MrtConfig) error {
+func (m *mrtManager) disable(c *config.Mrt) error {
 	if w, ok := m.writer[c.FileName]; !ok {
 		return fmt.Errorf("%s doesn't exists", c.FileName)
 	} else {

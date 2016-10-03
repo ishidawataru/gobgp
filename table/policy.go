@@ -323,7 +323,7 @@ func (s *PrefixSet) ToConfig() *config.PrefixSet {
 	})
 	return &config.PrefixSet{
 		PrefixSetName: s.name,
-		PrefixList:    list,
+		Prefixes:      list,
 	}
 }
 
@@ -344,13 +344,13 @@ func NewPrefixSetFromApiStruct(name string, prefixes []*Prefix) (*PrefixSet, err
 func NewPrefixSet(c config.PrefixSet) (*PrefixSet, error) {
 	name := c.PrefixSetName
 	if name == "" {
-		if len(c.PrefixList) == 0 {
+		if len(c.Prefixes) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("empty prefix set name")
 	}
 	tree := radix.New()
-	for _, x := range c.PrefixList {
+	for _, x := range c.Prefixes {
 		y, err := NewPrefix(x)
 		if err != nil {
 			return nil, err
@@ -745,8 +745,8 @@ func (s *CommunitySet) ToConfig() *config.CommunitySet {
 		list = append(list, exp.String())
 	}
 	return &config.CommunitySet{
-		CommunitySetName: s.name,
-		CommunityList:    list,
+		CommunitySetName:    s.name,
+		CommunityMemberList: list,
 	}
 }
 
@@ -842,13 +842,13 @@ func ParseExtCommunityRegexp(arg string) (bgp.ExtendedCommunityAttrSubType, *reg
 func NewCommunitySet(c config.CommunitySet) (*CommunitySet, error) {
 	name := c.CommunitySetName
 	if name == "" {
-		if len(c.CommunityList) == 0 {
+		if len(c.CommunityMemberList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("empty community set name")
 	}
-	list := make([]*regexp.Regexp, 0, len(c.CommunityList))
-	for _, x := range c.CommunityList {
+	list := make([]*regexp.Regexp, 0, len(c.CommunityMemberList))
+	for _, x := range c.CommunityMemberList {
 		exp, err := ParseCommunityRegexp(x)
 		if err != nil {
 			return nil, err
@@ -887,22 +887,22 @@ func (s *ExtCommunitySet) ToConfig() *config.ExtCommunitySet {
 		list = append(list, f(idx, exp.String()))
 	}
 	return &config.ExtCommunitySet{
-		ExtCommunitySetName: s.name,
-		ExtCommunityList:    list,
+		ExtCommunitySetName:    s.name,
+		ExtCommunityMemberList: list,
 	}
 }
 
 func NewExtCommunitySet(c config.ExtCommunitySet) (*ExtCommunitySet, error) {
 	name := c.ExtCommunitySetName
 	if name == "" {
-		if len(c.ExtCommunityList) == 0 {
+		if len(c.ExtCommunityMemberList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("empty ext-community set name")
 	}
-	list := make([]*regexp.Regexp, 0, len(c.ExtCommunityList))
-	subtypeList := make([]bgp.ExtendedCommunityAttrSubType, 0, len(c.ExtCommunityList))
-	for _, x := range c.ExtCommunityList {
+	list := make([]*regexp.Regexp, 0, len(c.ExtCommunityMemberList))
+	subtypeList := make([]bgp.ExtendedCommunityAttrSubType, 0, len(c.ExtCommunityMemberList))
+	for _, x := range c.ExtCommunityMemberList {
 		subtype, exp, err := ParseExtCommunityRegexp(x)
 		if err != nil {
 			return nil, err
@@ -1482,15 +1482,17 @@ func (a *CommunityAction) ToConfig() *config.SetCommunity {
 		cs = append(cs, exp.String())
 	}
 	return &config.SetCommunity{
-		Options:            string(a.action),
-		SetCommunityMethod: config.SetCommunityMethod{CommunitiesList: cs},
+		Options: string(a.action),
+		Inline: config.Inline{
+			CommunitiesList: cs,
+		},
 	}
 }
 
 func NewCommunityAction(c config.SetCommunity) (*CommunityAction, error) {
 	a, ok := CommunityOptionValueMap[strings.ToLower(c.Options)]
 	if !ok {
-		if len(c.SetCommunityMethod.CommunitiesList) == 0 {
+		if len(c.Inline.CommunitiesList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("invalid option name: %s", c.Options)
@@ -1498,11 +1500,11 @@ func NewCommunityAction(c config.SetCommunity) (*CommunityAction, error) {
 	var list []uint32
 	var removeList []*regexp.Regexp
 	if a == config.BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE {
-		removeList = make([]*regexp.Regexp, 0, len(c.SetCommunityMethod.CommunitiesList))
+		removeList = make([]*regexp.Regexp, 0, len(c.Inline.CommunitiesList))
 	} else {
-		list = make([]uint32, 0, len(c.SetCommunityMethod.CommunitiesList))
+		list = make([]uint32, 0, len(c.Inline.CommunitiesList))
 	}
-	for _, x := range c.SetCommunityMethod.CommunitiesList {
+	for _, x := range c.Inline.CommunitiesList {
 		if a == config.BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE {
 			exp, err := ParseCommunityRegexp(x)
 			if err != nil {
@@ -1569,7 +1571,7 @@ func (a *ExtCommunityAction) ToConfig() *config.SetExtCommunity {
 	}
 	return &config.SetExtCommunity{
 		Options: string(a.action),
-		SetExtCommunityMethod: config.SetExtCommunityMethod{
+		Inline: config.Inline{
 			CommunitiesList: cs,
 		},
 	}
@@ -1578,20 +1580,20 @@ func (a *ExtCommunityAction) ToConfig() *config.SetExtCommunity {
 func NewExtCommunityAction(c config.SetExtCommunity) (*ExtCommunityAction, error) {
 	a, ok := CommunityOptionValueMap[strings.ToLower(c.Options)]
 	if !ok {
-		if len(c.SetExtCommunityMethod.CommunitiesList) == 0 {
+		if len(c.Inline.CommunitiesList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("invalid option name: %s", c.Options)
 	}
 	var list []bgp.ExtendedCommunityInterface
 	var removeList []*regexp.Regexp
-	subtypeList := make([]bgp.ExtendedCommunityAttrSubType, 0, len(c.SetExtCommunityMethod.CommunitiesList))
+	subtypeList := make([]bgp.ExtendedCommunityAttrSubType, 0, len(c.Inline.CommunitiesList))
 	if a == config.BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE {
-		removeList = make([]*regexp.Regexp, 0, len(c.SetExtCommunityMethod.CommunitiesList))
+		removeList = make([]*regexp.Regexp, 0, len(c.Inline.CommunitiesList))
 	} else {
-		list = make([]bgp.ExtendedCommunityInterface, 0, len(c.SetExtCommunityMethod.CommunitiesList))
+		list = make([]bgp.ExtendedCommunityInterface, 0, len(c.Inline.CommunitiesList))
 	}
-	for _, x := range c.SetExtCommunityMethod.CommunitiesList {
+	for _, x := range c.Inline.CommunitiesList {
 		if a == config.BGP_SET_COMMUNITY_OPTION_TYPE_REMOVE {
 			subtype, exp, err := ParseExtCommunityRegexp(x)
 			if err != nil {
@@ -2352,7 +2354,7 @@ func (r *RoutingPolicy) getAssignmentFromConfig(dir PolicyDirection, a config.Ap
 	var names []string
 	var cdef config.DefaultPolicyType
 	def := ROUTE_TYPE_ACCEPT
-	c := a.Config
+	c := a
 	switch dir {
 	case POLICY_DIRECTION_IN:
 		names = c.InPolicyList
@@ -3051,8 +3053,8 @@ func CanImportToVrf(v *Vrf, path *Path) bool {
 		return ret
 	}
 	set, _ := NewExtCommunitySet(config.ExtCommunitySet{
-		ExtCommunitySetName: v.Name,
-		ExtCommunityList:    f(v.ImportRt),
+		ExtCommunitySetName:    v.Name,
+		ExtCommunityMemberList: f(v.ImportRt),
 	})
 	matchSet := config.MatchExtCommunitySet{
 		ExtCommunitySet: v.Name,

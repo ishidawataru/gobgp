@@ -465,11 +465,9 @@ func (c *roaManager) GetServers() []*config.RpkiServer {
 
 		addr, port, _ := net.SplitHostPort(client.host)
 		l = append(l, &config.RpkiServer{
-			Config: config.RpkiServerConfig{
-				Address: addr,
-				Port:    func() uint32 { p, _ := strconv.Atoi(port); return uint32(p) }(),
-			},
-			State: client.state,
+			Address: addr,
+			Port:    func() uint32 { p, _ := strconv.Atoi(port); return uint32(p) }(),
+			State:   client.state,
 		})
 
 		if client.conn == nil {

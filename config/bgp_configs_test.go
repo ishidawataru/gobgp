@@ -43,11 +43,11 @@ func TestEqual(t *testing.T) {
 	assert.False(p3.Equal(&p1))
 	ps1 := PrefixSet{
 		PrefixSetName: "ps",
-		PrefixList:    []Prefix{p1, p2},
+		Prefixes:      []Prefix{p1, p2},
 	}
 	ps2 := PrefixSet{
 		PrefixSetName: "ps",
-		PrefixList:    []Prefix{p2, p1},
+		Prefixes:      []Prefix{p2, p1},
 	}
 	assert.True(ps1.Equal(&ps2))
 	ps2.PrefixSetName = "ps2"
