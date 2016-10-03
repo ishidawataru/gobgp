@@ -708,33 +708,33 @@ func TestAsPathConditionEvaluate(t *testing.T) {
 
 	// create match condition
 	asPathSet1 := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{"^65001"},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{"^65001"},
 	}
 
 	asPathSet2 := config.ASPathSet{
-		ASPathSetName: "asset2",
-		ASPathList:    []string{"65005$"},
+		ASPathSetName:       "asset2",
+		ASPathSetMemberList: []string{"65005$"},
 	}
 
 	asPathSet3 := config.ASPathSet{
-		ASPathSetName: "asset3",
-		ASPathList:    []string{"65004", "65005$"},
+		ASPathSetName:       "asset3",
+		ASPathSetMemberList: []string{"65004", "65005$"},
 	}
 
 	asPathSet4 := config.ASPathSet{
-		ASPathSetName: "asset4",
-		ASPathList:    []string{"65000$"},
+		ASPathSetName:       "asset4",
+		ASPathSetMemberList: []string{"65000$"},
 	}
 
 	asPathSet5 := config.ASPathSet{
-		ASPathSetName: "asset5",
-		ASPathList:    []string{"65010"},
+		ASPathSetName:       "asset5",
+		ASPathSetMemberList: []string{"65010"},
 	}
 
 	asPathSet6 := config.ASPathSet{
-		ASPathSetName: "asset6",
-		ASPathList:    []string{"^65010$"},
+		ASPathSetName:       "asset6",
+		ASPathSetMemberList: []string{"^65010$"},
 	}
 
 	m := make(map[string]DefinedSet)
@@ -796,48 +796,48 @@ func TestMultipleAsPathConditionEvaluate(t *testing.T) {
 
 	// create match condition
 	asPathSet1 := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{"^65001_65000"},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{"^65001_65000"},
 	}
 
 	asPathSet2 := config.ASPathSet{
-		ASPathSetName: "asset2",
-		ASPathList:    []string{"65004_65005$"},
+		ASPathSetName:       "asset2",
+		ASPathSetMemberList: []string{"65004_65005$"},
 	}
 
 	asPathSet3 := config.ASPathSet{
-		ASPathSetName: "asset3",
-		ASPathList:    []string{"65001_65000_54000"},
+		ASPathSetName:       "asset3",
+		ASPathSetMemberList: []string{"65001_65000_54000"},
 	}
 
 	asPathSet4 := config.ASPathSet{
-		ASPathSetName: "asset4",
-		ASPathList:    []string{"54000_65004_65005"},
+		ASPathSetName:       "asset4",
+		ASPathSetMemberList: []string{"54000_65004_65005"},
 	}
 
 	asPathSet5 := config.ASPathSet{
-		ASPathSetName: "asset5",
-		ASPathList:    []string{"^65001 65000 54000 65004 65005$"},
+		ASPathSetName:       "asset5",
+		ASPathSetMemberList: []string{"^65001 65000 54000 65004 65005$"},
 	}
 
 	asPathSet6 := config.ASPathSet{
-		ASPathSetName: "asset6",
-		ASPathList:    []string{".*_[0-9]+_65005"},
+		ASPathSetName:       "asset6",
+		ASPathSetMemberList: []string{".*_[0-9]+_65005"},
 	}
 
 	asPathSet7 := config.ASPathSet{
-		ASPathSetName: "asset7",
-		ASPathList:    []string{".*_5[0-9]+_[0-9]+"},
+		ASPathSetName:       "asset7",
+		ASPathSetMemberList: []string{".*_5[0-9]+_[0-9]+"},
 	}
 
 	asPathSet8 := config.ASPathSet{
-		ASPathSetName: "asset8",
-		ASPathList:    []string{"6[0-9]+_6[0-9]+_5[0-9]+"},
+		ASPathSetName:       "asset8",
+		ASPathSetMemberList: []string{"6[0-9]+_6[0-9]+_5[0-9]+"},
 	}
 
 	asPathSet9 := config.ASPathSet{
-		ASPathSetName: "asset9",
-		ASPathList:    []string{"6[0-9]+__6[0-9]+"},
+		ASPathSetName:       "asset9",
+		ASPathSetMemberList: []string{"6[0-9]+__6[0-9]+"},
 	}
 
 	m := make(map[string]DefinedSet)
@@ -940,8 +940,8 @@ func TestAsPathCondition(t *testing.T) {
 
 	for k, v := range tests {
 		s, _ := NewAsPathSet(config.ASPathSet{
-			ASPathSetName: k,
-			ASPathList:    []string{k},
+			ASPathSetName:       k,
+			ASPathSetMemberList: []string{k},
 		})
 		c, _ := NewAsPathCondition(config.MatchASPathSet{
 			ASPathSet:       k,
@@ -983,8 +983,8 @@ func TestAsPathConditionWithOtherCondition(t *testing.T) {
 
 	// create policy
 	asPathSet := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{"65005$"},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{"65005$"},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.1.0/16", "21..24")
@@ -1049,18 +1049,18 @@ func TestAs4PathConditionEvaluate(t *testing.T) {
 
 	// create match condition
 	asPathSet1 := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
 	}
 
 	asPathSet2 := config.ASPathSet{
-		ASPathSetName: "asset2",
-		ASPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
+		ASPathSetName:       "asset2",
+		ASPathSetMemberList: []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
 	}
 
 	asPathSet3 := config.ASPathSet{
 		ASPathSetName: "asset3",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d", createAs4Value("65004.1")),
 			fmt.Sprintf("%d$", createAs4Value("65005.1")),
 		},
@@ -1068,21 +1068,21 @@ func TestAs4PathConditionEvaluate(t *testing.T) {
 
 	asPathSet4 := config.ASPathSet{
 		ASPathSetName: "asset4",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d$", createAs4Value("65000.1")),
 		},
 	}
 
 	asPathSet5 := config.ASPathSet{
 		ASPathSetName: "asset5",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d", createAs4Value("65010.1")),
 		},
 	}
 
 	asPathSet6 := config.ASPathSet{
 		ASPathSetName: "asset6",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d$", createAs4Value("65010.1")),
 		},
 	}
@@ -1156,59 +1156,59 @@ func TestMultipleAs4PathConditionEvaluate(t *testing.T) {
 	// create match condition
 	asPathSet1 := config.ASPathSet{
 		ASPathSetName: "asset1",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("^%d_%d", createAs4Value("65001.1"), createAs4Value("65000.1")),
 		},
 	}
 
 	asPathSet2 := config.ASPathSet{
 		ASPathSetName: "asset2",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d_%d$", createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
 	asPathSet3 := config.ASPathSet{
 		ASPathSetName: "asset3",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d_%d_%d", createAs4Value("65001.1"), createAs4Value("65000.1"), createAs4Value("54000.1")),
 		},
 	}
 
 	asPathSet4 := config.ASPathSet{
 		ASPathSetName: "asset4",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
 	asPathSet5 := config.ASPathSet{
 		ASPathSetName: "asset5",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf("^%d %d %d %d %d$", createAs4Value("65001.1"), createAs4Value("65000.1"), createAs4Value("54000.1"), createAs4Value("65004.1"), createAs4Value("65005.1")),
 		},
 	}
 
 	asPathSet6 := config.ASPathSet{
 		ASPathSetName: "asset6",
-		ASPathList: []string{
+		ASPathSetMemberList: []string{
 			fmt.Sprintf(".*_[0-9]+_%d", createAs4Value("65005.1")),
 		},
 	}
 
 	asPathSet7 := config.ASPathSet{
-		ASPathSetName: "asset7",
-		ASPathList:    []string{".*_3[0-9]+_[0-9]+"},
+		ASPathSetName:       "asset7",
+		ASPathSetMemberList: []string{".*_3[0-9]+_[0-9]+"},
 	}
 
 	asPathSet8 := config.ASPathSet{
-		ASPathSetName: "asset8",
-		ASPathList:    []string{"4[0-9]+_4[0-9]+_3[0-9]+"},
+		ASPathSetName:       "asset8",
+		ASPathSetMemberList: []string{"4[0-9]+_4[0-9]+_3[0-9]+"},
 	}
 
 	asPathSet9 := config.ASPathSet{
-		ASPathSetName: "asset9",
-		ASPathList:    []string{"4[0-9]+__4[0-9]+"},
+		ASPathSetName:       "asset9",
+		ASPathSetMemberList: []string{"4[0-9]+__4[0-9]+"},
 	}
 
 	m := make(map[string]DefinedSet)
@@ -1283,8 +1283,8 @@ func TestAs4PathConditionWithOtherCondition(t *testing.T) {
 
 	// create policy
 	asPathSet := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{fmt.Sprintf("%d$", createAs4Value("65005.1"))},
 	}
 
 	ps := createPrefixSet("ps1", "10.10.1.0/16", "21..24")
@@ -1342,38 +1342,38 @@ func TestAs4PathConditionEvaluateMixedWith2byteAS(t *testing.T) {
 
 	// create match condition
 	asPathSet1 := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{fmt.Sprintf("^%d", createAs4Value("65001.1"))},
 	}
 
 	asPathSet2 := config.ASPathSet{
-		ASPathSetName: "asset2",
-		ASPathList:    []string{"4000$"},
+		ASPathSetName:       "asset2",
+		ASPathSetMemberList: []string{"4000$"},
 	}
 
 	asPathSet3 := config.ASPathSet{
-		ASPathSetName: "asset3",
-		ASPathList:    []string{fmt.Sprintf("%d", createAs4Value("65004.1")), "4000$"},
+		ASPathSetName:       "asset3",
+		ASPathSetMemberList: []string{fmt.Sprintf("%d", createAs4Value("65004.1")), "4000$"},
 	}
 
 	asPathSet4 := config.ASPathSet{
-		ASPathSetName: "asset4",
-		ASPathList:    []string{fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), 100, 5000)},
+		ASPathSetName:       "asset4",
+		ASPathSetMemberList: []string{fmt.Sprintf("%d_%d_%d", createAs4Value("54000.1"), 100, 5000)},
 	}
 
 	asPathSet5 := config.ASPathSet{
-		ASPathSetName: "asset5",
-		ASPathList:    []string{".*_[0-9]+_100"},
+		ASPathSetName:       "asset5",
+		ASPathSetMemberList: []string{".*_[0-9]+_100"},
 	}
 
 	asPathSet6 := config.ASPathSet{
-		ASPathSetName: "asset6",
-		ASPathList:    []string{".*_3[0-9]+_[0]+"},
+		ASPathSetName:       "asset6",
+		ASPathSetMemberList: []string{".*_3[0-9]+_[0]+"},
 	}
 
 	asPathSet7 := config.ASPathSet{
-		ASPathSetName: "asset7",
-		ASPathList:    []string{".*_3[0-9]+_[1]+"},
+		ASPathSetName:       "asset7",
+		ASPathSetMemberList: []string{".*_3[0-9]+_[1]+"},
 	}
 
 	m := make(map[string]DefinedSet)
@@ -1592,8 +1592,8 @@ func TestCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 
 	// create policy
 	asPathSet := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{"65005$"},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{"65005$"},
 	}
 
 	comSet1 := config.CommunitySet{
@@ -2176,8 +2176,8 @@ func TestExtCommunityConditionEvaluateWithOtherCondition(t *testing.T) {
 
 	// create policy
 	asPathSet := config.ASPathSet{
-		ASPathSetName: "asset1",
-		ASPathList:    []string{"65005$"},
+		ASPathSetName:       "asset1",
+		ASPathSetMemberList: []string{"65005$"},
 	}
 
 	ecomSet1 := config.ExtCommunitySet{
@@ -2802,8 +2802,8 @@ func createPrefixSet(name string, prefix string, maskLength string) config.Prefi
 
 func createNeighborSet(name string, addr string) config.NeighborSet {
 	ns := config.NeighborSet{
-		NeighborSetName:  name,
-		NeighborInfoList: []string{addr},
+		NeighborSetName: name,
+		AddressList:     []string{addr},
 	}
 	return ns
 }

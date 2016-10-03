@@ -422,8 +422,8 @@ func (s *NeighborSet) ToConfig() *config.NeighborSet {
 		list = append(list, n.String())
 	}
 	return &config.NeighborSet{
-		NeighborSetName:  s.name,
-		NeighborInfoList: list,
+		NeighborSetName: s.name,
+		AddressList:     list,
 	}
 }
 
@@ -437,13 +437,13 @@ func NewNeighborSetFromApiStruct(name string, list []net.IP) (*NeighborSet, erro
 func NewNeighborSet(c config.NeighborSet) (*NeighborSet, error) {
 	name := c.NeighborSetName
 	if name == "" {
-		if len(c.NeighborInfoList) == 0 {
+		if len(c.AddressList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("empty neighbor set name")
 	}
-	list := make([]net.IP, 0, len(c.NeighborInfoList))
-	for _, x := range c.NeighborInfoList {
+	list := make([]net.IP, 0, len(c.AddressList))
+	for _, x := range c.AddressList {
 		addr := net.ParseIP(x)
 		if addr == nil {
 			return nil, fmt.Errorf("invalid address: %s", x)
@@ -627,22 +627,22 @@ func (s *AsPathSet) ToConfig() *config.ASPathSet {
 		list = append(list, exp.String())
 	}
 	return &config.ASPathSet{
-		ASPathSetName: s.name,
-		ASPathList:    list,
+		ASPathSetName:       s.name,
+		ASPathSetMemberList: list,
 	}
 }
 
 func NewAsPathSet(c config.ASPathSet) (*AsPathSet, error) {
 	name := c.ASPathSetName
 	if name == "" {
-		if len(c.ASPathList) == 0 {
+		if len(c.ASPathSetMemberList) == 0 {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("empty as-path set name")
 	}
-	list := make([]*regexp.Regexp, 0, len(c.ASPathList))
-	singleList := make([]*singleASPathMatch, 0, len(c.ASPathList))
-	for _, x := range c.ASPathList {
+	list := make([]*regexp.Regexp, 0, len(c.ASPathSetMemberList))
+	singleList := make([]*singleASPathMatch, 0, len(c.ASPathSetMemberList))
+	for _, x := range c.ASPathSetMemberList {
 		if s := NewSingleASPathMatch(x); s != nil {
 			singleList = append(singleList, s)
 		} else {

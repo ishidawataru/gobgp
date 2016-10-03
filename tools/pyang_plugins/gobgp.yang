@@ -763,29 +763,6 @@ module gobgp {
        }
   }
 
-
-
-  augment "/oc-rpol:routing-policy/oc-rpol:defined-sets/oc-rpol:neighbor-sets/oc-rpol:neighbor-set" {
-    description "alternative for the existing neighbor element";
-
-    leaf-list neighbor-info {
-      description
-            "neighbor ip address";
-      type inet:ip-address;
-    }
-  }
-
-  augment "/oc-rpol:routing-policy/oc-rpol:defined-sets/" +
-    "oc-bgp-pol:bgp-defined-sets/oc-bgp-pol:as-path-sets/oc-bgp-pol:as-path-set" {
-    description "alternative for the existing as-path-set-member";
-
-    leaf-list as-path {
-      type string;
-      description
-        "AS path expression";
-    }
-  }
-
   augment "/oc-rpol:routing-policy/oc-rpol:policy-definitions/" +
     "oc-rpol:policy-definition/oc-rpol:statements/oc-rpol:statement/" +
     "oc-rpol:conditions/oc-bgp-pol:bgp-conditions" {

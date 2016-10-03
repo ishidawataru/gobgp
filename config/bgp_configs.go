@@ -2120,8 +2120,6 @@ type ASPathSet struct {
 	// original -> oc-bgp-pol:as-path-set-name
 	// original -> oc-bgp-pol:as-path-set-state
 	State ASPathSetState `mapstructure:"state"`
-	// original -> gobgp:as-path
-	ASPathList []string `mapstructure:"as-path-list"`
 }
 
 func (lhs *ASPathSet) Equal(rhs *ASPathSet) bool {
@@ -2136,14 +2134,6 @@ func (lhs *ASPathSet) Equal(rhs *ASPathSet) bool {
 	}
 	for idx, l := range lhs.ASPathSetMemberList {
 		if l != rhs.ASPathSetMemberList[idx] {
-			return false
-		}
-	}
-	if len(lhs.ASPathList) != len(rhs.ASPathList) {
-		return false
-	}
-	for idx, l := range lhs.ASPathList {
-		if l != rhs.ASPathList[idx] {
 			return false
 		}
 	}
@@ -2421,9 +2411,6 @@ type NeighborSet struct {
 	// original -> oc-rpol:neighbor-set-name
 	// original -> oc-rpol:neighbor-set-state
 	State NeighborSetState `mapstructure:"state"`
-	// original -> gobgp:neighbor-info
-	// - original type: list of inet:ip-address
-	NeighborInfoList []string `mapstructure:"neighbor-info-list"`
 }
 
 func (lhs *NeighborSet) Equal(rhs *NeighborSet) bool {
@@ -2438,14 +2425,6 @@ func (lhs *NeighborSet) Equal(rhs *NeighborSet) bool {
 	}
 	for idx, l := range lhs.AddressList {
 		if l != rhs.AddressList[idx] {
-			return false
-		}
-	}
-	if len(lhs.NeighborInfoList) != len(rhs.NeighborInfoList) {
-		return false
-	}
-	for idx, l := range lhs.NeighborInfoList {
-		if l != rhs.NeighborInfoList[idx] {
 			return false
 		}
 	}

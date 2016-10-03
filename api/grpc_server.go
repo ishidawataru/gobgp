@@ -886,8 +886,8 @@ func NewDefinedSetFromApiStruct(a *DefinedSet) (table.DefinedSet, error) {
 		return table.NewNeighborSetFromApiStruct(a.Name, list)
 	case table.DEFINED_TYPE_AS_PATH:
 		return table.NewAsPathSet(config.ASPathSet{
-			ASPathSetName: a.Name,
-			ASPathList:    a.List,
+			ASPathSetName:       a.Name,
+			ASPathSetMemberList: a.List,
 		})
 	case table.DEFINED_TYPE_COMMUNITY:
 		return table.NewCommunitySet(config.CommunitySet{
@@ -934,7 +934,7 @@ func (s *Server) GetDefinedSet(ctx context.Context, arg *GetDefinedSetRequest) (
 		ad := &DefinedSet{
 			Type: DefinedType_NEIGHBOR,
 			Name: cs.NeighborSetName,
-			List: cs.NeighborInfoList,
+			List: cs.AddressList,
 		}
 		sets = append(sets, ad)
 	}
@@ -958,7 +958,7 @@ func (s *Server) GetDefinedSet(ctx context.Context, arg *GetDefinedSetRequest) (
 		ad := &DefinedSet{
 			Type: DefinedType_AS_PATH,
 			Name: cs.ASPathSetName,
-			List: cs.ASPathList,
+			List: cs.ASPathSetMemberList,
 		}
 		sets = append(sets, ad)
 	}
