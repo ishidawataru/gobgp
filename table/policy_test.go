@@ -2335,7 +2335,7 @@ func TestPolicyMatchAndAddingMedOverFlow(t *testing.T) {
 	ds.PrefixSets = []config.PrefixSet{ps}
 	ds.NeighborSets = []config.NeighborSet{ns}
 
-	m := fmt.Sprintf("+%d", math.MaxUint32)
+	m := fmt.Sprintf("+%d", uint32(math.MaxUint32))
 	ma := "1"
 
 	s := createStatement("statement1", "ps1", "ns1", true)
@@ -2623,7 +2623,8 @@ func TestPolicyAs4PathPrepend(t *testing.T) {
 	//test
 	r := NewRoutingPolicy()
 	r.reload(pl)
-	p, _ := NewPolicy(pl.PolicyDefinitions[0])
+	p, err := NewPolicy(pl.PolicyDefinitions[0])
+	assert.Nil(err)
 	addPolicy(r, p)
 
 	pType, newPath := p.Apply(path, nil)
@@ -2813,4 +2814,62 @@ func createAs4Value(s string) uint32 {
 	upper, _ := strconv.Atoi(v[0])
 	lower, _ := strconv.Atoi(v[1])
 	return uint32(upper)<<16 + uint32(lower)
+}
+
+func TestPrefixSetMatch(t *testing.T) {
+	p1 := config.Prefix{
+		IpPrefix:        "0.0.0.0/0",
+		MasklengthRange: "0..7",
+	}
+	p2 := config.Prefix{
+		IpPrefix:        "0.0.0.0/0",
+		MasklengthRange: "25..32",
+	}
+	ps, err := NewPrefixSet(config.PrefixSet{
+		PrefixSetName: "ps1",
+		PrefixList:    []config.Prefix{p1, p2},
+	})
+	assert.Nil(t, err)
+	m := &PrefixCondition{
+		set: ps,
+	}
+
+	path := NewPath(nil, bgp.NewIPAddrPrefix(6, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.True(t, m.Evaluate(path, nil))
+
+	path = NewPath(nil, bgp.NewIPAddrPrefix(10, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.False(t, m.Evaluate(path, nil))
+
+	path = NewPath(nil, bgp.NewIPAddrPrefix(25, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.True(t, m.Evaluate(path, nil))
+
+	path = NewPath(nil, bgp.NewIPAddrPrefix(30, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.True(t, m.Evaluate(path, nil))
+
+	p3 := config.Prefix{
+		IpPrefix:        "0.0.0.0/0",
+		MasklengthRange: "9..10",
+	}
+	ps2, err := NewPrefixSet(config.PrefixSet{
+		PrefixSetName: "ps2",
+		PrefixList:    []config.Prefix{p3},
+	})
+	assert.Nil(t, err)
+	err = ps.Append(ps2)
+	assert.Nil(t, err)
+
+	path = NewPath(nil, bgp.NewIPAddrPrefix(10, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.True(t, m.Evaluate(path, nil))
+
+	ps3, err := NewPrefixSet(config.PrefixSet{
+		PrefixSetName: "ps3",
+		PrefixList:    []config.Prefix{p1},
+	})
+	assert.Nil(t, err)
+	err = ps.Remove(ps3)
+	assert.Nil(t, err)
+
+	path = NewPath(nil, bgp.NewIPAddrPrefix(6, "0.0.0.0"), false, []bgp.PathAttributeInterface{}, time.Now(), false)
+	assert.False(t, m.Evaluate(path, nil))
+
 }

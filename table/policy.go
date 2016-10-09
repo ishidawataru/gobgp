@@ -286,8 +286,15 @@ func (lhs *PrefixSet) Append(arg DefinedSet) error {
 	if !ok {
 		return fmt.Errorf("type cast failed")
 	}
-	rhs.tree.Walk(func(s string, v interface{}) bool {
-		lhs.tree.Insert(s, v)
+	rhs.tree.Walk(func(key string, v interface{}) bool {
+		w, ok := lhs.tree.Get(key)
+		if ok {
+			r := v.([]*Prefix)
+			l := w.([]*Prefix)
+			lhs.tree.Insert(key, append(l, r...))
+		} else {
+			lhs.tree.Insert(key, v)
+		}
 		return false
 	})
 	return nil
@@ -298,8 +305,31 @@ func (lhs *PrefixSet) Remove(arg DefinedSet) error {
 	if !ok {
 		return fmt.Errorf("type cast failed")
 	}
-	rhs.tree.Walk(func(s string, v interface{}) bool {
-		lhs.tree.Delete(s)
+	rhs.tree.Walk(func(key string, v interface{}) bool {
+		w, ok := lhs.tree.Get(key)
+		if !ok {
+			return false
+		}
+		r := v.([]*Prefix)
+		l := w.([]*Prefix)
+		new := make([]*Prefix, 0, len(l))
+		for _, lp := range l {
+			delete := false
+			for _, rp := range r {
+				if lp.Equal(rp) {
+					delete = true
+					break
+				}
+			}
+			if !delete {
+				new = append(new, lp)
+			}
+		}
+		if len(new) == 0 {
+			lhs.tree.Delete(key)
+		} else {
+			lhs.tree.Insert(key, new)
+		}
 		return false
 	})
 	return nil
@@ -317,8 +347,10 @@ func (lhs *PrefixSet) Replace(arg DefinedSet) error {
 func (s *PrefixSet) ToConfig() *config.PrefixSet {
 	list := make([]config.Prefix, 0, s.tree.Len())
 	s.tree.Walk(func(s string, v interface{}) bool {
-		p := v.(*Prefix)
-		list = append(list, config.Prefix{IpPrefix: p.Prefix.String(), MasklengthRange: fmt.Sprintf("%d..%d", p.MasklengthRangeMin, p.MasklengthRangeMax)})
+		ps := v.([]*Prefix)
+		for _, p := range ps {
+			list = append(list, config.Prefix{IpPrefix: p.Prefix.String(), MasklengthRange: fmt.Sprintf("%d..%d", p.MasklengthRangeMin, p.MasklengthRangeMax)})
+		}
 		return false
 	})
 	return &config.PrefixSet{
@@ -333,7 +365,14 @@ func NewPrefixSetFromApiStruct(name string, prefixes []*Prefix) (*PrefixSet, err
 	}
 	tree := radix.New()
 	for _, x := range prefixes {
-		tree.Insert(CidrToRadixkey(x.Prefix.String()), x)
+		key := CidrToRadixkey(x.Prefix.String())
+		d, ok := tree.Get(key)
+		if ok {
+			ps := d.([]*Prefix)
+			tree.Insert(key, append(ps, x))
+		} else {
+			tree.Insert(key, []*Prefix{x})
+		}
 	}
 	return &PrefixSet{
 		name: name,
@@ -355,7 +394,14 @@ func NewPrefixSet(c config.PrefixSet) (*PrefixSet, error) {
 		if err != nil {
 			return nil, err
 		}
-		tree.Insert(CidrToRadixkey(y.Prefix.String()), y)
+		key := CidrToRadixkey(y.Prefix.String())
+		d, ok := tree.Get(key)
+		if ok {
+			ps := d.([]*Prefix)
+			tree.Insert(key, append(ps, y))
+		} else {
+			tree.Insert(key, []*Prefix{y})
+		}
 	}
 	return &PrefixSet{
 		name: name,
@@ -751,7 +797,7 @@ func (s *CommunitySet) ToConfig() *config.CommunitySet {
 }
 
 func ParseCommunity(arg string) (uint32, error) {
-	i, err := strconv.Atoi(arg)
+	i, err := strconv.ParseUint(arg, 10, 32)
 	if err == nil {
 		return uint32(i), nil
 	}
@@ -802,7 +848,7 @@ func ParseExtCommunity(arg string) (bgp.ExtendedCommunityInterface, error) {
 }
 
 func ParseCommunityRegexp(arg string) (*regexp.Regexp, error) {
-	i, err := strconv.Atoi(arg)
+	i, err := strconv.ParseUint(arg, 10, 32)
 	if err == nil {
 		return regexp.MustCompile(fmt.Sprintf("^%d:%d$", i>>16, i&0x0000ffff)), nil
 	}
@@ -970,9 +1016,14 @@ func (c *PrefixCondition) Evaluate(path *Path, _ *PolicyOptions) bool {
 	}
 
 	result := false
-	_, p, ok := c.set.tree.LongestPrefix(key)
-	if ok && p.(*Prefix).MasklengthRangeMin <= masklen && masklen <= p.(*Prefix).MasklengthRangeMax {
-		result = true
+	_, ps, ok := c.set.tree.LongestPrefix(key)
+	if ok {
+		for _, p := range ps.([]*Prefix) {
+			if p.MasklengthRangeMin <= masklen && masklen <= p.MasklengthRangeMax {
+				result = true
+				break
+			}
+		}
 	}
 
 	if c.option == MATCH_OPTION_INVERT {
@@ -1618,7 +1669,7 @@ func NewExtCommunityAction(c config.SetExtCommunity) (*ExtCommunityAction, error
 }
 
 type MedAction struct {
-	value  int
+	value  int64
 	action MedActionType
 }
 
@@ -1630,9 +1681,9 @@ func (a *MedAction) Apply(path *Path, _ *PolicyOptions) *Path {
 	var err error
 	switch a.action {
 	case MED_ACTION_MOD:
-		err = path.SetMed(int64(a.value), false)
+		err = path.SetMed(a.value, false)
 	case MED_ACTION_REPLACE:
-		err = path.SetMed(int64(a.value), true)
+		err = path.SetMed(a.value, true)
 	}
 
 	if err != nil {
@@ -1666,14 +1717,14 @@ func NewMedAction(c config.BgpSetMedType) (*MedAction, error) {
 	case "+", "-":
 		action = MED_ACTION_MOD
 	}
-	value, _ := strconv.Atoi(string(c))
+	value, _ := strconv.ParseInt(string(c), 10, 64)
 	return &MedAction{
 		value:  value,
 		action: action,
 	}, nil
 }
 
-func NewMedActionFromApiStruct(action MedActionType, value int) *MedAction {
+func NewMedActionFromApiStruct(action MedActionType, value int64) *MedAction {
 	return &MedAction{action: action, value: value}
 }
 
@@ -1768,7 +1819,7 @@ func NewAsPathPrependAction(action config.SetAsPathPrepend) (*AsPathPrependActio
 	case "last-as":
 		a.useLeftMost = true
 	default:
-		asn, err := strconv.Atoi(action.As)
+		asn, err := strconv.ParseUint(action.As, 10, 32)
 		if err != nil {
 			return nil, fmt.Errorf("As number string invalid")
 		}
