@@ -553,11 +553,11 @@ type CapAddPath struct {
 
 func (c *CapAddPath) DecodeFromBytes(data []byte) error {
 	c.DefaultParameterCapability.DecodeFromBytes(data)
-	data = data[2:]
-	if len(data)%4 != 0 {
+	data = data[2 : c.CapLen+2]
+	if c.CapLen%4 != 0 {
 		return NewMessageError(BGP_ERROR_OPEN_MESSAGE_ERROR, BGP_ERROR_SUB_UNSUPPORTED_CAPABILITY, nil, "Not all CapabilityAddPath bytes available")
 	}
-	items := make([]*CapAddPathItem, 0, len(data)%4)
+	items := make([]*CapAddPathItem, 0, c.CapLen/4)
 	for len(data) > 0 {
 		item := &CapAddPathItem{
 			Family: AfiSafiToRouteFamily(binary.BigEndian.Uint16(data[:2]), data[2]),
@@ -755,7 +755,10 @@ func (msg *BGPOpen) DecodeFromBytes(data []byte, options ...*MarshallingOption) 
 			p := &OptionParameterCapability{}
 			p.ParamType = paramtype
 			p.ParamLen = paramlen
-			p.DecodeFromBytes(data[2 : 2+paramlen])
+			err := p.DecodeFromBytes(data[2 : 2+paramlen])
+			if err != nil {
+				return err
+			}
 			msg.OptParams = append(msg.OptParams, p)
 		} else {
 			p := &OptionParameterUnknown{}
