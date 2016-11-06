@@ -427,6 +427,9 @@ func (server *BgpServer) notifyBestWatcher(best map[string][]*table.Path, multip
 }
 
 func (server *BgpServer) dropPeerAllRoutes(peer *Peer, families []bgp.RouteFamily) {
+
+	families = peer.toGlobalFamilies(families)
+
 	ids := make([]string, 0, len(server.neighborMap))
 	if peer.isRouteServerClient() {
 		for _, targetPeer := range server.neighborMap {
@@ -511,6 +514,13 @@ func (server *BgpServer) propagateUpdate(peer *Peer, pathList []*table.Path) []*
 	rib := server.globalRib
 	var alteredPathList, withdrawn []*table.Path
 	var best map[string][]*table.Path
+
+	if peer != nil && peer.fsm.pConf.Config.Vrf != "" {
+		vrf := server.globalRib.Vrfs[peer.fsm.pConf.Config.Vrf]
+		for idx, path := range pathList {
+			pathList[idx] = path.ToGlobal(vrf)
+		}
+	}
 
 	if peer != nil && peer.isRouteServerClient() {
 		for _, path := range pathList {
@@ -816,12 +826,6 @@ func (server *BgpServer) handleFSMMessage(peer *Peer, e *FsmMsg) {
 			}
 
 			if len(pathList) > 0 {
-				if v := peer.fsm.pConf.Config.Vrf; v != "" {
-					vrf := server.globalRib.Vrfs[v]
-					for idx, path := range pathList {
-						pathList[idx] = path.ToGlobal(vrf)
-					}
-				}
 				altered := server.propagateUpdate(peer, pathList)
 				if server.isWatched(WATCH_EVENT_TYPE_POST_UPDATE) {
 					_, y := peer.fsm.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
@@ -1102,7 +1106,7 @@ func getMacMobilityExtendedCommunity(etag uint32, mac net.HardwareAddr, evpnPath
 	return nil
 }
 
-func (server *BgpServer) fixupApiPath(vrfId string, pathList []*table.Path) error {
+func (server *BgpServer) fixupApiPath(pathList []*table.Path) error {
 	pi := &table.PeerInfo{
 		AS:      server.bgpConfig.Global.Config.As,
 		LocalID: net.ParseIP(server.bgpConfig.Global.Config.RouterId).To4(),
@@ -1111,13 +1115,6 @@ func (server *BgpServer) fixupApiPath(vrfId string, pathList []*table.Path) erro
 	for _, path := range pathList {
 		if path.GetSource() == nil {
 			path.SetSource(pi)
-		}
-
-		if vrfId != "" {
-			vrf := server.globalRib.Vrfs[vrfId]
-			if err := vrf.ToGlobalPath(path); err != nil {
-				return err
-			}
 		}
 
 		if path.GetRouteFamily() == bgp.RF_EVPN {
@@ -1149,7 +1146,7 @@ func (s *BgpServer) AddPath(vrfId string, pathList []*table.Path) (uuidBytes []b
 			return
 		}
 
-		if err = s.fixupApiPath(vrfId, pathList); err == nil {
+		if err = s.fixupApiPath(pathList); err == nil {
 			if len(pathList) == 1 {
 				uuidBytes = uuid.NewV4().Bytes()
 				pathList[0].SetUUID(uuidBytes)
@@ -1192,7 +1189,7 @@ func (s *BgpServer) DeletePath(uuid []byte, f bgp.RouteFamily, vrfId string, pat
 				deletePathList = append(deletePathList, path.Clone(true))
 			}
 		} else {
-			if err = s.fixupApiPath(vrfId, pathList); err != nil {
+			if err = s.fixupApiPath(pathList); err != nil {
 				return
 			}
 			deletePathList = pathList
