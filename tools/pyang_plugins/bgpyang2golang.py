@@ -274,65 +274,66 @@ def emit_class_def(ctx, yang_statement, struct_name, prefix):
                 tag_name = 'state'
                 val_name_go = 'State'
 
-        print >> o, '  {0}\t{1} `mapstructure:"{2}"`'.format(val_name_go, emit_type_name, tag_name)
+        print >> o, '  {0}\t{1} `mapstructure:"{2}" json:"{2},omitempty"`'.format(val_name_go, emit_type_name, tag_name)
 
         equal_elems.append((val_name_go, emit_type_name, equal_type, equal_data))
 
     print >> o, '}'
 
-    print >> o, 'func (lhs *{0}) Equal(rhs *{0}) bool {{'.format(convert_to_golang(struct_name))
-    print >> o, 'if lhs == nil || rhs == nil {'
-    print >> o, 'return false'
-    print >> o, '}'
+    if not struct_name.endswith('state'):
+        print >> o, 'func (lhs *{0}) Equal(rhs *{0}) bool {{'.format(convert_to_golang(struct_name))
+        print >> o, 'if lhs == nil || rhs == nil {'
+        print >> o, 'return false'
+        print >> o, '}'
 
-    for val_name, type_name, typ, elem in equal_elems:
-        if val_name == 'State':
-            continue
-        if typ == EQUAL_TYPE_LEAF:
-            if type_name == '[]byte':
-                print >> o, 'if bytes.Compare(lhs.{0}, rhs.{0}) != 0 {{'.format(val_name)
+        for val_name, type_name, typ, elem in equal_elems:
+            if val_name == 'State':
+                continue
+            if typ == EQUAL_TYPE_LEAF:
+                if type_name == '[]byte':
+                    print >> o, 'if bytes.Compare(lhs.{0}, rhs.{0}) != 0 {{'.format(val_name)
+                else:
+                    print >> o, 'if lhs.{0} != rhs.{0} {{'.format(val_name)
+                print >> o, 'return false'
+                print >> o, '}'
+            elif typ == EQUAL_TYPE_CONTAINER:
+                print >> o, 'if !lhs.{0}.Equal(&(rhs.{0})) {{'.format(val_name)
+                print >> o, 'return false'
+                print >> o, '}'
+            elif typ == EQUAL_TYPE_ARRAY:
+                print >> o, 'if len(lhs.{0}) != len(rhs.{0}) {{'.format(val_name)
+                print >> o, 'return false'
+                print >> o, '}'
+                print >> o, 'for idx, l := range lhs.{0} {{'.format(val_name)
+                if type_name == '[][]byte':
+                    print >> o, 'if bytes.Compare(l, rhs.{0}[idx]) != 0 {{'.format(val_name)
+                else:
+                    print >> o, 'if l != rhs.{0}[idx] {{'.format(val_name)
+                print >> o, 'return false'
+                print >> o, '}'
+                print >> o, '}'
+            elif typ == EQUAL_TYPE_MAP:
+                print >> o, 'if len(lhs.{0}) != len(rhs.{0}) {{'.format(val_name)
+                print >> o, 'return false'
+                print >> o, '}'
+                print >> o, '{'
+                print >> o, 'lmap := make(map[string]*{0})'.format(type_name[2:])
+                print >> o, 'for i, l := range lhs.{0} {{'.format(val_name)
+                print >> o, 'lmap[mapkey(i, string({0}))] = &lhs.{1}[i]'.format(' + '.join('l.{0}'.format(convert_to_golang(v)) for v in elem.split(' ')), val_name)
+                print >> o, '}'
+                print >> o, 'for i, r := range rhs.{0} {{'.format(val_name)
+                print >> o, 'if l, y := lmap[mapkey(i, string({0}))]; !y {{'.format('+'.join('r.{0}'.format(convert_to_golang(v)) for v in elem.split(' ')))
+                print >> o, 'return false'
+                print >> o, '} else if !r.Equal(l) {'
+                print >> o, 'return false'
+                print >> o, '}'
+                print >> o, '}'
+                print >> o, '}'
             else:
-                print >> o, 'if lhs.{0} != rhs.{0} {{'.format(val_name)
-            print >> o, 'return false'
-            print >> o, '}'
-        elif typ == EQUAL_TYPE_CONTAINER:
-            print >> o, 'if !lhs.{0}.Equal(&(rhs.{0})) {{'.format(val_name)
-            print >> o, 'return false'
-            print >> o, '}'
-        elif typ == EQUAL_TYPE_ARRAY:
-            print >> o, 'if len(lhs.{0}) != len(rhs.{0}) {{'.format(val_name)
-            print >> o, 'return false'
-            print >> o, '}'
-            print >> o, 'for idx, l := range lhs.{0} {{'.format(val_name)
-            if type_name == '[][]byte':
-                print >> o, 'if bytes.Compare(l, rhs.{0}[idx]) != 0 {{'.format(val_name)
-            else:
-                print >> o, 'if l != rhs.{0}[idx] {{'.format(val_name)
-            print >> o, 'return false'
-            print >> o, '}'
-            print >> o, '}'
-        elif typ == EQUAL_TYPE_MAP:
-            print >> o, 'if len(lhs.{0}) != len(rhs.{0}) {{'.format(val_name)
-            print >> o, 'return false'
-            print >> o, '}'
-            print >> o, '{'
-            print >> o, 'lmap := make(map[string]*{0})'.format(type_name[2:])
-            print >> o, 'for i, l := range lhs.{0} {{'.format(val_name)
-            print >> o, 'lmap[mapkey(i, string({0}))] = &lhs.{1}[i]'.format(' + '.join('l.{0}'.format(convert_to_golang(v)) for v in elem.split(' ')), val_name)
-            print >> o, '}'
-            print >> o, 'for i, r := range rhs.{0} {{'.format(val_name)
-            print >> o, 'if l, y := lmap[mapkey(i, string({0}))]; !y {{'.format('+'.join('r.{0}'.format(convert_to_golang(v)) for v in elem.split(' ')))
-            print >> o, 'return false'
-            print >> o, '} else if !r.Equal(l) {'
-            print >> o, 'return false'
-            print >> o, '}'
-            print >> o, '}'
-            print >> o, '}'
-        else:
-            sys.stderr.write("invalid equal type %s", typ)
+                sys.stderr.write("invalid equal type %s", typ)
 
-    print >> o, 'return true'
-    print >> o, '}'
+        print >> o, 'return true'
+        print >> o, '}'
     print o.getvalue()
 
 
@@ -664,6 +665,8 @@ _type_translation_map = {
     'yang:timeticks': 'int64',
     'ptypes:install-protocol-type': 'string',
     'binary': '[]byte',
+    'bgp-capability': 'bgp.ParameterCapabilityInterface',
+    'bgp-open-message': '*bgp.BGPMessage',
 }
 
 
@@ -689,7 +692,9 @@ _path_exclude = ["/rpol:routing-policy/rpol:defined-sets/rpol:neighbor-sets/rpol
                  "/rpol:routing-policy/rpol:defined-sets/bgp-pol:bgp-defined-sets/bgp-pol:ext-community-sets/bgp-pol:ext-community-set/bgp-pol:ext-community-member",
                  "/rpol:routing-policy/rpol:defined-sets/bgp-pol:bgp-defined-sets/bgp-pol:as-path-sets/bgp-pol:as-path-set/bgp-pol:as-path-set-member"]
 
-_typedef_exclude =[]
+_typedef_exclude =["/gobgp:bgp-capability",
+                   "/gobgp:bgp-open-message"]
+
 
 def generate_header(ctx):
     print _COPYRIGHT_NOTICE
@@ -697,7 +702,8 @@ def generate_header(ctx):
     print ''
     print 'import ('
     print '"fmt"'
-    print '"bytes"'
+    print ''
+    print '"github.com/osrg/gobgp/packet/bgp"'
     print ')'
     print ''
 
