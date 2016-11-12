@@ -1634,7 +1634,7 @@ func (s *BgpServer) GetServer() (c *config.Global) {
 	return c
 }
 
-func (s *BgpServer) GetNeighbor() (l []*config.Neighbor) {
+func (s *BgpServer) listNeighbor(afi int, vrfName string) (l []*config.Neighbor) {
 	ch := make(chan struct{})
 	defer func() { <-ch }()
 
@@ -1643,10 +1643,46 @@ func (s *BgpServer) GetNeighbor() (l []*config.Neighbor) {
 
 		l = make([]*config.Neighbor, 0, len(s.neighborMap))
 		for _, peer := range s.neighborMap {
+			if afi > 0 {
+				v6 := peer.fsm.peerInfo.Address.To4() == nil
+				if (afi == bgp.AFI_IP && v6) || (afi == bgp.AFI_IP6 && !v6) {
+					continue
+				}
+			}
+			if vrfName != "" && peer.fsm.pConf.Config.Vrf != vrfName {
+				continue
+			}
 			l = append(l, peer.ToConfig())
 		}
 	}
 	return l
+
+}
+
+func (s *BgpServer) ListNeighbor() (l []*config.Neighbor) {
+	return s.listNeighbor(0, "")
+}
+
+func (s *BgpServer) ListNeighborByTransport(afi int) (l []*config.Neighbor) {
+	return s.listNeighbor(afi, "")
+}
+
+func (s *BgpServer) ListNeighborByVRF(vrfName string) (l []*config.Neighbor) {
+	return s.listNeighbor(0, vrfName)
+}
+
+func (s *BgpServer) GetNeighbor(name string) (n *config.Neighbor) {
+	ch := make(chan struct{})
+	defer func() { <-ch }()
+
+	s.mgmtCh <- func() {
+		defer close(ch)
+		peer := s.neighborMap[name]
+		if peer != nil {
+			n = peer.ToConfig()
+		}
+	}
+	return n
 }
 
 func (server *BgpServer) addNeighbor(c *config.Neighbor) error {
