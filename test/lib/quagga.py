@@ -236,14 +236,23 @@ class QuaggaBGPContainer(BGPContainer):
         else:
             return self.local("vtysh -d bgpd {0}".format(cmd), capture=True)
 
-    def reload_config(self):
+    def _pkill(self, signal=''):
         daemon = []
         daemon.append('bgpd')
         if self.zebra:
             daemon.append('zebra')
         for d in daemon:
-            cmd = '/usr/bin/pkill {0} -SIGHUP'.format(d)
+            cmd = '/usr/bin/pkill {0} {1}'.format(d, signal)
             self.local(cmd, capture=True)
+
+    def reload_config(self):
+        self._pkill('-SIGHUP')
+
+    def stop(self, all=False):
+        if all:
+            super(QuaggaBGPContainer, self).stop()
+        else:
+            self._pkill()
 
 
 class RawQuaggaBGPContainer(QuaggaBGPContainer):
