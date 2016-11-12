@@ -74,6 +74,14 @@ service GobgpApi {
 }
 
 message GetNeighborRequest {
+  string address = 1;
+  enum Transport {
+    ALL = 0; //default
+    V4 = 1;
+    V6 = 2;
+  }
+  Transport transport = 2;
+  string vrf_id = 3;
 }
 
 message GetNeighborResponse {

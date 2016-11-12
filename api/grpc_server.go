@@ -188,8 +188,20 @@ func NewPeerFromConfigStruct(pconf *config.Neighbor) *Peer {
 
 func (s *Server) GetNeighbor(ctx context.Context, arg *GetNeighborRequest) (*GetNeighborResponse, error) {
 	p := []*Peer{}
-	for _, e := range s.bgpServer.GetNeighbor() {
-		p = append(p, NewPeerFromConfigStruct(e))
+	if name := arg.Address; name != "" {
+		n := s.bgpServer.GetNeighbor(name)
+		if n == nil {
+			return nil, fmt.Errorf("neighbor %s not found", name)
+		}
+		p = append(p, NewPeerFromConfigStruct(n))
+	} else if vrf := arg.VrfId; vrf != "" {
+		for _, e := range s.bgpServer.ListNeighborByVRF(vrf) {
+			p = append(p, NewPeerFromConfigStruct(e))
+		}
+	} else {
+		for _, e := range s.bgpServer.ListNeighborByTransport(int(arg.Transport)) {
+			p = append(p, NewPeerFromConfigStruct(e))
+		}
 	}
 	return &GetNeighborResponse{Peers: p}, nil
 }
