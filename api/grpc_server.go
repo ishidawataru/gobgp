@@ -123,7 +123,8 @@ func NewPeerFromConfigStruct(pconf *config.Neighbor) *Peer {
 		localCap = append(localCap, c)
 	}
 	return &Peer{
-		Families: families,
+		Families:    families,
+		ApplyPolicy: NewApplyPolicyFromConfigStruct(&pconf.ApplyPolicy),
 		Conf: &PeerConf{
 			NeighborAddress:   pconf.Config.NeighborAddress,
 			Id:                s.RemoteRouterId,
@@ -1700,6 +1701,45 @@ func toPolicyApi(p *config.PolicyDefinition) *Policy {
 			return l
 		}(),
 	}
+}
+
+func NewApplyPolicyFromConfigStruct(ap *config.ApplyPolicy) *ApplyPolicy {
+	p := ap.Config
+	a := &ApplyPolicy{
+		InPolicy:     &PolicyAssignment{},
+		ExportPolicy: &PolicyAssignment{},
+		ImportPolicy: &PolicyAssignment{},
+	}
+
+	defaultPolicy := func(c config.DefaultPolicyType) RouteAction {
+		var action RouteAction
+		switch p.DefaultImportPolicy {
+		case config.DEFAULT_POLICY_TYPE_ACCEPT_ROUTE:
+			action = RouteAction_ACCEPT
+		case config.DEFAULT_POLICY_TYPE_REJECT_ROUTE:
+			action = RouteAction_REJECT
+		}
+		return action
+	}
+
+	policies := func(c []string) []*Policy {
+		a := make([]*Policy, 0, len(c))
+		for _, n := range c {
+			a = append(a, &Policy{
+				Name: n,
+			})
+		}
+		return a
+	}
+
+	a.ImportPolicy.Default = defaultPolicy(p.DefaultImportPolicy)
+	a.ImportPolicy.Policies = policies(p.ImportPolicyList)
+	a.ExportPolicy.Default = defaultPolicy(p.DefaultExportPolicy)
+	a.ExportPolicy.Policies = policies(p.ExportPolicyList)
+	a.InPolicy.Default = defaultPolicy(p.DefaultInPolicy)
+	a.InPolicy.Policies = policies(p.InPolicyList)
+
+	return a
 }
 
 func NewAPIPolicyAssignmentFromTableStruct(t *table.PolicyAssignment) *PolicyAssignment {
