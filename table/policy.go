@@ -408,7 +408,11 @@ func (s *PrefixSet) ToConfig() *config.PrefixSet {
 	s.tree.Walk(func(s string, v interface{}) bool {
 		ps := v.([]*Prefix)
 		for _, p := range ps {
-			list = append(list, config.Prefix{IpPrefix: p.Prefix.String(), MasklengthRange: fmt.Sprintf("%d..%d", p.MasklengthRangeMin, p.MasklengthRangeMax)})
+			prefix := p.Prefix.String()
+			if bgp.IsIPv4MappedIPv6(p.Prefix.IP) {
+				prefix = "::ffff:" + prefix
+			}
+			list = append(list, config.Prefix{IpPrefix: prefix, MasklengthRange: fmt.Sprintf("%d..%d", p.MasklengthRangeMin, p.MasklengthRangeMax)})
 		}
 		return false
 	})

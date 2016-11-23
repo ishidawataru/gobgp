@@ -950,7 +950,7 @@ func NewIPAddrPrefix(length uint8, prefix string) *IPAddrPrefix {
 	}
 }
 
-func isIPv4MappedIPv6(ip net.IP) bool {
+func IsIPv4MappedIPv6(ip net.IP) bool {
 	return len(ip) == net.IPv6len && ip.To4() != nil
 }
 
@@ -964,7 +964,7 @@ func (r *IPv6AddrPrefix) AFI() uint16 {
 
 func (r *IPv6AddrPrefix) String() string {
 	prefix := r.Prefix.String()
-	if isIPv4MappedIPv6(r.Prefix) {
+	if IsIPv4MappedIPv6(r.Prefix) {
 		prefix = "::ffff:" + prefix
 	}
 	return fmt.Sprintf("%s/%d", prefix, r.Length)
@@ -1498,7 +1498,7 @@ func (l *LabeledIPAddrPrefix) Serialize() ([]byte, error) {
 
 func (l *LabeledIPAddrPrefix) String() string {
 	prefix := l.Prefix.String()
-	if isIPv4MappedIPv6(l.Prefix) {
+	if IsIPv4MappedIPv6(l.Prefix) {
 		prefix = "::ffff:" + prefix
 	}
 	return fmt.Sprintf("%s/%d", prefix, int(l.Length)-l.Labels.Len()*8)
