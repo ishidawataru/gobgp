@@ -404,7 +404,7 @@ const (
 
 var MatchSetOptionsRestrictedTypeToIntMap = map[MatchSetOptionsRestrictedType]int{
 	MATCH_SET_OPTIONS_RESTRICTED_TYPE_ANY:    0,
-	MATCH_SET_OPTIONS_RESTRICTED_TYPE_INVERT: 1,
+	MATCH_SET_OPTIONS_RESTRICTED_TYPE_INVERT: 2,
 }
 
 func (v MatchSetOptionsRestrictedType) ToInt() int {
@@ -417,7 +417,7 @@ func (v MatchSetOptionsRestrictedType) ToInt() int {
 
 var IntToMatchSetOptionsRestrictedTypeMap = map[int]MatchSetOptionsRestrictedType{
 	0: MATCH_SET_OPTIONS_RESTRICTED_TYPE_ANY,
-	1: MATCH_SET_OPTIONS_RESTRICTED_TYPE_INVERT,
+	2: MATCH_SET_OPTIONS_RESTRICTED_TYPE_INVERT,
 }
 
 func (v MatchSetOptionsRestrictedType) Validate() error {
