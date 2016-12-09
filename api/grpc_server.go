@@ -1204,6 +1204,16 @@ func NewAPIStatementFromTableStruct(t *table.Statement) *Statement {
 	return toStatementApi(t.ToConfig())
 }
 
+func convertMatchSetOptionsRestrictedTypeToMatchType(o config.MatchSetOptionsRestrictedType) MatchType {
+	switch o {
+	case config.MATCH_SET_OPTIONS_RESTRICTED_TYPE_ANY:
+		return MatchType_ANY
+	case config.MATCH_SET_OPTIONS_RESTRICTED_TYPE_INVERT:
+		return MatchType_INVERT
+	}
+	return -1
+}
+
 func toStatementApi(s *config.Statement) *Statement {
 	cs := &Conditions{}
 	if s.Conditions.MatchPrefixSet.PrefixSet != "" {
@@ -1214,7 +1224,7 @@ func toStatementApi(s *config.Statement) *Statement {
 	}
 	if s.Conditions.MatchNeighborSet.NeighborSet != "" {
 		cs.NeighborSet = &MatchSet{
-			Type: MatchType(s.Conditions.MatchNeighborSet.MatchSetOptions.ToInt()),
+			Type: convertMatchSetOptionsRestrictedTypeToMatchType(s.Conditions.MatchNeighborSet.MatchSetOptions),
 			Name: s.Conditions.MatchNeighborSet.NeighborSet,
 		}
 	}
