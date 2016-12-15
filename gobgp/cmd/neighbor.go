@@ -815,7 +815,13 @@ func modNeighbor(cmdType string, args []string) error {
 
 func NewNeighborCmd() *cobra.Command {
 
-	neighborCmdImpl := &cobra.Command{}
+	neighborCmdImpl := &cobra.Command{
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := showNeighbor([]string{cmd.Use}); err != nil {
+				exitWithError(err)
+			}
+		},
+	}
 
 	type cmds struct {
 		names []string
@@ -927,18 +933,14 @@ func NewNeighborCmd() *cobra.Command {
 
 	neighborCmd := &cobra.Command{
 		Use: CMD_NEIGHBOR,
-		Run: func(cmd *cobra.Command, args []string) {
-			var err error
-			if len(args) == 0 {
-				err = showNeighbors("")
-			} else if len(args) == 1 {
-				err = showNeighbor(args)
-			} else {
-				args = append(args[1:], args[0])
-				neighborCmdImpl.SetArgs(args)
-				err = neighborCmdImpl.Execute()
+		FindHookFn: func(cmd *cobra.Command, args []string) {
+			if len(args) > 0 && net.ParseIP(args[0]) != nil {
+				neighborCmdImpl.Use = args[0]
+				cmd.AddCommand(neighborCmdImpl)
 			}
-			if err != nil {
+		},
+		Run: func(cmd *cobra.Command, args []string) {
+			if err := showNeighbors(""); err != nil {
 				exitWithError(err)
 			}
 		},
