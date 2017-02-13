@@ -334,6 +334,10 @@ func (path *Path) Filtered(id string) PolicyDirection {
 	return path.filtered[id]
 }
 
+func (path *Path) ClearFilter() {
+	path.filtered = make(map[string]PolicyDirection)
+}
+
 func (path *Path) GetRouteFamily() bgp.RouteFamily {
 	return bgp.AfiSafiToRouteFamily(path.OriginInfo().nlri.AFI(), path.OriginInfo().nlri.SAFI())
 }

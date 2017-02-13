@@ -594,8 +594,12 @@ func (server *BgpServer) propagateUpdate(peer *Peer, pathList []*table.Path) {
 			if p := server.policy.ApplyPolicy(table.GLOBAL_RIB_NAME, table.POLICY_DIRECTION_IMPORT, path, nil); p != nil {
 				path = p
 			} else {
+				if peer != nil {
+					peer.adjRibIn.ImportFilter(path)
+				}
 				path = path.Clone(true)
 			}
+
 			pathList[idx] = path
 			// RFC4684 Constrained Route Distribution 6. Operation
 			//
@@ -1289,10 +1293,11 @@ func (s *BgpServer) softResetIn(addr string, family bgp.RouteFamily) error {
 			families = peer.configuredRFlist()
 		}
 		for _, path := range peer.adjRibIn.PathList(families, false) {
-			exResult := path.Filtered(peer.ID())
-			path.Filter(peer.ID(), table.POLICY_DIRECTION_NONE)
-			if s.policy.ApplyPolicy(peer.ID(), table.POLICY_DIRECTION_IN, path, nil) != nil {
-				pathList = append(pathList, path.Clone(false))
+			id := peer.TableID()
+			exResult := path.Filtered(id)
+			path.ClearFilter()
+			if s.policy.ApplyPolicy(id, table.POLICY_DIRECTION_IN, path, nil) != nil {
+				pathList = append(pathList, path)
 				// this path still in rib's
 				// knownPathList. We can't
 				// drop
@@ -1301,10 +1306,12 @@ func (s *BgpServer) softResetIn(addr string, family bgp.RouteFamily) error {
 				// path could be the old best
 				// path.
 				if peer.isRouteServerClient() {
-					path.Filter(peer.ID(), table.POLICY_DIRECTION_IMPORT)
+					path.Filter(id, table.POLICY_DIRECTION_IMPORT)
+				} else {
+					path.Filter(id, exResult)
 				}
 			} else {
-				path.Filter(peer.ID(), table.POLICY_DIRECTION_IN)
+				path.Filter(id, table.POLICY_DIRECTION_IN)
 				if exResult != table.POLICY_DIRECTION_IN {
 					pathList = append(pathList, path.Clone(true))
 				}
