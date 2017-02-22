@@ -69,7 +69,7 @@ func (peer *Peer) TableID() string {
 }
 
 func (peer *Peer) isIBGPPeer() bool {
-	return peer.fsm.pConf.Config.PeerAs == peer.fsm.gConf.Config.As
+	return peer.fsm.pConf.State.PeerAs == peer.fsm.gConf.Config.As
 }
 
 func (peer *Peer) isRouteServerClient() bool {
@@ -272,7 +272,7 @@ func (peer *Peer) filterpath(path, old *table.Path) *table.Path {
 	}
 
 	path = path.Clone(path.IsWithdraw)
-	path.UpdatePathAttrs(peer.fsm.gConf, peer.fsm.pConf)
+	path.UpdatePathAttrs(peer.fsm.gConf, peer.fsm.pConf, peer.fsm.peerInfo)
 
 	options := &table.PolicyOptions{
 		Info: peer.fsm.peerInfo,

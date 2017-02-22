@@ -159,6 +159,12 @@ const (
 	ROUTER_ID_DELETE
 	ROUTER_ID_UPDATE
 	HELLO
+	IPV4_NEXTHOP_LOOKUP_MRIB
+	VRF_UNREGISTER
+	INTERFACE_LINK_PARAMS
+	NEXTHOP_REGISTER
+	NEXTHOP_UNREGISTER
+	NEXTHOP_UPDATE
 	MESSAGE_MAX
 )
 
@@ -1020,6 +1026,232 @@ func (b *ImportLookupBody) String() string {
 	return s
 }
 
+type RegisteredNexthop struct {
+	Connected uint8
+	Family    uint16
+	// Note: Ignores PrefixLength (uint8),
+	// because this field should be always:
+	// - 32 if Address Family is AF_INET
+	// - 128 if Address Family is AF_INET6
+	Prefix net.IP
+}
+
+func (n *RegisteredNexthop) Len() int {
+	// Connected (1 byte) + Address Family (2 bytes) + Prefix Length (1 byte) + Prefix (variable)
+	if n.Family == uint16(syscall.AF_INET) {
+		return 4 + net.IPv4len
+	} else {
+		return 4 + net.IPv6len
+	}
+}
+
+func (n *RegisteredNexthop) Serialize() ([]byte, error) {
+	// Connected (1 byte)
+	buf := make([]byte, 4)
+	buf[0] = byte(n.Connected)
+
+	// Address Family (2 bytes)
+	binary.BigEndian.PutUint16(buf[1:3], n.Family)
+
+	// Prefix Length (1 byte) + Prefix (variable)
+	switch n.Family {
+	case uint16(syscall.AF_INET):
+		buf[3] = byte(net.IPv4len * 8)
+		buf = append(buf, n.Prefix.To4()...)
+	case uint16(syscall.AF_INET6):
+		buf[3] = byte(net.IPv6len * 8)
+		buf = append(buf, n.Prefix.To16()...)
+	default:
+		return nil, fmt.Errorf("invalid address family: %d", n.Family)
+	}
+
+	return buf, nil
+}
+
+func (n *RegisteredNexthop) DecodeFromBytes(data []byte) error {
+	// Connected (1 byte)
+	n.Connected = uint8(data[0])
+	offset := 1
+
+	// Address Family (2 bytes)
+	n.Family = binary.BigEndian.Uint16(data[offset : offset+2])
+	isV4 := n.Family == uint16(syscall.AF_INET)
+	addrLen := int(net.IPv4len)
+	if !isV4 {
+		addrLen = net.IPv6len
+	}
+	// Note: Ignores Prefix Length (1 byte)
+	offset += 3
+
+	// Prefix (variable)
+	if isV4 {
+		n.Prefix = net.IP(data[offset : offset+addrLen]).To4()
+	} else {
+		n.Prefix = net.IP(data[offset : offset+addrLen]).To16()
+	}
+
+	return nil
+}
+
+func (n *RegisteredNexthop) String() string {
+	return fmt.Sprintf("connected: %d, family: %d, prefix: %s", n.Connected, n.Family, n.Prefix.String())
+}
+
+type NexthopRegisterBody struct {
+	Api      API_TYPE
+	Nexthops []*RegisteredNexthop
+}
+
+func (b *NexthopRegisterBody) Serialize() ([]byte, error) {
+	buf := make([]byte, 0)
+
+	// List of Registered Nexthops
+	for _, nh := range b.Nexthops {
+		nhBuf, err := nh.Serialize()
+		if err != nil {
+			return nil, err
+		}
+		buf = append(buf, nhBuf...)
+	}
+
+	return buf, nil
+}
+
+func (b *NexthopRegisterBody) DecodeFromBytes(data []byte, version uint8) error {
+	offset := 0
+
+	// List of Registered Nexthops
+	b.Nexthops = []*RegisteredNexthop{}
+	for len(data[offset:]) > 0 {
+		nh := new(RegisteredNexthop)
+		err := nh.DecodeFromBytes(data[offset:])
+		if err != nil {
+			return err
+		}
+		b.Nexthops = append(b.Nexthops, nh)
+
+		offset += nh.Len()
+		if len(data) < offset {
+			break
+		}
+	}
+
+	return nil
+}
+
+func (b *NexthopRegisterBody) String() string {
+	s := make([]string, 0)
+	for _, nh := range b.Nexthops {
+		s = append(s, fmt.Sprintf("nexthop:{%s}", nh.String()))
+	}
+	return strings.Join(s, ", ")
+}
+
+type NexthopUpdateBody struct {
+	Api    API_TYPE
+	Family uint16
+	// Note: Ignores PrefixLength (uint8),
+	// because this field should be always:
+	// - 32 if Address Family is AF_INET
+	// - 128 if Address Family is AF_INET6
+	Prefix   net.IP
+	Metric   uint32
+	Nexthops []*Nexthop
+}
+
+func (b *NexthopUpdateBody) Serialize() ([]byte, error) {
+	// Address Family (2 bytes)
+	buf := make([]byte, 3)
+	binary.BigEndian.PutUint16(buf, b.Family)
+
+	// Prefix Length (1 byte) + Prefix (variable)
+	switch b.Family {
+	case uint16(syscall.AF_INET):
+		buf[2] = byte(net.IPv4len * 8)
+		buf = append(buf, b.Prefix.To4()...)
+	case uint16(syscall.AF_INET6):
+		buf[2] = byte(net.IPv6len * 8)
+		buf = append(buf, b.Prefix.To16()...)
+	default:
+		return nil, fmt.Errorf("invalid address family: %d", b.Family)
+	}
+
+	return buf, nil
+}
+
+func (b *NexthopUpdateBody) DecodeFromBytes(data []byte, version uint8) error {
+	// Address Family (2 bytes)
+	b.Family = binary.BigEndian.Uint16(data[0:2])
+	isV4 := b.Family == uint16(syscall.AF_INET)
+	addrLen := int(net.IPv4len)
+	if !isV4 {
+		addrLen = net.IPv6len
+	}
+	// Note: Ignores Prefix Length (1 byte)
+	offset := 3
+
+	// Prefix (variable)
+	if isV4 {
+		b.Prefix = net.IP(data[offset : offset+addrLen]).To4()
+	} else {
+		b.Prefix = net.IP(data[offset : offset+addrLen]).To16()
+	}
+	offset += addrLen
+
+	// Metric (4 bytes)
+	// Number of Nexthops (1 byte)
+	if len(data[offset:]) < 4+1 {
+		return fmt.Errorf("invalid message length: missing metric(4 bytes) or nexthops(1 byte): %d<5", len(data[offset:]))
+	}
+	b.Metric = binary.BigEndian.Uint32(data[offset : offset+4])
+	offset += 4
+	nexthopsNum := int(data[offset])
+	offset += 1
+
+	// List of Nexthops
+	b.Nexthops = []*Nexthop{}
+	for i := 0; i < nexthopsNum; i++ {
+		nh := &Nexthop{}
+		nh.Type = NEXTHOP_FLAG(data[offset])
+		offset += 1
+
+		switch nh.Type {
+		case NEXTHOP_IPV4, NEXTHOP_IPV6:
+			if isV4 {
+				nh.Addr = net.IP(data[offset : offset+addrLen]).To4()
+			} else {
+				nh.Addr = net.IP(data[offset : offset+addrLen]).To16()
+			}
+			offset += addrLen
+
+		case NEXTHOP_IPV4_IFINDEX, NEXTHOP_IPV4_IFNAME, NEXTHOP_IPV6_IFINDEX, NEXTHOP_IPV6_IFNAME:
+			if isV4 {
+				nh.Addr = net.IP(data[offset : offset+addrLen]).To4()
+			} else {
+				nh.Addr = net.IP(data[offset : offset+addrLen]).To16()
+			}
+			offset += addrLen
+			nh.Ifindex = binary.BigEndian.Uint32(data[offset : offset+4])
+			offset += 4
+
+		case NEXTHOP_IFINDEX, NEXTHOP_IFNAME:
+			nh.Ifindex = binary.BigEndian.Uint32(data[offset : offset+4])
+			offset += 4
+		}
+		b.Nexthops = append(b.Nexthops, nh)
+	}
+
+	return nil
+}
+
+func (b *NexthopUpdateBody) String() string {
+	s := fmt.Sprintf("family: %d, prefix: %s, metric: %d", b.Family, b.Prefix.String(), b.Metric)
+	for _, nh := range b.Nexthops {
+		s = s + fmt.Sprintf(", nexthop:{%s}", nh.String())
+	}
+	return s
+}
+
 type Message struct {
 	Header Header
 	Body   Body
@@ -1067,6 +1299,11 @@ func ParseMessage(hdr *Header, data []byte) (*Message, error) {
 		log.WithFields(log.Fields{
 			"Topic": "Zebra",
 		}).Debugf("ipv4 import lookup message received: %v", data)
+	case NEXTHOP_UPDATE:
+		m.Body = &NexthopUpdateBody{Api: m.Header.Command}
+		log.WithFields(log.Fields{
+			"Topic": "Zebra",
+		}).Debugf("nexthop update message received: %v", data)
 	default:
 		return nil, fmt.Errorf("Unknown zapi command: %d", m.Header.Command)
 	}

@@ -108,12 +108,14 @@ func (i *PeerInfo) String() string {
 
 func NewPeerInfo(g *config.Global, p *config.Neighbor) *PeerInfo {
 	id := net.ParseIP(string(p.RouteReflector.Config.RouteReflectorClusterId)).To4()
+	// exclude zone info
+	naddr, _ := net.ResolveIPAddr("ip", p.Config.NeighborAddress)
 	return &PeerInfo{
 		AS:                      p.Config.PeerAs,
 		LocalAS:                 g.Config.As,
 		LocalID:                 net.ParseIP(g.Config.RouterId).To4(),
-		Address:                 net.ParseIP(p.Config.NeighborAddress),
 		RouteReflectorClient:    p.RouteReflector.Config.RouteReflectorClient,
+		Address:                 naddr.IP,
 		RouteReflectorClusterID: id,
 		MultihopTtl:             p.EbgpMultihop.Config.MultihopTtl,
 	}
@@ -177,6 +179,24 @@ func (dd *Destination) GetBestPath(id string) *Path {
 	for _, p := range dd.knownPathList {
 		if p.Filtered(id) == POLICY_DIRECTION_NONE {
 			return p
+		}
+	}
+	return nil
+}
+
+func (dd *Destination) GetMultiBestPath(id string) []*Path {
+	list := make([]*Path, 0, len(dd.knownPathList))
+	var best *Path
+	for _, p := range dd.knownPathList {
+		if p.Filtered(id) == POLICY_DIRECTION_NONE {
+			if best == nil {
+				best = p
+				list = append(list, p)
+			} else if best.Compare(p) == 0 {
+				list = append(list, p)
+			} else {
+				return list
+			}
 		}
 	}
 	return nil

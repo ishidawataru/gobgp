@@ -195,6 +195,8 @@ func NewPeerFromConfigStruct(pconf *config.Neighbor) *Peer {
 			Received:   s.AdjTable.Received,
 			Accepted:   s.AdjTable.Accepted,
 			Advertised: s.AdjTable.Advertised,
+			PeerAs:     s.PeerAs,
+			PeerType:   uint32(s.PeerType.ToInt()),
 		},
 		Timers: &Timers{
 			Config: &TimersConfig{
@@ -340,21 +342,22 @@ func (s *Server) GetRib(ctx context.Context, arg *GetRibRequest) (*GetRibRespons
 	}, err
 }
 
-func (s *Server) MonitorRib(arg *Table, stream GobgpApi_MonitorRibServer) error {
-	if arg == nil {
+func (s *Server) MonitorRib(arg *MonitorRibRequest, stream GobgpApi_MonitorRibServer) error {
+	if arg == nil || arg.Table == nil {
 		return fmt.Errorf("invalid request")
 	}
+	t := arg.Table
 	w, err := func() (*server.Watcher, error) {
-		switch arg.Type {
+		switch t.Type {
 		case Resource_GLOBAL:
-			return s.bgpServer.Watch(server.WatchBestPath()), nil
+			return s.bgpServer.Watch(server.WatchBestPath(arg.Current)), nil
 		case Resource_ADJ_IN:
-			if arg.PostPolicy {
-				return s.bgpServer.Watch(server.WatchPostUpdate(false)), nil
+			if t.PostPolicy {
+				return s.bgpServer.Watch(server.WatchPostUpdate(arg.Current)), nil
 			}
-			return s.bgpServer.Watch(server.WatchUpdate(false)), nil
+			return s.bgpServer.Watch(server.WatchUpdate(arg.Current)), nil
 		default:
-			return nil, fmt.Errorf("unsupported resource type: %v", arg.Type)
+			return nil, fmt.Errorf("unsupported resource type: %v", t.Type)
 		}
 	}()
 	if err != nil {
@@ -367,7 +370,7 @@ func (s *Server) MonitorRib(arg *Table, stream GobgpApi_MonitorRibServer) error 
 		sendPath := func(pathList []*table.Path) error {
 			dsts := make(map[string]*Destination)
 			for _, path := range pathList {
-				if path == nil || (arg.Family != 0 && bgp.RouteFamily(arg.Family) != path.GetRouteFamily()) {
+				if path == nil || (t.Family != 0 && bgp.RouteFamily(t.Family) != path.GetRouteFamily()) {
 					continue
 				}
 				if dst, y := dsts[path.GetNlri().String()]; y {
@@ -427,15 +430,16 @@ func (s *Server) MonitorPeerState(arg *Arguments, stream GobgpApi_MonitorPeerSta
 			case ev := <-w.Event():
 				switch msg := ev.(type) {
 				case *server.WatchEventPeerState:
-					if len(arg.Name) > 0 && arg.Name != msg.PeerAddress.String() {
+					if len(arg.Name) > 0 && arg.Name != msg.PeerAddress.String() && arg.Name != msg.PeerInterface {
 						continue
 					}
 					if err := stream.Send(&Peer{
 						Conf: &PeerConf{
-							PeerAs:          msg.PeerAS,
-							LocalAs:         msg.LocalAS,
-							NeighborAddress: msg.PeerAddress.String(),
-							Id:              msg.PeerID.String(),
+							PeerAs:            msg.PeerAS,
+							LocalAs:           msg.LocalAS,
+							NeighborAddress:   msg.PeerAddress.String(),
+							Id:                msg.PeerID.String(),
+							NeighborInterface: msg.PeerInterface,
 						},
 						Info: &PeerState{
 							PeerAs:          msg.PeerAS,
@@ -957,6 +961,8 @@ func NewNeighborFromAPIStruct(a *Peer) (*config.Neighbor, error) {
 		pconf.State.AdjTable.Received = a.Info.Received
 		pconf.State.AdjTable.Accepted = a.Info.Accepted
 		pconf.State.AdjTable.Advertised = a.Info.Advertised
+		pconf.State.PeerAs = a.Info.PeerAs
+		pconf.State.PeerType = config.IntToPeerTypeMap[int(a.Info.PeerType)]
 
 		if a.Info.Messages != nil {
 			if a.Info.Messages.Sent != nil {

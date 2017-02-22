@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Nippon Telegraph and Telephone Corporation.
+# Copyright (C) 2016 Nippon Telegraph and Telephone Corporation.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,14 +17,12 @@ import unittest
 from fabric.api import local
 from lib import base
 from lib.gobgp import *
-from lib.exabgp import *
 import sys
 import os
 import time
 import nose
 from noseplugin import OptionParser, parser_option
 from itertools import combinations
-
 
 class GoBGPTestBase(unittest.TestCase):
 
@@ -36,45 +34,37 @@ class GoBGPTestBase(unittest.TestCase):
         g1 = GoBGPContainer(name='g1', asn=65000, router_id='192.168.0.1',
                             ctn_image_name=gobgp_ctn_image_name,
                             log_level=parser_option.gobgp_log_level)
-        e1 = ExaBGPContainer(name='e1', asn=65000, router_id='192.168.0.2')
-
-        ctns = [g1, e1]
-
-        # advertise a route from q1, q2
-        matchs = ['destination 10.0.0.0/24', 'source 20.0.0.0/24']
-        thens = ['discard']
-        e1.add_route(route='flow1', rf='ipv4-flowspec', matchs=matchs, thens=thens)
-        matchs2 = ['tcp-flags S', 'protocol tcp udp', "packet-length '>1000&<2000'"]
-        thens2 = ['rate-limit 9600', 'redirect 0.10:100', 'mark 20', 'action sample']
-        g1.add_route(route='flow1', rf='ipv4-flowspec', matchs=matchs2, thens=thens2)
-        matchs3 = ['destination 2001::/24/10', 'source 2002::/24/15']
-        thens3 = ['discard']
-        e1.add_route(route='flow2', rf='ipv6-flowspec', matchs=matchs3, thens=thens3)
-        matchs4 = ['destination 2001::/24 10', "label '=100'"]
-        thens4 = ['discard']
-        g1.add_route(route='flow2', rf='ipv6-flowspec', matchs=matchs4, thens=thens4)
+        g2 = GoBGPContainer(name='g2', asn=65001, router_id='192.168.0.2',
+                            ctn_image_name=gobgp_ctn_image_name,
+                            log_level=parser_option.gobgp_log_level)
+        ctns = [g1, g2]
 
         initial_wait_time = max(ctn.run() for ctn in ctns)
 
-        time.sleep(initial_wait_time)
+        time.sleep(initial_wait_time+2)
 
-        # ibgp peer. loop topology
+        g1.local('ping6 -c 1 ff02::1%eth0')
+        g2.local('ping6 -c 1 ff02::1%eth0')
+
         for a, b in combinations(ctns, 2):
-            a.add_peer(b, flowspec=True)
-            b.add_peer(a, flowspec=True)
+            a.add_peer(b, interface='eth0')
+            b.add_peer(a, interface='eth0')
 
-        cls.gobgp = g1
-        cls.exabgp = e1
+        cls.g1 = g1
+        cls.g2 = g2
 
     # test each neighbor state is turned establish
     def test_01_neighbor_established(self):
-        self.gobgp.wait_for(expected_state=BGP_FSM_ESTABLISHED, peer=self.exabgp)
+        self.g1.wait_for(expected_state=BGP_FSM_ESTABLISHED, peer=self.g2)
 
-    def test_02_check_gobgp_global_rib(self):
-        self.assertTrue(len(self.gobgp.get_global_rib(rf='ipv4-flowspec')) == 2)
+    def test_02_add_ipv4_route(self):
 
-    def test_03_check_gobgp_global_rib(self):
-        self.assertTrue(len(self.gobgp.get_global_rib(rf='ipv6-flowspec')) == 2)
+        self.g1.add_route('10.0.0.0/24')
+
+        time.sleep(1)
+
+        rib = self.g2.get_global_rib(rf='ipv4')
+        self.assertTrue(len(rib) == 1)
 
 
 if __name__ == '__main__':
