@@ -5110,20 +5110,20 @@ func (p *PathAttributeMpReachNLRI) DecodeFromBytes(data []byte) error {
 	}
 	nexthopbin := value[4 : 4+nexthoplen]
 	if nexthoplen > 0 {
-		addrlen := 4
-		if afi == AFI_IP6 {
-			addrlen = 16
-		}
+		v4addrlen := 4
+		v6addrlen := 16
 		offset := 0
 		if safi == SAFI_MPLS_VPN {
 			offset = 8
 		}
 		switch nexthoplen {
-		case 2 * (offset + addrlen):
-			p.LinkLocalNexthop = nexthopbin[offset+addrlen+offset : 2*(offset+addrlen)]
+		case 2 * (offset + v6addrlen):
+			p.LinkLocalNexthop = nexthopbin[offset+v6addrlen+offset : 2*(offset+v6addrlen)]
 			fallthrough
-		case offset + addrlen:
-			p.Nexthop = nexthopbin[offset : offset+addrlen]
+		case offset + v6addrlen:
+			p.Nexthop = nexthopbin[offset : offset+v6addrlen]
+		case offset + v4addrlen:
+			p.Nexthop = nexthopbin[offset : offset+v4addrlen]
 		default:
 			return NewMessageError(eCode, eSubCode, value, "mpreach nexthop length is incorrect")
 		}
