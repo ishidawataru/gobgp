@@ -238,6 +238,7 @@ func (dest *Destination) Calculate(ids []string) (map[string]*Path, map[string]*
 	bestList := make(map[string]*Path, len(ids))
 	oldList := make(map[string]*Path, len(ids))
 	oldKnownPathList := dest.knownPathList
+
 	// First remove the withdrawn paths.
 	dest.explicitWithdraw()
 	// Do implicit withdrawal
@@ -248,6 +249,8 @@ func (dest *Destination) Calculate(ids []string) (map[string]*Path, map[string]*
 	dest.newPathList = make([]*Path, 0)
 	// Compute new best path
 	dest.computeKnownBestPath()
+	// Cache to reduce massive call of old.Clone(true)
+	withdrawCache := make(map[*Path]*Path)
 
 	f := func(id string) (*Path, *Path) {
 		old := getBestPath(id, &oldKnownPathList)
@@ -272,7 +275,13 @@ func (dest *Destination) Calculate(ids []string) (map[string]*Path, map[string]*
 			if old == nil {
 				return nil, nil
 			}
-			return old.Clone(true), old
+			if cache := withdrawCache[old]; cache != nil {
+				return cache, old
+			} else {
+				cache = old.Clone(true)
+				withdrawCache[old] = cache
+				return cache, old
+			}
 		}
 		return best, old
 	}
