@@ -17,11 +17,21 @@ package table
 
 import (
 	"bytes"
+	"fmt"
+	"hash/fnv"
+	"io"
+	"reflect"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/osrg/gobgp/packet/bgp"
-	"hash/fnv"
-	"reflect"
 )
+
+// Header + Update (WithdrawnRoutesLen +
+// TotalPathAttributeLen + attributes + maxlen of
+// NLRI).
+func calcBGPUpdateMsgLen(nlriLen, attrLen int) int {
+	return bgp.BGP_HEADER_LENGTH + 2 + 2 + nlriLen + attrLen
+}
 
 func UpdatePathAttrs2ByteAs(msg *bgp.BGPUpdate) error {
 	ps := msg.PathAttributes
@@ -269,7 +279,7 @@ func createUpdateMsgFromPath(path *Path, msg *bgp.BGPMessage) *bgp.BGPMessage {
 			if msg != nil {
 				u := msg.Body.(*bgp.BGPUpdate)
 				u.WithdrawnRoutes = append(u.WithdrawnRoutes, nlri)
-				return nil
+				return msg
 			} else {
 				return bgp.NewBGPUpdateMessage([]*bgp.IPAddrPrefix{nlri}, nil, nil)
 			}
@@ -339,28 +349,19 @@ type bucket struct {
 	paths []*Path
 }
 
-func CreateUpdateMsgFromPaths(pathList []*Path) []*bgp.BGPMessage {
+func CreateUpdateMsgFromPaths(pathList []*Path) ([]*bgp.BGPMessage, *updateMsgGenerator) {
 	var msgs []*bgp.BGPMessage
 
 	pathByAttrs := make(map[uint32][]*bucket)
+	var v4withdrawals []*Path
 	for _, path := range pathList {
-		if path == nil {
-			continue
-		} else if path.IsEOR() {
+		switch {
+		case path == nil:
+		case path.IsEOR():
 			msgs = append(msgs, bgp.NewEndOfRib(path.GetRouteFamily()))
-			continue
-		}
-		y := func(p *Path) bool {
-			if p.GetRouteFamily() != bgp.RF_IPv4_UC {
-				return false
-			}
-			if p.IsWithdraw {
-				return false
-			}
-			return true
-		}(path)
-
-		if y {
+		case path.IsWithdraw && path.GetRouteFamily() == bgp.RF_IPv4_UC:
+			v4withdrawals = append(v4withdrawals, path)
+		case path.GetRouteFamily() == bgp.RF_IPv4_UC:
 			key, attrs := func(p *Path) (uint32, []byte) {
 				h := fnv.New32()
 				total := bytes.NewBuffer(make([]byte, 0))
@@ -395,7 +396,7 @@ func CreateUpdateMsgFromPaths(pathList []*Path) []*bgp.BGPMessage {
 				}
 				pathByAttrs[key] = []*bucket{nb}
 			}
-		} else {
+		default:
 			msg := createUpdateMsgFromPath(path, nil)
 			msgs = append(msgs, msg)
 		}
@@ -404,26 +405,29 @@ func CreateUpdateMsgFromPaths(pathList []*Path) []*bgp.BGPMessage {
 	for _, bList := range pathByAttrs {
 		for _, b := range bList {
 			var msg *bgp.BGPMessage
+			nlriLen := 0
+			attrsLen := -1
 			for i, path := range b.paths {
+				nlriLen += path.GetNlri().Len()
 				if i == 0 {
 					msg = createUpdateMsgFromPath(path, nil)
 					msgs = append(msgs, msg)
 				} else {
 					msgLen := func(u *bgp.BGPUpdate) int {
-						attrsLen := 0
-						for _, a := range u.PathAttributes {
-							attrsLen += a.Len()
+						if attrsLen < 0 {
+							attrsLen = 0
+							for _, a := range u.PathAttributes {
+								attrsLen += a.Len()
+							}
 						}
-						// Header + Update (WithdrawnRoutesLen +
-						// TotalPathAttributeLen + attributes + maxlen of
-						// NLRI). Note that we try to add one NLRI.
-						return 19 + 2 + 2 + attrsLen + (len(u.NLRI)+1)*5
+						return calcBGPUpdateMsgLen(nlriLen, attrsLen)
 					}(msg.Body.(*bgp.BGPUpdate))
 
 					if msgLen+32 > bgp.BGP_MAX_MESSAGE_LENGTH {
 						// don't marge
 						msg = createUpdateMsgFromPath(path, nil)
 						msgs = append(msgs, msg)
+						nlriLen = 0
 					} else {
 						createUpdateMsgFromPath(path, msg)
 					}
@@ -432,5 +436,46 @@ func CreateUpdateMsgFromPaths(pathList []*Path) []*bgp.BGPMessage {
 		}
 	}
 
-	return msgs
+	var g *updateMsgGenerator
+	if len(v4withdrawals) > 0 {
+		g = &updateMsgGenerator{
+			family:       bgp.RF_IPv4_UC,
+			isWithdrawal: true,
+			paths:        v4withdrawals,
+		}
+	}
+
+	return msgs, g
+}
+
+type updateMsgGenerator struct {
+	family       bgp.RouteFamily
+	isWithdrawal bool
+	paths        []*Path
+}
+
+func (g *updateMsgGenerator) Next() (*bgp.BGPMessage, error) {
+	if g == nil || len(g.paths) == 0 {
+		return nil, io.EOF
+	}
+	if g.family != bgp.RF_IPv4_UC || !g.isWithdrawal {
+		return nil, fmt.Errorf("not implemented yet")
+	}
+	var msg *bgp.BGPMessage
+	nlriLen := 0
+	lastIdx := -1
+	for idx, path := range g.paths {
+		nlriLen += path.GetNlri().Len()
+		if calcBGPUpdateMsgLen(nlriLen, 0) > bgp.BGP_MAX_MESSAGE_LENGTH {
+			lastIdx = idx
+			break
+		}
+		msg = createUpdateMsgFromPath(path, msg)
+	}
+	if lastIdx < 0 {
+		g.paths = nil
+	} else {
+		g.paths = g.paths[lastIdx:]
+	}
+	return msg, nil
 }
