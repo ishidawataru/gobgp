@@ -1200,8 +1200,20 @@ func (h *FSMHandler) sendMessageloop() error {
 			return nil
 		case o := <-h.outgoing.Out():
 			m := o.(*FsmOutgoingMsg)
-			for _, msg := range table.CreateUpdateMsgFromPaths(m.Paths) {
+			msgs, g := table.CreateUpdateMsgFromPaths(m.Paths)
+			for _, msg := range msgs {
 				if err := send(msg); err != nil {
+					return nil
+				}
+			}
+			for {
+				msg, err := g.Next()
+				if err == io.EOF {
+					break
+				} else if err != nil {
+					return nil
+				}
+				if err = send(msg); err != nil {
 					return nil
 				}
 			}

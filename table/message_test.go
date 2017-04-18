@@ -16,6 +16,9 @@
 package table
 
 import (
+	"fmt"
+	"io"
+
 	"github.com/osrg/gobgp/packet/bgp"
 	"github.com/stretchr/testify/assert"
 	"reflect"
@@ -431,4 +434,27 @@ func TestBMP(t *testing.T) {
 	msg := bgp.NewBGPUpdateMessage(w, p, n)
 	pList := ProcessMessage(msg, peerR1(), time.Now())
 	CreateUpdateMsgFromPaths(pList)
+}
+
+func TestCreateUpdateMsgFromPaths(t *testing.T) {
+	num := 10000
+	paths := make([]*Path, 0, num)
+	for i := 0; i < num; i++ {
+		nlri := bgp.NewIPAddrPrefix(30, fmt.Sprintf("%d.%d.0.0", i%255, i/255))
+		path := NewPath(nil, nlri, true, nil, time.Now(), false)
+		paths = append(paths, path)
+	}
+	msgs, g := CreateUpdateMsgFromPaths(paths)
+	assert.Equal(t, len(msgs), 0)
+	sum := 0
+	for {
+		msg, err := g.Next()
+		if err == io.EOF {
+			break
+		}
+		b, _ := msg.Serialize()
+		sum += len(msg.Body.(*bgp.BGPUpdate).WithdrawnRoutes)
+		assert.True(t, len(b) < bgp.BGP_MAX_MESSAGE_LENGTH)
+	}
+	assert.Equal(t, num, sum)
 }

@@ -17,14 +17,16 @@ package server
 
 import (
 	"fmt"
+	"io"
+	"net"
+	"strconv"
+	"time"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/osrg/gobgp/config"
 	"github.com/osrg/gobgp/packet/bgp"
 	"github.com/osrg/gobgp/packet/bmp"
 	"github.com/osrg/gobgp/table"
-	"net"
-	"strconv"
-	"time"
 )
 
 type ribout map[string][]*table.Path
@@ -153,7 +155,20 @@ func (b *bmpClient) loop() {
 									pathList = append(pathList, p)
 								}
 							}
-							for _, u := range table.CreateUpdateMsgFromPaths(pathList) {
+							msgs, g := table.CreateUpdateMsgFromPaths(pathList)
+							for _, u := range msgs {
+								payload, _ := u.Serialize()
+								if err := write(bmpPeerRoute(bmp.BMP_PEER_TYPE_GLOBAL, msg.PostPolicy, 0, info, msg.Timestamp.Unix(), payload)); err != nil {
+									return false
+								}
+							}
+							for {
+								u, err := g.Next()
+								if err == io.EOF {
+									break
+								} else if err != nil {
+									return false
+								}
 								payload, _ := u.Serialize()
 								if err := write(bmpPeerRoute(bmp.BMP_PEER_TYPE_GLOBAL, msg.PostPolicy, 0, info, msg.Timestamp.Unix(), payload)); err != nil {
 									return false
@@ -166,7 +181,8 @@ func (b *bmpClient) loop() {
 						}
 					case *WatchEventBestPath:
 						for _, p := range msg.PathList {
-							u := table.CreateUpdateMsgFromPaths([]*table.Path{p})[0]
+							msgs, _ := table.CreateUpdateMsgFromPaths([]*table.Path{p})
+							u := msgs[0]
 							if payload, err := u.Serialize(); err != nil {
 								return false
 							} else if err = write(bmpPeerRoute(bmp.BMP_PEER_TYPE_LOCAL_RIB, false, 0, p.GetSource(), p.GetTimestamp().Unix(), payload)); err != nil {

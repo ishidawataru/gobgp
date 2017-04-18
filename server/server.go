@@ -2359,7 +2359,7 @@ func (s *BgpServer) Watch(opts ...WatchOption) (w *Watcher) {
 					_, y := peer.fsm.capMap[bgp.BGP_CAP_FOUR_OCTET_AS_NUMBER]
 					l, _ := peer.fsm.LocalHostPort()
 					for _, path := range peer.adjRibIn.PathList([]bgp.RouteFamily{rf}, false) {
-						msgs := table.CreateUpdateMsgFromPaths([]*table.Path{path})
+						msgs, _ := table.CreateUpdateMsgFromPaths([]*table.Path{path})
 						buf, _ := msgs[0].Serialize()
 						w.notify(&WatchEventUpdate{
 							Message:      msgs[0],
@@ -2402,7 +2402,7 @@ func (s *BgpServer) Watch(opts ...WatchOption) (w *Watcher) {
 				}
 				for peerInfo, paths := range pathsByPeer {
 					for _, path := range paths {
-						msgs := table.CreateUpdateMsgFromPaths([]*table.Path{path})
+						msgs, _ := table.CreateUpdateMsgFromPaths([]*table.Path{path})
 						buf, _ := msgs[0].Serialize()
 						w.notify(&WatchEventUpdate{
 							Message:     msgs[0],
