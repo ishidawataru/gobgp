@@ -7,6 +7,8 @@ before_install:
 install: test/scenario_test/ci-scripts/travis-install-script.sh
 script: test/scenario_test/ci-scripts/travis-build-script.sh
 
+go_import_path: github.com/osrg/gobgp
+
 env:
   global:
     - DOCKER_IMAGE=osrg/quagga

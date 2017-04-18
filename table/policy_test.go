@@ -51,7 +51,7 @@ func TestPrefixCalcurateNoRange(t *testing.T) {
 	assert.Equal(t, false, match2)
 	pl3, _ := NewPrefix(config.Prefix{IpPrefix: "10.10.0.0/16", MasklengthRange: "21..24"})
 	match3 := pl3.Match(path)
-	assert.Equal(t, true, match3)
+	assert.Equal(t, false, match3)
 }
 
 func TestPrefixCalcurateAddress(t *testing.T) {
