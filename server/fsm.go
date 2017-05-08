@@ -600,6 +600,29 @@ func readAll(conn net.Conn, length int) ([]byte, error) {
 	return buf, nil
 }
 
+func checkOwnASLoop(ownAS uint32, limit int, m *bgp.BGPUpdate) error {
+	cnt := 0
+	err := bgp.NewMessageError(uint8(bgp.BGP_ERROR_UPDATE_MESSAGE_ERROR), uint8(bgp.BGP_ERROR_SUB_MALFORMED_AS_PATH), nil, "")
+	for _, a := range m.PathAttributes {
+		switch p := a.(type) {
+		case *bgp.PathAttributeAsPath:
+			for _, i := range p.Value {
+				for _, as := range i.(*bgp.As4PathParam).AS {
+					if as == ownAS {
+						cnt++
+						if cnt > limit {
+							return err
+						}
+					}
+				}
+			}
+			return nil
+		}
+	}
+	return nil
+
+}
+
 func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 	sendToErrorCh := func(reason FsmStateReason) {
 		// probably doesn't happen but be cautious
@@ -671,6 +694,11 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 			case bgp.BGP_MSG_UPDATE:
 				body := m.Body.(*bgp.BGPUpdate)
 				confedCheck := !config.IsConfederationMember(h.fsm.gConf, h.fsm.pConf) && config.IsEBGPPeer(h.fsm.gConf, h.fsm.pConf)
+
+				fmsg.payload = make([]byte, len(headerBuf)+len(bodyBuf))
+				copy(fmsg.payload, headerBuf)
+				copy(fmsg.payload[len(headerBuf):], bodyBuf)
+
 				_, err = bgp.ValidateUpdateMsg(body, h.fsm.rfMap, confedCheck)
 				if err != nil {
 					log.WithFields(log.Fields{
@@ -680,28 +708,31 @@ func (h *FSMHandler) recvMessageWithError() (*FsmMsg, error) {
 						"error": err,
 					}).Warn("malformed BGP update message")
 					fmsg.MsgData = err
-				} else {
-					// FIXME: we should use the original message for bmp/mrt
-					table.UpdatePathAttrs4ByteAs(body)
-					err = table.UpdatePathAggregator4ByteAs(body)
-					if err == nil {
-						fmsg.PathList = table.ProcessMessage(m, h.fsm.peerInfo, fmsg.timestamp)
-						id := h.fsm.pConf.Config.NeighborAddress
-						for _, path := range fmsg.PathList {
-							if path.IsEOR() {
-								continue
-							}
-							if h.fsm.policy.ApplyPolicy(id, table.POLICY_DIRECTION_IN, path, nil) == nil {
-								path.Filter(id, table.POLICY_DIRECTION_IN)
-							}
-						}
-					} else {
-						fmsg.MsgData = err
+					return fmsg, err
+				}
+
+				table.UpdatePathAttrs4ByteAs(body)
+				if err = table.UpdatePathAggregator4ByteAs(body); err != nil {
+					fmsg.MsgData = err
+					return fmsg, err
+				}
+
+				if err = checkOwnASLoop(h.fsm.peerInfo.LocalAS, int(h.fsm.pConf.AsPathOptions.Config.AllowOwnAs), body); err != nil {
+					fmsg.MsgData = err
+					return fmsg, err
+				}
+
+				fmsg.PathList = table.ProcessMessage(m, h.fsm.peerInfo, fmsg.timestamp)
+				id := h.fsm.pConf.Config.NeighborAddress
+				for _, path := range fmsg.PathList {
+					if path.IsEOR() {
+						continue
+					}
+					if h.fsm.policy.ApplyPolicy(id, table.POLICY_DIRECTION_IN, path, nil) == nil {
+						path.Filter(id, table.POLICY_DIRECTION_IN)
 					}
 				}
-				fmsg.payload = make([]byte, len(headerBuf)+len(bodyBuf))
-				copy(fmsg.payload, headerBuf)
-				copy(fmsg.payload[len(headerBuf):], bodyBuf)
+
 				fallthrough
 			case bgp.BGP_MSG_KEEPALIVE:
 				// if the length of h.holdTimerResetCh
