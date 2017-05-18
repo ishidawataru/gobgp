@@ -7,6 +7,7 @@ import (
 	"github.com/osrg/gobgp/packet/rtr"
 	"github.com/spf13/viper"
 	"net"
+	"reflect"
 )
 
 const (
@@ -254,6 +255,18 @@ func setDefaultPolicyConfigValuesWithViper(v *viper.Viper, p *PolicyDefinition) 
 	return nil
 }
 
+func isExistPeerGroup(name string, b *BgpConfigSet) error {
+	if name == "" {
+		return nil
+	}
+	for _, pg := range b.PeerGroups {
+		if name == pg.Config.PeerGroupName {
+			return nil
+		}
+	}
+	return fmt.Errorf("No such peer-group: %s", name)
+}
+
 func setDefaultConfigValuesWithViper(v *viper.Viper, b *BgpConfigSet) error {
 	if v == nil {
 		v = viper.New()
@@ -293,6 +306,10 @@ func setDefaultConfigValuesWithViper(v *viper.Viper, b *BgpConfigSet) error {
 	}
 
 	for idx, n := range b.Neighbors {
+		if err := isExistPeerGroup(n.Config.PeerGroup, b); err != nil {
+			return err
+		}
+
 		vv := viper.New()
 		if len(list) > idx {
 			vv.Set("neighbor", list[idx])
@@ -326,4 +343,31 @@ func setDefaultConfigValuesWithViper(v *viper.Viper, b *BgpConfigSet) error {
 	}
 
 	return nil
+}
+
+func OverwriteNeighborConfigWithPeerGroup(c *Neighbor, pg *PeerGroup) {
+	exclude := []string{"NeighborAddress", "AdminDown", "NeighborInterface", "Vrf", "PeerGroup"}
+	overwriteConfig(&c.Config, &pg.Config, exclude)
+	exclude = []string{"Config", "State"}
+	overwriteConfig(c, pg, exclude)
+}
+
+func overwriteConfig(c, pg interface{}, exAttr []string) {
+	nValue := reflect.ValueOf(c)
+	nType := reflect.Indirect(nValue).Type()
+	pgValue := reflect.Indirect(reflect.ValueOf(pg))
+
+	for i := 0; i < nType.NumField(); i++ {
+		field := nType.Field(i).Name
+		if func() bool {
+			for _, attr := range exAttr {
+				if field == attr {
+					return false
+				}
+			}
+			return true
+		}() {
+			nValue.Elem().FieldByName(field).Set(pgValue.FieldByName(field))
+		}
+	}
 }

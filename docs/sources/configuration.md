@@ -130,6 +130,14 @@
     [neighbors.route-server.config]
         route-server-client = true
 
+[[peer-groups]]
+  [peer-groups.config]
+    peer-group-name = "my-peer-group"
+    peer-as = 65000
+  [[peer-groups.afi-safis]]
+    [peer-groups.afi-safis.config]
+      afi-safi-name = "ipv4-unicast"
+
 [[defined-sets.prefix-sets]]
     prefix-set-name = "ps0"
     [[defined-sets.prefix-sets.prefix-list]]
