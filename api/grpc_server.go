@@ -2059,7 +2059,7 @@ func (s *Server) StartServer(ctx context.Context, arg *StartServerRequest) (*Sta
 }
 
 func (s *Server) StopServer(ctx context.Context, arg *StopServerRequest) (*StopServerResponse, error) {
-	return &StopServerResponse{}, s.bgpServer.Stop()
+	return &StopServerResponse{}, s.bgpServer.StopServer()
 }
 
 func (s *Server) GetRibInfo(ctx context.Context, arg *GetRibInfoRequest) (*GetRibInfoResponse, error) {

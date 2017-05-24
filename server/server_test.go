@@ -29,15 +29,18 @@ import (
 
 func TestModPolicyAssign(t *testing.T) {
 	assert := assert.New(t)
-	s := NewBgpServer()
-	go s.Serve()
-	s.Start(&config.Global{
+	s, err := New(&config.Global{
 		Config: config.GlobalConfig{
 			As:       1,
 			RouterId: "1.1.1.1",
+			Port:     -1,
 		},
 	})
-	err := s.AddPolicy(&table.Policy{Name: "p1"}, false)
+	defer func() {
+		assert.Nil(s.Stop())
+	}()
+	assert.Nil(err)
+	err = s.AddPolicy(&table.Policy{Name: "p1"}, false)
 	assert.Nil(err)
 
 	err = s.AddPolicy(&table.Policy{Name: "p2"}, false)
@@ -60,15 +63,18 @@ func TestModPolicyAssign(t *testing.T) {
 
 func TestMonitor(test *testing.T) {
 	assert := assert.New(test)
-	s := NewBgpServer()
-	go s.Serve()
-	s.Start(&config.Global{
+	log.SetLevel(log.DebugLevel)
+	s, err := New(&config.Global{
 		Config: config.GlobalConfig{
 			As:       1,
 			RouterId: "1.1.1.1",
 			Port:     10179,
 		},
 	})
+	defer func() {
+		assert.Nil(s.Stop())
+	}()
+	assert.Nil(err)
 	n := &config.Neighbor{
 		Config: config.NeighborConfig{
 			NeighborAddress: "127.0.0.1",
@@ -83,15 +89,17 @@ func TestMonitor(test *testing.T) {
 	if err := s.AddNeighbor(n); err != nil {
 		log.Fatal(err)
 	}
-	t := NewBgpServer()
-	go t.Serve()
-	t.Start(&config.Global{
+	t, err := New(&config.Global{
 		Config: config.GlobalConfig{
 			As:       2,
 			RouterId: "2.2.2.2",
 			Port:     -1,
 		},
 	})
+	defer func() {
+		assert.Nil(t.Stop())
+	}()
+	assert.Nil(err)
 	m := &config.Neighbor{
 		Config: config.NeighborConfig{
 			NeighborAddress: "127.0.0.1",
@@ -149,15 +157,16 @@ func TestMonitor(test *testing.T) {
 
 func TestNumGoroutineWithAddDeleteNeighbor(t *testing.T) {
 	assert := assert.New(t)
-	s := NewBgpServer()
-	go s.Serve()
-	err := s.Start(&config.Global{
+	s, err := New(&config.Global{
 		Config: config.GlobalConfig{
 			As:       1,
 			RouterId: "1.1.1.1",
 			Port:     -1,
 		},
 	})
+	defer func() {
+		assert.Nil(s.Stop())
+	}()
 	assert.Nil(err)
 
 	num := runtime.NumGoroutine()

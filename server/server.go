@@ -103,6 +103,13 @@ type BgpServer struct {
 	zclient     *zebraClient
 	bmpManager  *bmpClientManager
 	mrtManager  *mrtManager
+	endCh       chan chan error
+}
+
+func New(c *config.Global) (*BgpServer, error) {
+	s := NewBgpServer()
+	go s.Serve()
+	return s, s.Start(c)
 }
 
 func NewBgpServer() *BgpServer {
@@ -113,6 +120,7 @@ func NewBgpServer() *BgpServer {
 		roaManager:  roaManager,
 		mgmtCh:      make(chan *mgmtOp, 1),
 		watcherMap:  make(map[WatchEventType][]*Watcher),
+		endCh:       make(chan chan error),
 	}
 	s.bmpManager = newBmpClientManager(s)
 	s.mrtManager = newMrtManager(s)
@@ -274,6 +282,9 @@ func (server *BgpServer) Serve() {
 			handleFsmMsg(e.(*FsmMsg))
 		case e := <-server.fsmStateCh:
 			handleFsmMsg(e)
+		case ch := <-server.endCh:
+			ch <- server.stopServer()
+			return
 		}
 	}
 }
@@ -1287,20 +1298,30 @@ func (s *BgpServer) DeleteVrf(name string) error {
 	}, true)
 }
 
-func (s *BgpServer) Stop() error {
+func (s *BgpServer) stopServer() error {
+	for k, _ := range s.neighborMap {
+		if err := s.deleteNeighbor(&config.Neighbor{Config: config.NeighborConfig{
+			NeighborAddress: k}}, bgp.BGP_ERROR_CEASE, bgp.BGP_ERROR_SUB_PEER_DECONFIGURED); err != nil {
+			return err
+		}
+	}
+	for _, l := range s.listeners {
+		l.Close()
+	}
+	s.bgpConfig.Global = config.Global{}
+	return nil
+}
+
+func (s *BgpServer) StopServer() error {
 	return s.mgmtOperation(func() error {
-		for k, _ := range s.neighborMap {
-			if err := s.deleteNeighbor(&config.Neighbor{Config: config.NeighborConfig{
-				NeighborAddress: k}}, bgp.BGP_ERROR_CEASE, bgp.BGP_ERROR_SUB_PEER_DECONFIGURED); err != nil {
-				return err
-			}
-		}
-		for _, l := range s.listeners {
-			l.Close()
-		}
-		s.bgpConfig.Global = config.Global{}
-		return nil
+		return s.stopServer()
 	}, true)
+}
+
+func (s *BgpServer) Stop() error {
+	ch := make(chan error)
+	s.endCh <- ch
+	return <-ch
 }
 
 func (s *BgpServer) softResetIn(addr string, family bgp.RouteFamily) error {
