@@ -1580,6 +1580,11 @@ func (server *BgpServer) addPeerGroup(c *config.PeerGroup) error {
 		return fmt.Errorf("Can't overwrite the existing peer-group: %s", name)
 	}
 
+	log.WithFields(log.Fields{
+		"Topic": "Peer",
+		"Name":  name,
+	}).Info("Add a peer group configuration")
+
 	server.peerGroupMap[c.Config.PeerGroupName] = NewPeerGroup(c)
 
 	return nil
@@ -1654,7 +1659,7 @@ func (server *BgpServer) addNeighbor(c *config.Neighbor) error {
 	}
 	server.neighborMap[addr] = peer
 	if name := c.Config.PeerGroup; name != "" {
-		server.peerGroupMap[name].AddMember(c)
+		server.peerGroupMap[name].AddMember(*c)
 	}
 	peer.startFSMHandler(server.fsmincomingCh, server.fsmStateCh)
 	server.broadcastPeerState(peer, bgp.BGP_FSM_IDLE)
@@ -1679,6 +1684,12 @@ func (server *BgpServer) deletePeerGroup(pg *config.PeerGroup) error {
 	if _, y := server.peerGroupMap[name]; !y {
 		return fmt.Errorf("Can't delete a peer-group %s which does not exist", name)
 	}
+
+	log.WithFields(log.Fields{
+		"Topic": "Peer",
+		"Name":  name,
+	}).Info("Delete a peer group configuration")
+
 	delete(server.peerGroupMap, name)
 	return nil
 }
@@ -1687,7 +1698,7 @@ func (server *BgpServer) deleteNeighbor(c *config.Neighbor, code, subcode uint8)
 	if c.Config.PeerGroup != "" {
 		_, y := server.peerGroupMap[c.Config.PeerGroup]
 		if y {
-			server.peerGroupMap[c.Config.PeerGroup].DeleteMember(c)
+			server.peerGroupMap[c.Config.PeerGroup].DeleteMember(*c)
 		}
 	}
 
@@ -1781,7 +1792,7 @@ func (s *BgpServer) updatePeerGroup(pg *config.PeerGroup) (needsSoftResetIn bool
 	s.peerGroupMap[name].Conf = pg
 
 	for _, n := range s.peerGroupMap[name].members {
-		u, err := s.updateNeighbor(n)
+		u, err := s.updateNeighbor(&n)
 		if err != nil {
 			return needsSoftResetIn, err
 		}
@@ -1828,6 +1839,9 @@ func (s *BgpServer) updateNeighbor(c *config.Neighbor) (needsSoftResetIn bool, e
 		peer.fsm.pConf.AsPathOptions = c.AsPathOptions
 		needsSoftResetIn = true
 	}
+
+	log.Infof("c: %+v\n", c)
+	log.Infof("original: %+v\n", original)
 
 	if !original.Config.Equal(&c.Config) || !original.Transport.Config.Equal(&c.Transport.Config) || config.CheckAfiSafisChange(original.AfiSafis, c.AfiSafis) {
 		sub := uint8(bgp.BGP_ERROR_SUB_OTHER_CONFIGURATION_CHANGE)
