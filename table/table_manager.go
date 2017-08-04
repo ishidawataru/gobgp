@@ -53,49 +53,32 @@ func withdraw2Path(m *bgp.BGPMessage, p *PeerInfo, now time.Time) []*Path {
 
 func mpreachNlri2Path(m *bgp.BGPMessage, p *PeerInfo, now time.Time) []*Path {
 	updateMsg := m.Body.(*bgp.BGPUpdate)
-	pathAttributes := updateMsg.PathAttributes
-	attrList := []*bgp.PathAttributeMpReachNLRI{}
+	nlris := []bgp.AddrPrefixInterface{}
+	withdrawals := []bgp.AddrPrefixInterface{}
+	pathAttributes := make([]bgp.PathAttributeInterface, 0, len(updateMsg.PathAttributes))
 
-	for _, attr := range pathAttributes {
-		a, ok := attr.(*bgp.PathAttributeMpReachNLRI)
-		if ok {
-			attrList = append(attrList, a)
-			break
+	for _, attr := range updateMsg.PathAttributes {
+		switch a := attr.(type) {
+		case *bgp.PathAttributeMpReachNLRI:
+			for _, nlri := range a.Value {
+				nlris = append(nlris, nlri)
+			}
+		case *bgp.PathAttributeMpUnreachNLRI:
+			for _, withdrawal := range a.Value {
+				withdrawals = append(withdrawals, withdrawal)
+			}
+		default:
+			pathAttributes = append(pathAttributes, a)
 		}
 	}
-	pathList := make([]*Path, 0)
-
-	for _, mp := range attrList {
-		nlri_info := mp.Value
-		for _, nlri := range nlri_info {
-			path := NewPath(p, nlri, false, pathAttributes, now, false)
-			pathList = append(pathList, path)
-		}
+	pathList := make([]*Path, 0, len(nlris)+len(withdrawals))
+	for _, nlri := range nlris {
+		path := NewPath(p, nlri, false, pathAttributes, now, false)
+		pathList = append(pathList, path)
 	}
-	return pathList
-}
-
-func mpunreachNlri2Path(m *bgp.BGPMessage, p *PeerInfo, now time.Time) []*Path {
-	updateMsg := m.Body.(*bgp.BGPUpdate)
-	pathAttributes := updateMsg.PathAttributes
-	attrList := []*bgp.PathAttributeMpUnreachNLRI{}
-
-	for _, attr := range pathAttributes {
-		a, ok := attr.(*bgp.PathAttributeMpUnreachNLRI)
-		if ok {
-			attrList = append(attrList, a)
-			break
-		}
-	}
-	pathList := make([]*Path, 0)
-
-	for _, mp := range attrList {
-		nlri_info := mp.Value
-
-		for _, nlri := range nlri_info {
-			path := NewPath(p, nlri, true, pathAttributes, now, false)
-			pathList = append(pathList, path)
-		}
+	for _, withdrawal := range withdrawals {
+		path := NewPath(p, withdrawal, true, pathAttributes, now, false)
+		pathList = append(pathList, path)
 	}
 	return pathList
 }
@@ -105,7 +88,6 @@ func ProcessMessage(m *bgp.BGPMessage, peerInfo *PeerInfo, timestamp time.Time) 
 	pathList = append(pathList, nlri2Path(m, peerInfo, timestamp)...)
 	pathList = append(pathList, withdraw2Path(m, peerInfo, timestamp)...)
 	pathList = append(pathList, mpreachNlri2Path(m, peerInfo, timestamp)...)
-	pathList = append(pathList, mpunreachNlri2Path(m, peerInfo, timestamp)...)
 	if y, f := m.Body.(*bgp.BGPUpdate).IsEndOfRib(); y {
 		pathList = append(pathList, NewEOR(f))
 	}
