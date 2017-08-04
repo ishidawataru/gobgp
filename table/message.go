@@ -21,7 +21,51 @@ import (
 	log "github.com/sirupsen/logrus"
 	"hash/fnv"
 	"reflect"
+	"time"
 )
+
+func ProcessMessage(msg *bgp.BGPMessage, peerInfo *PeerInfo, now time.Time) []*Path {
+	update := msg.Body.(*bgp.BGPUpdate)
+	if y, f := update.IsEndOfRib(); y {
+		return []*Path{NewEOR(f)}
+	}
+
+	nlris := make([]bgp.AddrPrefixInterface, 0, len(update.NLRI))
+	for _, nlri := range update.NLRI {
+		nlris = append(nlris, nlri)
+	}
+	withdrawals := make([]bgp.AddrPrefixInterface, 0, len(update.WithdrawnRoutes))
+	for _, withdrawal := range update.WithdrawnRoutes {
+		withdrawals = append(withdrawals, withdrawal)
+	}
+	pathAttributes := make([]bgp.PathAttributeInterface, 0, len(update.PathAttributes))
+
+	for _, attr := range update.PathAttributes {
+		switch a := attr.(type) {
+		case *bgp.PathAttributeMpReachNLRI:
+			for _, nlri := range a.Value {
+				nlris = append(nlris, nlri)
+			}
+		case *bgp.PathAttributeMpUnreachNLRI:
+			for _, withdrawal := range a.Value {
+				withdrawals = append(withdrawals, withdrawal)
+			}
+		default:
+			pathAttributes = append(pathAttributes, a)
+		}
+	}
+
+	pathList := make([]*Path, 0, len(nlris)+len(withdrawals))
+	for _, nlri := range nlris {
+		path := NewPath(peerInfo, nlri, false, pathAttributes, now, false)
+		pathList = append(pathList, path)
+	}
+	for _, withdrawal := range withdrawals {
+		path := NewPath(peerInfo, withdrawal, true, pathAttributes, now, false)
+		pathList = append(pathList, path)
+	}
+	return pathList
+}
 
 func UpdatePathAttrs2ByteAs(msg *bgp.BGPUpdate) error {
 	ps := msg.PathAttributes
@@ -293,15 +337,7 @@ func createUpdateMsgFromPath(path *Path, msg *bgp.BGPMessage) *bgp.BGPMessage {
 					}
 				}
 			} else {
-				var nlris []bgp.AddrPrefixInterface
-				attr := path.getPathAttr(bgp.BGP_ATTR_TYPE_MP_REACH_NLRI)
-				if attr == nil {
-					// for bmp post-policy
-					attr = path.getPathAttr(bgp.BGP_ATTR_TYPE_MP_UNREACH_NLRI)
-					nlris = attr.(*bgp.PathAttributeMpUnreachNLRI).Value
-				} else {
-					nlris = []bgp.AddrPrefixInterface{path.GetNlri()}
-				}
+				nlris := []bgp.AddrPrefixInterface{path.GetNlri()}
 				return bgp.NewBGPUpdateMessage(nil, []bgp.PathAttributeInterface{bgp.NewPathAttributeMpUnreachNLRI(nlris)}, nil)
 			}
 		} else {
@@ -314,19 +350,20 @@ func createUpdateMsgFromPath(path *Path, msg *bgp.BGPMessage) *bgp.BGPMessage {
 					}
 				}
 			} else {
-				attrs := make([]bgp.PathAttributeInterface, 0, 8)
-
-				for _, p := range path.GetPathAttrs() {
-					if p.GetType() == bgp.BGP_ATTR_TYPE_MP_REACH_NLRI {
-						attrs = append(attrs, bgp.NewPathAttributeMpReachNLRI(path.GetNexthop().String(), []bgp.AddrPrefixInterface{path.GetNlri()}))
-					} else {
-						attrs = append(attrs, p)
+				attrs := path.GetPathAttrs()
+				mpreach := bgp.NewPathAttributeMpReachNLRI(path.GetNexthop().String(), []bgp.AddrPrefixInterface{path.GetNlri()})
+				if attrs[len(attrs)-1].GetType() < bgp.BGP_ATTR_TYPE_MP_REACH_NLRI {
+					attrs = append(attrs, mpreach)
+				} else {
+					for i, attr := range attrs {
+						if attr.GetType() > bgp.BGP_ATTR_TYPE_MP_REACH_NLRI {
+							tmp := attrs
+							attrs = append(tmp[:i], mpreach)
+							attrs = append(attrs, tmp[i:]...)
+							break
+						}
 					}
 				}
-
-				// we don't need to clone here but we
-				// might merge path to this message in
-				// the future so let's clone anyway.
 				return bgp.NewBGPUpdateMessage(nil, attrs, nil)
 			}
 		}
